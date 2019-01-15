@@ -2,7 +2,6 @@ from .. import config
 from . import utils
 import glob
 
-
 class FeatureConstructor:
     def __init__(self, function, no_cache_default=False):
         self.function = function
@@ -67,13 +66,11 @@ class FeatureList(list):
     def define_in_scope(self, global_scope):
         self.recalc()
         for func in self.name_to_idx:
-#             exec(f"{func} = self['{func}']")
             for name in self.names:
                 try:
                     exec(f"{func} = {name}['{func}']", global_scope)
                     break
                 except Exception as e:
-#                     print(e)
                     pass
     
 feature_constructors = FeatureList()
