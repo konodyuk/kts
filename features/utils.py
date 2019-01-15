@@ -3,6 +3,7 @@ import pandas as pd
 import hashlib
 import feather
 import inspect
+import dill
 import os
 from glob import glob
 
@@ -35,6 +36,13 @@ def load_src(path):
         src = f.read()
     return src
 
+def save_fc(feature_constructor, path):
+    print('dumping: ', feature_constructor)
+    dill.dump(feature_constructor, open(path, 'wb'))
+    
+def load_fc(path):
+    return dill.load(open(path, 'rb'))
+
 
 def make_df_name(func, df):
     return f"{func.__name__}__{hash_df(df)[:4]}.fth"
@@ -44,12 +52,19 @@ def make_src_name(func):
     return f"{func.__name__}.py"
 #     return f"{func.__name__}__{hash_src(func)[:4]}.py"
 
+def make_fc_name(feature_constructor):
+    return f"{feature_constructor.__name__}.fc"
+
     
 def make_df_path(func, df):
     return config.feature_path + make_df_name(func, df)
 
 def make_src_path(func):
     return config.feature_path + make_src_name(func)
+
+def make_fc_path(feature_constructor):
+    return config.feature_path + make_fc_name(feature_constructor)
+
 
 def make_glob(name):
     return config.feature_path + name + '*'
@@ -71,6 +86,9 @@ def load_src_func(func):
     def loader():
         return load_src(make_src_path(func))
     return loader
+
+def cache_fc(feature_constructor):
+    save_fc(feature_constructor, make_fc_path(feature_constructor))
 
 def get_func_name_from_path(path):
     return path.split('/')[-1].split('.')[~1]
