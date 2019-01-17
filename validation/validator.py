@@ -1,15 +1,24 @@
 from .. import config
+from copy import deepcopy
 
 class Validator:
-    def __init__(self, df, y, features_before, features_after, single_splitter, n_folds=5, n_splits=3):
+    def __init__(self, df, y, splitter):
         self.df = df
         self.y = y
-        self.features_before = features_before
-        self.features_after = features_after
-        self.single_splitter = single_splitter
-        self.split = [single_splitter(y, n_folds, config.seeds[i]) for i in range(n_splits)]
+        self.splitter = splitter
         
     def score(model):
-        for idx_split in range(self.n_splits):
-            for idx_fold, (idx_train, idx_test) in self.split[idx_split]:
-                model.fit()
+        df = model.preprocess_before_split(self.df)
+        raw_model = deepcopy(model)
+        for split in self.splitter.split:
+            idx_train = split['train']
+            idx_test = split['test']
+            df_train = df.iloc[idx_train]
+            y_train = y[idx_train]
+            df_test = df.iloc[idx_test]
+            y_test = y[idx_test]
+            cur_model = deepcopy(raw_model)
+            cur_model.fit(df_train, y_train)
+            y_hat = cur_model.predict(df_test)
+            
+                

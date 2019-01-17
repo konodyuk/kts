@@ -1,6 +1,7 @@
 seed = 31337
 import numpy as np
-seeds = np.random.randint(10)
+np.random.seed(seed)
+seeds = np.random.randint(100, size=10)
 
 storage_path = '../storage/'
 

@@ -1,4 +1,4 @@
-from .model import *
+from ..model.model import *
 from .. import config
 
 from xgboost import XGBClassifier as _XGBC
@@ -43,29 +43,20 @@ class XGBClassifier(Model):
         "random_state": 0, 
         "seed": config.seed
     }
-    
-    
-from xgboost import XGBRegressor as _XGBR
-class XGBRegressor(Model):
-    Estimator = _XGBR
+    short_name = 'xgb'
     
     
 from lightgbm import LGBMClassifier as _LGBMC
 class LGBMClassifier(Model):
     Estimator = _LGBMC
-    
-    
-from lightgbm import LGBMRegressor as _LGBMR
-class LGBMRegressor(Model):
-    Estimator = _LGBMR
+    short_name = 'lgb'
     
     
 from catboost import CatBoostClassifier as _CBC
 class CBClassifier(Model):
     Estimator = _CBC
+    short_name = 'cb'
     
-    
-from catboost import CatBoostRegressor as _CBR
-class CBRegressor(Model):
-    Estimator = _CBR
+    def predict(self, X):
+        return self.estimator.predict_proba(X)
     
