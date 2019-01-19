@@ -23,6 +23,7 @@ class Model:
                 self.system_params[param] = kwargs[param]
         self.estimator = type(self).Estimator(**self.params, **type(self).system_params)
         self.reset_name()
+#         self.coeff = 1 # hack to make Ensemble simplification possible
         
     def reset_name(self):
         self.__name__ = f"{type(self).short_name}_{hex(hash(frozenset(self.params.items())))[-2:]}"
@@ -101,15 +102,31 @@ class WeightedModel(Model): # MulNode
             
     def predict(self, X):
         return self.coeff * self.model.predict(X)
-
+    
 class Ensemble(Model): # AddNode
     def __init__(self, models):
         self.models = []
         ensembles = [model for model in models if type(model) == type(self)]
         single_models = [model for model in models if type(model) != type(self)]
+        _models = []
         for ensemble in ensembles:
-            self.models += ensemble.models
-        self.models += single_models
+            _models += ensemble.models
+        _models += single_models
+        
+        def get_model_coeff(model):
+            if 'model' in dir(model):
+                return model.model, model.coeff
+            return model, 1
+        
+        self.models = list(set([get_model_coeff(model)[0] for model in _models]))
+        _coeffs = [0 for i in range(len(self.models))]
+        for i in range(len(self.models)):
+            for model in _models:
+                if get_model_coeff(self.models[i])[0] == get_model_coeff(model)[0]:
+                    _coeffs[i] += get_model_coeff(model)[1]
+        
+        self.models = [WeightedModel(model, coeff) for model, coeff in zip(self.models, _coeffs)]
+                    
         self.__name__ = ' + '.join([model.__name__ for model in self.models])
         
     def predict(self, X):

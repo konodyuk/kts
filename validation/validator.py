@@ -18,7 +18,7 @@ class Validator:
             df_test = df.iloc[idx_test]
             y_test = y[idx_test]
             cur_model = deepcopy(raw_model)
-            cur_model.fit(df_train, y_train)
+            cur_model.fit(df_train.values, y_train)
             y_hat = cur_model.predict(df_test)
             
                 

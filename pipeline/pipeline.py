@@ -1,12 +1,9 @@
 from .model import *
 
 class Pipeline(Model):
-    def __init__(self, model, features_before_split, features_after_split=[]):
+    def __init__(self, model, featureset, splitter):
         self.model = model
-        self.features_before = features_before_split
-        self.features_after = features_after_split
+        self.featureset = featureset
         
-    def preprocess_before_split(self, x):
-        
-    def preprocess_after_split(self, x):
+    def fit(self, df):
         

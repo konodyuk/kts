@@ -2,6 +2,10 @@
 # Created by https://www.gitignore.io/api/macos,python,pycharm,sublimetext,jupyternotebooks
 # Edit at https://www.gitignore.io/?templates=macos,python,pycharm,sublimetext,jupyternotebooks
 
+### KTS example cache ###
+*/storage/features/*
+*/storage/runs/*
+
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/

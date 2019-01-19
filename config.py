@@ -4,6 +4,7 @@ np.random.seed(seed)
 seeds = np.random.randint(100, size=10)
 
 storage_path = '../storage/'
+index_prefix = "__kts__index_"
 
 @property
 def feature_path(config):
