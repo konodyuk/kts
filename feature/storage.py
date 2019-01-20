@@ -1,6 +1,7 @@
 from .. import config
 from . import utils
 import glob
+import os
 
 class FeatureConstructor:
     def __init__(self, function, no_cache_default=False):
@@ -11,7 +12,7 @@ class FeatureConstructor:
         
     # needs refactoring because of direct storing source
     def __call__(self, df, no_cache=False):
-        if no_cache:
+        if no_cache or config.test_call: # dirty hack to avoid  caching when @test function uses @registered function inside
             return self.function(df)
         if utils.is_cached(self.function, df):
             return utils.load_cached(self.function, df)
@@ -65,9 +66,31 @@ class FeatureSet:
              for feature in self.features_after]
         )
         return result
+    
+    @property
+    def source(self):
+        import inspect
+        used_funcs = (self.features_before + self.features_after)[::-1]
+        for func in used_funcs:
+            for func_stored in feature_constructors:
+                if func_stored.__name__ in func.source and \
+                func_stored.__name__ not in [i.__name__ for i in used_funcs]:
+                    used_funcs.append(func_stored)
+        src = '\n'.join([i.source for i in used_funcs[::-1]]) 
         
+        src += '\n\n'
+#         src += inspect.getsource(type(self))
+#         src += '\n\n'
+        src += 'featureset = '
+        src += type(self).__name__ + '('
+        src += 'features_before=[' + ', '.join([i.__name__ for i in self.features_before]) + '], '
+        src += 'features_after=[' + ', '.join([i.__name__ for i in self.features_after]) + ']'
+        src += ')'
+        return src
+    
+from collections import MutableSequence
 
-class FeatureList(list):
+class FeatureList(MutableSequence):
     def __init__(self):
         self.full_name = "kts.storage.feature_constructors" # such a hardcode 
         self.names = [self.full_name]
@@ -79,7 +102,9 @@ class FeatureList(list):
     def recalc(self):
         self.functors = []
         self.name_to_idx = dict()
-        for idx, file in enumerate(glob.glob(config.feature_path + '*.fc')):
+        files = glob.glob(config.feature_path + '*.fc')
+        files.sort(key=os.path.getmtime)
+        for idx, file in enumerate(files):
             functor = utils.load_fc(file)
             self.functors.append(functor)
             self.name_to_idx[functor.__name__] = idx
@@ -91,12 +116,21 @@ class FeatureList(list):
         
     def __getitem__(self, key):
         self.recalc()
-        if type(key) == int:
+        if type(key) in [int, slice]:
             return self.functors[key]
         elif type(key) == str:
             return self.functors[self.name_to_idx[key]]
         else:
-            raise TypeError('Index should be either int or str')
+            raise TypeError('Index should be int, slice or str')
+            
+    def __delitem__(self, key):
+        raise AttributeError('This object is read-only')
+        
+    def __setitem__(self, key, value):
+        raise AttributeError('This object is read-only')
+        
+    def insert(self, key, value):
+        raise AttributeError('This object is read-only')
     
     def define_in_scope(self, global_scope):
         self.recalc()

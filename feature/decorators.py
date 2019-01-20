@@ -1,4 +1,5 @@
 from . import utils
+from .. import config
 from .storage import FeatureConstructor
 from IPython.display import display
 from glob import glob
@@ -7,8 +8,10 @@ import os
 def test(function):
     
     def new_function(df, sizes=[2, 4, 6]):
+        config.test_call = 1
         for sz in sizes:
             display(function(df.head(sz)))
+        config.test_call = 0
     
     return new_function
 
