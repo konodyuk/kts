@@ -30,10 +30,9 @@ def register(*args, **kwargs):
             utils.cache_fc(functor)    
             utils.cache_src(function)
         return functor
-    
     if len(args):
         function = args[0]
-        __register(function)
+        return __register(function)
     else:
         return __register
     
@@ -47,3 +46,10 @@ def deregister(*args, **kwargs):
         utils.decache(force)(function)
     else:
         return utils.decache(force)
+    
+
+def dropper(function):
+    return register(function, cache_default=False)
+
+def selector(function):
+    return register(function, cache_default=False)
