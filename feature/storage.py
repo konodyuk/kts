@@ -4,15 +4,17 @@ import glob
 import os
 
 class FeatureConstructor:
-    def __init__(self, function, no_cache_default=False):
+    def __init__(self, function, cache_default=True):
         self.function = function
-        self.no_cache_default = no_cache_default
+        self.cache_default = cache_default
         self.__name__ = function.__name__
         self.src = utils.get_src(function)
         
     # needs refactoring because of direct storing source
-    def __call__(self, df, no_cache=False):
-        if no_cache or config.test_call: # dirty hack to avoid  caching when @test function uses @registered function inside
+    def __call__(self, df, cache=None):
+        if type(cache) == type(None):
+            cache = self.cache_default
+        if not cache or config.test_call: # dirty hack to avoid  caching when @test function uses @registered function inside
             return self.function(df)
         if utils.is_cached(self.function, df):
             return utils.load_cached(self.function, df)
