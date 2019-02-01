@@ -1,2 +1,2 @@
 from .decorators import test, register, deregister
-# from .storage import feature_constructors
+from .interface import column_selector, column_dropper
