@@ -20,7 +20,7 @@ def compose(funcs):
 
 def make_ohe(cols, sep='_ohe_'):
     def __make_ohe(df):
-        return pd.get_dummies(df[cols], prefix_sep='_ohe_', columns=cols)
+        return pd.get_dummies(df[cols], prefix_sep=sep, columns=cols)
     return FeatureConstructor(__make_ohe, cache_default=False)
 
 def make_mean_encoding(cols, target_col, prefix='me_'):
