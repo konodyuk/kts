@@ -45,10 +45,10 @@ def save_df(df, path):
     feather.write_dataframe(df, path)
     df.set_index(index_name, inplace=True)
     df.index.name = df.index.name[len(config.index_prefix):]
-    
+
 def load_df(path):
     '''
-    Loads a dataframe from feather format and sets as index that additional 
+    Loads a dataframe from feather format and sets as index that additional
     column added with saving by save_df. Restores original name of index column.
     '''
     tmp = feather.read_dataframe(path, use_threads=True)
@@ -77,7 +77,7 @@ def save_fc(feature_constructor, path):
     Save feature in "upgraded" pickle format
     '''
     dill.dump(feature_constructor, open(path, 'wb'))
-    
+
 def load_fc(path):
     '''
     Opposite to save_fc
@@ -128,9 +128,9 @@ def make_fc_path(feature_constructor):
 
 def make_glob(name):
     '''
-    Constructs a pattern for glob. Glob searches all path matching this pattern. This finction is used in decashe(). 
+    Constructs a pattern for glob. Glob searches all path matching this pattern. This finction is used in decache(). 
     '''
-    return config.feature_path + name + '.*'
+    return glob(config.feature_path + name + '.*') + glob(config.feature_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
 
 
 def is_cached(func, df):
@@ -206,20 +206,21 @@ def decache(force=False):
             if not force and confirmation != function:
                 print("Doesn't match")
                 return
-            for path in glob(make_glob(function)):
+            for path in make_glob(function):
                 print(f'removing {path}')
                 os.remove(path)
         else:
             if not force and confirmation != function.__name__:                
                 print("Doesn't match")
                 return
-            for path in glob(make_glob(function.__name__)):            
+            for path in make_glob(function.__name__):            
                 print(f'removing {path}')
                 os.remove(path)
     return __decache
 
+def empty_like(df):
+    return df[[]].copy()
+
 
 def merge(dfs):
-    if not dfs:
-        return
-    return dfs[0].join(dfs[1:])
+    return pd.concat(dfs, axis=1)
