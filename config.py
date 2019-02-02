@@ -3,6 +3,7 @@ import numpy as np
 np.random.seed(seed)
 seeds = np.random.randint(100, size=10)
 
+info_path = '../info/'
 storage_path = '../storage/'
 index_prefix = "__kts__index_"
 test_call = 0
