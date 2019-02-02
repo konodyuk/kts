@@ -35,17 +35,17 @@ def load_df(path):
     return tmp
 
 
-def get_path_obj(name):
+def get_path_info(name):
     return config.feature_path + name
 
-def save_obj(obj, path):
+def save_info(obj, path):
     '''
     Saves object
     '''
     dill.dump(obj, open(path, 'wb'))
 
 
-def load_obj(path):
+def load_info(path):
     '''
     Loads object
     '''
