@@ -217,3 +217,9 @@ def decache(force=False):
                 print(f'removing {path}')
                 os.remove(path)
     return __decache
+
+
+def merge(dfs):
+    if not dfs:
+        return
+    return dfs[0].join(dfs[1:])
