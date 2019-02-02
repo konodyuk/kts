@@ -171,7 +171,7 @@ def cache_fc(feature_constructor):
 
 def get_func_name_from_path(path):
     '''
-    Gets name of a function from the path it is stored. What does ~ mean?
+    Gets name of a function from the path it is stored.
     '''
     return path.split('/')[-1].split('.')[~1]
 
