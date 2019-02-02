@@ -15,10 +15,10 @@ def test(function):
     
     return new_function
 
-def register(*args, **kwargs):
-    cache_default = True
-    if 'cache_default' in kwargs:
-        cache_default = kwargs['cache_default']
+def register(*args, cache_default=True):
+#     cache_default = True
+#     if 'cache_default' in kwargs:
+#         cache_default = kwargs['cache_default']
     
     def __register(function):
         if utils.is_cached_src(function) and not utils.matches_cache(function):
@@ -30,18 +30,18 @@ def register(*args, **kwargs):
             utils.cache_fc(functor)    
             utils.cache_src(function)
         return functor
-    if len(args):
+    if args:
         function = args[0]
         return __register(function)
     else:
         return __register
     
-def deregister(*args, **kwargs):
+def deregister(*args, force=False):
 #     print(args, kwargs)
-    force = False
-    if 'force' in kwargs:
-        force = kwargs['force']
-    if len(args) >= 1:
+#     force = False
+#     if 'force' in kwargs:
+#         force = kwargs['force']
+    if args:
         function = args[0]
         utils.decache(force)(function)
     else:
