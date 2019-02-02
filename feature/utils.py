@@ -130,7 +130,7 @@ def make_glob(name):
     '''
     Constructs a pattern for glob. Glob searches all path matching this pattern. This finction is used in decashe(). 
     '''
-    return config.feature_path + name + '*'
+    return config.feature_path + name + '.*'
 
 
 def is_cached(func, df):
@@ -213,7 +213,7 @@ def decache(force=False):
             if not force and confirmation != function.__name__:                
                 print("Doesn't match")
                 return
-            for path in glob(make_glob(make_src_name(function))):            
+            for path in glob(make_glob(function.__name__)):            
                 print(f'removing {path}')
                 os.remove(path)
     return __decache
