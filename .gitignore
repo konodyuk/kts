@@ -274,7 +274,11 @@ oscrypto-ca-bundle.crt
 bh_unicode_properties.cache
 
 # Sublime-github package stores a github token in this file
+
 # https://packagecontrol.io/packages/sublime-github
 GitHub.sublime-settings
 
 # End of https://www.gitignore.io/api/macos,python,pycharm,sublimetext,jupyternotebooks
+
+# Pycharm files
+feature/.idea/*
