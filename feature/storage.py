@@ -36,6 +36,7 @@ class FeatureConstructor:
     
 class FeatureSet:
     def __init__(self, features_before, features_after=[], df_input=None):
+        assert len(features_before) >= 1, "List of features can't be empty"
         self.features_before = features_before
         self.features_after = features_after
         if type(df_input) != type(None):
