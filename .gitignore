@@ -274,6 +274,9 @@ oscrypto-ca-bundle.crt
 bh_unicode_properties.cache
 
 # Sublime-github package stores a github token in this file
+
+# Pycharme garbage
+feature/.idea/*
 # https://packagecontrol.io/packages/sublime-github
 GitHub.sublime-settings
 
