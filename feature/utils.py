@@ -74,9 +74,8 @@ def load_src(path):
 
 def save_fc(feature_constructor, path):
     '''
-    ???
+    Save feature in "upgraded" pickle format
     '''
-#     print('dumping: ', feature_constructor)
     dill.dump(feature_constructor, open(path, 'wb'))
     
 def load_fc(path):
