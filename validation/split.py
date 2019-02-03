@@ -1,4 +1,5 @@
 from .. import config
+from ..storage import split_manager
 import numpy as np
 
 class BaseSplitter:
@@ -9,7 +10,9 @@ class BaseSplitter:
         
     @property
     def split(self):
-        yield from self._split()
+        for spl in self._split():
+            split_manager.register(spl)
+            yield spl
             
         
 from sklearn.model_selection import StratifiedKFold
