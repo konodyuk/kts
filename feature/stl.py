@@ -1,6 +1,7 @@
 from .storage import FeatureConstructor
 from . import utils
 from .utils import empty_like
+import pandas as pd
 
 def column_selector(columns):
     def __col_selector(df):

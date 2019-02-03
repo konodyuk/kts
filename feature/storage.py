@@ -95,7 +95,7 @@ from collections import MutableSequence
 
 class FeatureList(MutableSequence):
     def __init__(self):
-        self.full_name = "kts.feature.storage.feature_constructors" # such a hardcode 
+        self.full_name = "kts.feature.storage.feature_list" # such a hardcode 
         self.names = [self.full_name]
         while self.names[-1].count('.'):
             self.names.append(self.names[-1][self.names[-1].find('.') + 1:])
@@ -149,4 +149,4 @@ class FeatureList(MutableSequence):
         self.recalc()
         return len(self.functors)
     
-feature_constructors = FeatureList()
+feature_list = FeatureList()

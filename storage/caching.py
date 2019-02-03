@@ -5,6 +5,9 @@ import glob
 
 
 class Cache:
+    '''
+    Doesn't work yet
+    '''
     def __init__(self):
         self.memory = dict()
     
@@ -22,7 +25,7 @@ class Cache:
             raise KeyError("No such df in cache")
 
     def is_cached_df(self, name):
-        return name in self.memory or os,path.exists(utils.get_path_df(name))
+        return name in self.memory or os.path.exists(utils.get_path_df(name))
 
     def cache_obj(self, obj, name):
         self.memory[name] = obj
