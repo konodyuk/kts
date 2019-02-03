@@ -14,8 +14,9 @@ class SplitManager:
         utils.save_info(self.splits, utils.get_path_info('splits'))
     
     def register(self, split):
-        self.splits.add(split)
-        self.save()
+        if self.status(split) == 'unknown':
+            self.splits.add(split)
+            self.save()
     
     def status(self, split):
         for spl in self.splits:
