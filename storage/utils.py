@@ -36,7 +36,7 @@ def load_df(path):
 
 
 def get_path_info(name):
-    return config.feature_path + name
+    return config.info_path + name
 
 def save_info(obj, path):
     '''
