@@ -20,9 +20,9 @@ class SplitManager:
     
     def status(self, split):
         for spl in self.splits:
-            if set(spl['train']) == set(split):
+            if frozenset(spl['train']) == frozenset(split):
                 return 'train'
-            elif set(spl['test']) == set(split):
+            elif frozenset(spl['test']) == frozenset(split):
                 return 'test'
         return 'unknown'
     
