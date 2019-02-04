@@ -1,7 +1,13 @@
 from .storage import FeatureConstructor
-from . import utils
-from .utils import empty_like
 import pandas as pd
+
+
+def empty_like(df):
+    return df[[]].copy()
+
+def merge(dfs):
+    return pd.concat(dfs, axis=1)
+
 
 def column_selector(columns):
     def __col_selector(df):
@@ -15,7 +21,7 @@ def column_dropper(columns):
 
 def compose(funcs):
     def __compose(df):
-        return utils.merge([func(df) for func in funcs])
+        return merge([func(df) for func in funcs])
     fc = FeatureConstructor(__compose, cache_default=False)
     fc.src = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.src for func in funcs])}])"
     fc.__name__ = f"compose_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
@@ -26,7 +32,7 @@ def sequence(funcs):
     def __sequence(df):
         res = empty_like(df)
         for func in funcs:
-            res = utils.merge([res, func(res)])
+            res = merge([res, func(res)])
         return res
     fc = FeatureConstructor(__sequence, cache_default=False)
     fc.src = f"stl.sequence([{', '.join([func.__name__ if not func.stl else func.src for func in funcs])}])"

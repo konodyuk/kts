@@ -217,10 +217,3 @@ def decache(force=False):
                 print(f'removing {path}')
                 os.remove(path)
     return __decache
-
-def empty_like(df):
-    return df[[]].copy()
-
-
-def merge(dfs):
-    return pd.concat(dfs, axis=1)
