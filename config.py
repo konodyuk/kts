@@ -22,7 +22,7 @@ def info_path(config):
 
 @property
 def source_path(config):
-    return storage_path + 'sources'
+    return storage_path + 'sources/'
 
 
 mprop.init()

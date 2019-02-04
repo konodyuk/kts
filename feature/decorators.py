@@ -35,7 +35,7 @@ def register(*args, cache_default=True):
 
         functor = FeatureConstructor(func, cache_default)
         if not source_utils.source_is_saved(func):
-            cache.cache_obj(functor)
+            cache.cache_obj(functor, functor.__name__)
             source_utils.save_source(func)
         return functor
 

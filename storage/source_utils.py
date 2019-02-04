@@ -38,4 +38,4 @@ def load_source(function):
 
 
 def matches_cache(function):
-    return get_source(function) == load_source(source_path(function))
+    return get_source(function) == load_source((function))
