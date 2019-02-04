@@ -1,5 +1,6 @@
 from .. import config
 from . import utils
+from . import stl
 import glob
 import os
 
@@ -31,40 +32,27 @@ class FeatureConstructor:
         return self.__name__
     
 class FeatureSet:
-    def __init__(self, features_before, features_after=[], df_input=None):
-        assert len(features_before) >= 1, "List of features can't be empty"
-        self.features_before = features_before
-        self.features_after = features_after
+    def __init__(self, fc_before, fc_after=None, df_input=None):
+        self.fc_before = fc_before
+        self.fc_after = fc_after
         if type(df_input) != type(None):
             self.set_df(df_input)
             
     def set_df(self, df_input):
         self.df_input = df_input
-        self.df = self.features_before[0](self.df_input)
-        self.df = self.df.join(
-            [feature(self.df_input)
-             for feature in self.features_before[1:]]
-        )
+        self.df = self.fc_before(self.df_input)
         
     def __call__(self, df):
-        result = self.features_before[0](df)
-        result = result.join(
-            [feature(df)
-             for feature in self.features_before[1:]]
-        )
-        result = result.join(
-            [feature(df)
-             for feature in self.features_after]
-        )
-        return result
+        return stl.merge([
+            self.fc_before(self.df_input),
+            self.fc_after(self.df_input)
+        ])
         
     def __getitem__(self, idx):
-        result = self.df.iloc[idx]
-        result = result.join(
-            [feature(self.df_input.iloc[idx])
-             for feature in self.features_after]
-        )
-        return result
+        return stl.merge([
+            self.df.iloc[idx], 
+            self.fc_after(self.df_input.iloc[idx])
+        ])
     
     @property
     def source(self):
