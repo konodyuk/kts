@@ -1,24 +1,29 @@
+import numpy as np
+
 from .. import config
 from copy import deepcopy
 
 class Validator:
-    def __init__(self, df, y, splitter):
-        self.df = df
-        self.y = y
+    def __init__(self, featureset, target, splitter, metric):
+        self.fs = featureset
+        self.target = target
         self.splitter = splitter
+        self.metric = metric
         
-    def score(model):
-        df = model.preprocess_before_split(self.df)
-        raw_model = deepcopy(model)
-        for split in self.splitter.split:
-            idx_train = split['train']
-            idx_test = split['test']
-            df_train = df.iloc[idx_train]
-            y_train = y[idx_train]
-            df_test = df.iloc[idx_test]
-            y_test = y[idx_test]
-            cur_model = deepcopy(raw_model)
-            cur_model.fit(df_train.values, y_train)
-            y_hat = cur_model.predict(df_test)
-            
-                
+    def score(self, model):
+        models = []
+        scores = []
+        oofs = np.zeros_like(self.target)
+        weights = np.zeros_like(self.target)
+        for spl in self.splitter.split:
+            idx_train = spl['train']
+            idx_test = spl['test']
+            c_model = deepcopy(model)
+            c_model.fit(self.fs[idx_train], self.target[idx_train])
+            pred = c_model.predict(self.fs[idx_test])
+            oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
+            weights[idx_test] += 1
+            score = self.metric(self.target[idx_test], pred)
+            models.append(model)
+            scores.append(score)
+        return np.mean(scores)
