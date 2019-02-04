@@ -8,6 +8,11 @@ import os
 
 
 def test(function):
+    """
+    This function helps to test feature
+    :param function:
+    :return:
+    """
     def new_function(df, sizes=(2, 4, 6)):
         config.test_call = 1
         for sz in sizes:

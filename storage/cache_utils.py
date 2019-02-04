@@ -1,6 +1,12 @@
 from .. import config
+import hashlib
+import pandas as pd
 import feather
 import dill
+
+
+def get_hash(df):
+    return hashlib.sha256(pd.util.hash_pandas_object(df, index=True).values).hexdigest()
 
 
 def get_path_df(name):

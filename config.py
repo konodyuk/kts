@@ -21,7 +21,7 @@ def info_path(config):
 
 
 @property
-def souce_path(config):
+def source_path(config):
     return storage_path + 'sources'
 
 
