@@ -67,6 +67,7 @@ def is_cached_src(func):
 def load_src_func(func):
     def loader():
         return load_src(make_src_path(func))
+
     return loader
 
 
@@ -168,7 +169,8 @@ def make_glob(name):
     """
     Constructs a pattern for glob. Glob searches all path matching this pattern. This finction is used in decache().
     """
-    return glob(config.feature_path + name + '.*') + glob(config.feature_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
+    return glob(config.feature_path + name + '.*') + glob(
+        config.feature_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
 
 
 def is_cached(func, df):
@@ -211,6 +213,7 @@ def decache(force=False):
     """
     Removes all paths for any cached files (.py, .fc, .fth) for particular function.
     """
+
     def __decache(function):
         if not force:
             print("Are you sure you want to delete all the cached files?")
@@ -230,12 +233,6 @@ def decache(force=False):
             for path in make_glob(function.__name__):
                 print(f'removing {path}')
                 os.remove(path)
+
     return __decache
 
-
-def empty_like(df):
-    return df[[]].copy()
-
-
-def merge(dfs):
-    return pd.concat(dfs, axis=1)
