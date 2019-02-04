@@ -75,7 +75,7 @@ class FeatureSet:
         import inspect
         used_funcs = (self.features_before + self.features_after)[::-1]
         for func in used_funcs:
-            for func_stored in feature_constructors:
+            for func_stored in feature_list:
                 if func_stored.__name__ in func.source and \
                 func_stored.__name__ not in [i.__name__ for i in used_funcs]:
                     used_funcs.append(func_stored)
