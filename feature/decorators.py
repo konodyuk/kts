@@ -5,6 +5,7 @@ from IPython.display import display
 from glob import glob
 import os
 
+
 def test(function):
     
     def new_function(df, sizes=[2, 4, 6]):
@@ -15,14 +16,11 @@ def test(function):
     
     return new_function
 
+
 def register(*args, cache_default=True):
-#     cache_default = True
-#     if 'cache_default' in kwargs:
-#         cache_default = kwargs['cache_default']
-    
     def __register(function):
         if utils.is_cached_src(function) and not utils.matches_cache(function):
-            raise NameError(f"A function with the same name is already registered:\n{utils.load_src_func(function)()}")
+            raise NameError("A function with the same name is already registered:\n")
 
         functor = FeatureConstructor(function, cache_default)
         # TODO: delete redundant recaching
@@ -35,12 +33,9 @@ def register(*args, cache_default=True):
         return __register(function)
     else:
         return __register
-    
+
+
 def deregister(*args, force=False):
-#     print(args, kwargs)
-#     force = False
-#     if 'force' in kwargs:
-#         force = kwargs['force']
     if args:
         function = args[0]
         utils.decache(force)(function)
@@ -50,6 +45,7 @@ def deregister(*args, force=False):
 
 def dropper(function):
     return register(function, cache_default=False)
+
 
 def selector(function):
     return register(function, cache_default=False)

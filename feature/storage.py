@@ -2,20 +2,22 @@ from .. import config
 from . import utils
 import glob
 import os
+from collections import MutableSequence
+
 
 class FeatureConstructor:
     def __init__(self, function, cache_default=True):
         self.function = function
         self.cache_default = cache_default
         self.__name__ = function.__name__
-        self.src = utils.get_src(function)
+        self.source = utils.get_src(function)
         self.stl = False
-        
+
     # needs refactoring because of direct storing source
     def __call__(self, df, cache=None):
         if type(cache) == type(None):
             cache = self.cache_default
-        if not cache or config.test_call: # dirty hack to avoid  caching when @test function uses @registered function inside
+        if not cache or config.test_call:  # dirty hack to avoid  caching when @test function uses @registered function inside
             return self.function(df)
         if utils.is_cached(self.function, df):
             return utils.load_cached(self.function, df)
@@ -23,17 +25,14 @@ class FeatureConstructor:
             result = self.function(df)
             utils.cache(self.function, df, result)
             return result
-        
-    @property
-    def source(self):
-        return self.src
-    
+
     def __repr__(self):
         return f'<Feature Constructor "{self.__name__}">'
-        
+
     def __str__(self):
         return self.__name__
-    
+
+
 class FeatureSet:
     def __init__(self, features_before, features_after=[], df_input=None):
         assert len(features_before) >= 1, "List of features can't be empty"
@@ -41,7 +40,7 @@ class FeatureSet:
         self.features_after = features_after
         if type(df_input) != type(None):
             self.set_df(df_input)
-            
+
     def set_df(self, df_input):
         self.df_input = df_input
         self.df = self.features_before[0](self.df_input)
@@ -49,7 +48,7 @@ class FeatureSet:
             [feature(self.df_input)
              for feature in self.features_before[1:]]
         )
-        
+
     def __call__(self, df):
         result = self.features_before[0](df)
         result = result.join(
@@ -61,7 +60,7 @@ class FeatureSet:
              for feature in self.features_after]
         )
         return result
-        
+
     def __getitem__(self, idx):
         result = self.df.iloc[idx]
         result = result.join(
@@ -69,39 +68,17 @@ class FeatureSet:
              for feature in self.features_after]
         )
         return result
-    
-    @property
-    def source(self):
-        import inspect
-        used_funcs = (self.features_before + self.features_after)[::-1]
-        for func in used_funcs:
-            for func_stored in feature_constructors:
-                if func_stored.__name__ in func.source and \
-                func_stored.__name__ not in [i.__name__ for i in used_funcs]:
-                    used_funcs.append(func_stored)
-        src = '\n'.join([i.source for i in used_funcs[::-1]]) 
-        
-        src += '\n\n'
-#         src += inspect.getsource(type(self))
-#         src += '\n\n'
-        src += 'featureset = '
-        src += type(self).__name__ + '('
-        src += 'features_before=[' + ', '.join([i.__name__ for i in self.features_before]) + '], '
-        src += 'features_after=[' + ', '.join([i.__name__ for i in self.features_after]) + ']'
-        src += ')'
-        return src
-    
-from collections import MutableSequence
+
 
 class FeatureList(MutableSequence):
     def __init__(self):
-        self.full_name = "kts.feature.storage.feature_list" # such a hardcode 
+        self.full_name = "kts.feature.storage.feature_list"  # such a hardcode
         self.names = [self.full_name]
         while self.names[-1].count('.'):
             self.names.append(self.names[-1][self.names[-1].find('.') + 1:])
         self.functors = []
         self.name_to_idx = dict()
-    
+
     def recalc(self):
         self.functors = []
         self.name_to_idx = dict()
@@ -111,12 +88,12 @@ class FeatureList(MutableSequence):
             functor = utils.load_fc(file)
             self.functors.append(functor)
             self.name_to_idx[functor.__name__] = idx
-    
+
     def __repr__(self):
         self.recalc()
         string = f"[{', '.join([f.__str__() for f in self.functors])}]"
         return string
-        
+
     def __getitem__(self, key):
         self.recalc()
         if type(key) in [int, slice]:
@@ -125,16 +102,16 @@ class FeatureList(MutableSequence):
             return self.functors[self.name_to_idx[key]]
         else:
             raise TypeError('Index should be int, slice or str')
-            
+
     def __delitem__(self, key):
         raise AttributeError('This object is read-only')
-        
+
     def __setitem__(self, key, value):
         raise AttributeError('This object is read-only')
-        
+
     def insert(self, key, value):
         raise AttributeError('This object is read-only')
-    
+
     def define_in_scope(self, global_scope):
         self.recalc()
         for func in self.name_to_idx:
@@ -142,11 +119,12 @@ class FeatureList(MutableSequence):
                 try:
                     exec(f"{func} = {name}['{func}']", global_scope)
                     break
-                except Exception as e:
+                except BaseException:
                     pass
-                
+
     def __len__(self):
         self.recalc()
         return len(self.functors)
-    
+
+
 feature_list = FeatureList()

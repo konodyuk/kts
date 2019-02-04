@@ -5,9 +5,10 @@ import glob
 
 
 class Cache:
-    '''
+    """
     Standard interface for caching DataFrames and objects
-    '''
+    """
+
     def __init__(self):
         self.memory = dict()
 
@@ -32,16 +33,23 @@ class Cache:
         utils.save_obj(obj, utils.get_path_obj(name))
 
     def load_obj(self, name):
-        if name in self.memory:
-            return self.memory[name]
+        """
+        Loads object from cache
+        :param name: name of object
+        :return: object with given name
+        """
+        dict_name = name + '_obj'
+        if dict_name in self.memory:
+            return self.memory[dict_name]
         elif os.path.exists(utils.get_path_obj(name)):
-            self.memory[name] = utils.load_obj(utils.get_path_obj(name))
-            return self.memory[name]
+            tmp = utils.load_obj(utils.get_path_obj(name))
+            self.memory[dict_name] = tmp
+            return tmp
         else:
             raise KeyError("No such object in cache")
 
     def is_cached_obj(self, name):
-        return name in self.memory or os,path.exists(utils.get_path_obj(name))
+        return (name + '_obj') in self.memory or os.path.exists(utils.get_path_obj(name))
 
 
 cache = Cache()
