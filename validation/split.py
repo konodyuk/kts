@@ -10,9 +10,11 @@ class BaseSplitter:
         
     @property
     def split(self):
-        for spl in self._split():
-            split_manager.register(spl)
-            yield spl
+        yield from self._split()
+            
+    @property
+    def size(self):
+        return self.n_folds
             
         
 from sklearn.model_selection import StratifiedKFold
@@ -50,3 +52,8 @@ class NM(BaseSplitter):
             yield from self.Splitter(self.y, 
                                      self.n_folds,
                                      config.seeds[i]).split
+            
+            
+    @property
+    def size(self):
+        return self.n_folds * self.n_splits
