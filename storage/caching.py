@@ -1,7 +1,5 @@
-from . import utils
-from .. import config
+from . import cache_utils
 import os
-import glob
 
 
 class Cache:
@@ -21,7 +19,7 @@ class Cache:
         """
         dict_name = name + '_df'
         self.memory[dict_name] = df
-        utils.save_df(df, utils.get_path_df(name))
+        cache_utils.save_df(df, cache_utils.get_path_df(name))
 
     def load_df(self, name):
         """
@@ -32,8 +30,8 @@ class Cache:
         dict_name = name + '_df'
         if dict_name in self.memory:
             return self.memory[dict_name]
-        elif os.path.exists(utils.get_path_df(name)):
-            tmp = utils.load_df(utils.get_path_df(name))
+        elif os.path.exists(cache_utils.get_path_df(name)):
+            tmp = cache_utils.load_df(cache_utils.get_path_df(name))
             self.memory[dict_name] = tmp
             return tmp
         else:
@@ -46,7 +44,7 @@ class Cache:
         :return: True or False (cache hit or miss)
         """
         dict_name = name + '_df'
-        return dict_name in self.memory or os.path.exists(utils.get_path_df(name))
+        return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
 
     def cache_obj(self, obj, name):
         """
@@ -57,7 +55,7 @@ class Cache:
         """
         dict_name = name + '_obj'
         self.memory[dict_name] = obj
-        utils.save_obj(obj, utils.get_path_obj(name))
+        cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
         """
@@ -68,8 +66,8 @@ class Cache:
         dict_name = name + '_obj'
         if dict_name in self.memory:
             return self.memory[dict_name]
-        elif os.path.exists(utils.get_path_obj(name)):
-            tmp = utils.load_obj(utils.get_path_obj(name))
+        elif os.path.exists(cache_utils.get_path_obj(name)):
+            tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
             self.memory[dict_name] = tmp
             return tmp
         else:
@@ -82,7 +80,7 @@ class Cache:
         :return: True or False (chache hit or miss)
         """
         dict_name = name + '_obj'
-        return dict_name in self.memory or os.path.exists(utils.get_path_obj(name))
+        return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
 
 
 cache = Cache()
