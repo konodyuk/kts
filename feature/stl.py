@@ -5,8 +5,7 @@ import pandas as pd
 def empty_like(df):
     return df[[]].copy()
 
-def identity(df):
-    return df
+identity = FeatureConstructor(lambda df: df, cache_default=False)
 
 def merge(dfs):
     return pd.concat(dfs, axis=1)
@@ -58,4 +57,3 @@ def make_mean_encoding(cols, target_col, prefix='me_'):
                 res.loc[idxs, prefix + col] = df[idxs][target_col].mean()
         return res
     return FeatureConstructor(__make_mean_encoding, cache_default=False)
-
