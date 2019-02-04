@@ -53,3 +53,16 @@ def load_obj(path):
     Loads object
     """
     return dill.load(open(path, 'rb'))
+
+
+# Source code
+def get_src(func):
+    """
+    Gets source code of a function. Ignores decorators starting with @.
+    :param func: function
+    :return: source code
+    """
+    src = inspect.getsource(func)
+    if src[0] == '@':
+        src = src[src.find('\n') + 1:]
+    return src
