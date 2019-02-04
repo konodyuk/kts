@@ -1,5 +1,6 @@
 from .. import config
 from . import utils
+import os
 
 class SplitManager:
     def __init__(self):
