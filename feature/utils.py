@@ -195,7 +195,7 @@ def load_cached(func, df):
     return load_df(make_df_path(func, df))
 
 
-def cache_fc(feature_constructor):f
+def cache_fc(feature_constructor):
     """
     Saves a function as .fc binary file with proper path.
     """
