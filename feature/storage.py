@@ -8,7 +8,7 @@ class FeatureConstructor:
         self.function = function
         self.cache_default = cache_default
         self.__name__ = function.__name__
-        self.src = utils.get_src(function)
+        self.source = utils.get_src(function)
         self.stl = False
         
     # needs refactoring because of direct storing source
@@ -23,10 +23,6 @@ class FeatureConstructor:
             result = self.function(df)
             utils.cache(self.function, df, result)
             return result
-        
-    @property
-    def source(self):
-        return self.src
     
     def __repr__(self):
         return f'<Feature Constructor "{self.__name__}">'

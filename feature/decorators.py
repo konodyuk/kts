@@ -101,7 +101,11 @@ def dropper(function):
         return stl.column_dropper(['Pclass'])(df)
     ```
     """
-    
+#     TODO:
+#     if cache.is_cached(function.__name__):
+#         print('Dropper is already registered. Deregistering: ')
+#         deregister(function.__name__, force=True)
+    deregister(function.__name__, force=True)
     return register(function, cache_default=False)
 
 def selector(function):
@@ -117,4 +121,5 @@ def selector(function):
     ```
     """
     
+    deregister(function.__name__, force=True)
     return register(function, cache_default=False)
