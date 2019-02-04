@@ -29,7 +29,8 @@ class Cache:
         return name in self.memory or os.path.exists(utils.get_path_df(name))
 
     def cache_obj(self, obj, name):
-        self.memory[name] = obj
+        dict_name = name + '_obj'
+        self.memory[dict_name] = obj
         utils.save_obj(obj, utils.get_path_obj(name))
 
     def load_obj(self, name):
