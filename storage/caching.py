@@ -49,6 +49,11 @@ class Cache:
             raise KeyError("No such object in cache")
 
     def is_cached_obj(self, name):
+        """
+        Checks whether obj is in cache
+        :param name: name of file
+        :return: True or False (chache hit or miss)
+        """
         return (name + '_obj') in self.memory or os.path.exists(utils.get_path_obj(name))
 
 
