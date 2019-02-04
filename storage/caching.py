@@ -6,11 +6,11 @@ import glob
 
 class Cache:
     '''
-    Doesn't work yet
+    Standard interface for caching DataFrames and objects
     '''
     def __init__(self):
         self.memory = dict()
-    
+
     def cache_df(self, df, name):
         self.memory[name] = df
         utils.save_df(df, utils.get_path_df(name))
