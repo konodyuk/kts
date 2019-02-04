@@ -1,7 +1,7 @@
 from .. import config
-from . import utils
 from storage import source_utils
-from storage.caching import cache
+from storage import cache_utils
+from storage import caching
 import glob
 import os
 from collections import MutableSequence
@@ -21,11 +21,13 @@ class FeatureConstructor:
             cache = self.cache_default
         if not cache or config.test_call:  # dirty hack to avoid  caching when @test function uses @registered function inside
             return self.function(df)
-        if cache.is_cached(f"{self.function.__name__}__{hash_df(df)[:4]}.fth"):
-            return utils.load_cached(self.function, df)
+
+        name = f"{self.function.__name__}__{cache_utils.get_hash(df)[:4]}"
+        if caching.cache.is_cached(name):
+            return caching.cache.load_df(name)
         else:
             result = self.function(df)
-            utils.cache(self.function, df, result)
+            caching.cache.cache_df(result, name)
             return result
 
     def __repr__(self):
@@ -87,7 +89,7 @@ class FeatureList(MutableSequence):
         files = glob.glob(config.feature_path + '*.fc')
         files.sort(key=os.path.getmtime)
         for idx, file in enumerate(files):
-            functor = cache.load_obj(file)
+            functor = caching.cache.load_obj(file)
             self.functors.append(functor)
             self.name_to_idx[functor.__name__] = idx
 
