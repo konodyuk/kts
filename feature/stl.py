@@ -5,6 +5,9 @@ import pandas as pd
 def empty_like(df):
     return df[[]].copy()
 
+def identity(df):
+    return df
+
 def merge(dfs):
     return pd.concat(dfs, axis=1)
 
