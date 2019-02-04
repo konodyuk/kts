@@ -13,7 +13,8 @@ class Cache:
         self.memory = dict()
 
     def cache_df(self, df, name):
-        self.memory[name] = df
+        dict_name = name + '_df'
+        self.memory[dict_name] = df
         utils.save_df(df, utils.get_path_df(name))
         
     def load_df(self, name):
