@@ -5,20 +5,36 @@ from IPython.display import display
 from glob import glob
 import os
 
-def test(function):
+def test(df, sizes=[2, 4, 6]):
+    """
+    Applies function to heads of particular dataframe.
     
-    def new_function(df, sizes=[2, 4, 6]):
+    Example:
+    ``` python
+    @test(df, sizes=[5, 15])
+    def make_ohe_pclass(df):
+        ...
+    ```
+    """
+    def __test(function):
         config.test_call = 1
         for sz in sizes:
             display(function(df.head(sz)))
         config.test_call = 0
     
-    return new_function
+    return __test
 
 def register(*args, cache_default=True):
-#     cache_default = True
-#     if 'cache_default' in kwargs:
-#         cache_default = kwargs['cache_default']
+    """
+    Registers function for further caching its calls and restoring source.
+    
+    Example:
+    ``` python
+    @register
+    def make_ohe_pclass(df):
+        ...
+    ```
+    """
     
     def __register(function):
         if utils.is_cached_src(function) and not utils.matches_cache(function):
@@ -37,6 +53,31 @@ def register(*args, cache_default=True):
         return __register
     
 def deregister(*args, force=False):
+    """
+    Deletes sources and cached calls of a certain function.
+    The interface is too rich now:
+    
+    ``` python
+    @deregister
+    def make_new_features(df):
+        ...
+
+    @deregister(force=False)
+    def make_new_features(df):
+        ...
+
+    deregister('make_new_features', force=False)
+
+    @deregister(force=True)
+    def make_new_features(df):
+        ...
+
+    deregister('make_new_features', force=True)
+    ```
+    
+    It's highly recommended to use only `deregister('function_name')` interface. 
+    Other ones are deprecated.
+    """
 #     print(args, kwargs)
 #     force = False
 #     if 'force' in kwargs:
@@ -49,7 +90,31 @@ def deregister(*args, force=False):
     
 
 def dropper(function):
+    """
+    Registers function that won't be cached.
+    Is recommended to be used only with functions which actually drop columns or rows and don't produce any new data.
+    
+    Example:
+    ``` python
+    @dropper
+    def drop_pclass(df):
+        return stl.column_dropper(['Pclass'])(df)
+    ```
+    """
+    
     return register(function, cache_default=False)
 
 def selector(function):
+    """
+    Registers function that won't be cached.
+    Is recommended to be used only with functions which actually select columns or rows and don't produce any new data.
+    
+    Example:
+    ``` python
+    @selector
+    def select_pclass_cabin(df):
+        return stl.column_selector(['Pclass', 'Cabin'])(df)
+    ```
+    """
+    
     return register(function, cache_default=False)
