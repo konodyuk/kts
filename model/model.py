@@ -26,7 +26,7 @@ class Model:
         Changes name according to current parameters.
         :return:
         """
-        self.__name__ = f"{type(self).short_name}_{hex(hash(frozenset(self.params.items())))[-2:]}"
+        self.__name__ = f"{type(self).short_name}_{hex(hash(frozenset(self.params.items())))[-2:] if self.params else 'default'}"
         
     def fit(self, X, y, **kwargs):
         """
