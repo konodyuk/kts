@@ -6,7 +6,7 @@ import glob
 class Experiment(Model):
     def __init__(self, model, featureset, oofs, score, std):
         self.model = model
-        self.featureset = featureset
+        self.featureset = featureset.empty_copy()
         self.oofs = oofs
         self.score = score
         self.std = std
