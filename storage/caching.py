@@ -8,7 +8,7 @@ from .info import info
 
 class Cache:
     """
-    Standard interface for caching DataFrames and objects
+    Standard interface for lru caching DataFrames and objects
     """
 
     def __init__(self):
@@ -21,30 +21,29 @@ class Cache:
             info.memory_limit = 4 * (1024 ** 3)  # 4 Gb
 
     @staticmethod
-    def set_memory_limit(size):
-        info.memory_limit = size
+    def set_memory_limit(volume):
+        """
+        Sets new memory limit
+        :param volume: new memory volume limit
+        :return:
+        """
+        info.memory_limit = volume
 
     def __release_volume(self, df):
         """
-        Removes most unpopular dataframes
+        Removes most unpopular dataframes until it is possible to cache given one
         :param df: dataframe
         :return:
         """
-        while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
-            self.memory.pop(min(self.memory, key=self.memory.get))
 
-    def cache_df(self, df, name):
-        """
-        Caches dataframe with given name
-        :param df: object
-        :param name: object name
-        :return:
-        """
-        dict_name = name + '_df'
-        self.__release_volume(df)
-        self.memory[dict_name] = df
-        self.last_used[dict_name] = datetime.datetime.now()
-        cache_utils.save_df(df, cache_utils.get_path_df(name))
+        items = sorted([(time, key) for (key, time) in self.last_used.items()])
+        cur = 0
+        while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
+            key = items[cur][1]
+            cur += 1
+            self.current_volume -= cache_utils.get_df_volume(self.memory[key])
+            self.memory.pop(key)
+            print(self.current_volume)
 
     def is_cached_df(self, name):
         """
@@ -54,6 +53,25 @@ class Cache:
         """
         dict_name = name + '_df'
         return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
+
+    def cache_df(self, df, name):
+        """
+        Caches dataframe with given name
+        :param df: object
+        :param name: object name
+        :return:
+        """
+        if self.is_cached_df(name):
+            return
+        if cache_utils.get_df_volume(df) > info.memory_limit:
+            raise MemoryError
+
+        dict_name = name + '_df'
+        self.__release_volume(df)
+        self.memory[dict_name] = df
+        self.current_volume += cache_utils.get_df_volume(df)
+        self.last_used[dict_name] = datetime.datetime.now()
+        cache_utils.save_df(df, cache_utils.get_path_df(name))
 
     def load_df(self, name):
         """
@@ -83,17 +101,6 @@ class Cache:
         return [df.split('/')[-1][:-3] for df in
                 glob(config.storage_path + '*' + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f]_df')]
 
-    def cache_obj(self, obj, name):
-        """
-        Caches object with given name
-        :param obj: object
-        :param name: object name
-        :return:
-        """
-        dict_name = name + '_obj'
-        self.memory[dict_name] = obj
-        cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
-
     def is_cached_obj(self, name):
         """
         Checks whether obj is in cache
@@ -102,6 +109,20 @@ class Cache:
         """
         dict_name = name + '_obj'
         return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
+
+    def cache_obj(self, obj, name):
+        """
+        Caches object with given name
+        :param obj: object
+        :param name: object name
+        :return:
+        """
+        if self.is_cached_obj(name):
+            return
+
+        dict_name = name + '_obj'
+        self.memory[dict_name] = obj
+        cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
         """
