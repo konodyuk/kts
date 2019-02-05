@@ -143,7 +143,7 @@ class Ensemble(Model): # AddNode
             :param model:
             :return: if the model is weighted, then returns its coefficient, else 1
             """
-            if 'model' in dir(model):
+            if isinstance(model, WeightedModel):
                 return model.model, model.coeff
             return model, 1
         
