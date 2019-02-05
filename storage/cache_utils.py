@@ -9,8 +9,9 @@ import numpy as np
 
 
 def clear_storage():
-    a, b = np.random.randint(10, size=2)
-    c = int(input(f"{a} + {b} ="))
+    np.random.seed(int(__import__("time").time()))
+    a, b = np.random.randint(5, 30, size=2)
+    c = int(input(f"{a} + {b} = "))
     if a + b != c:
         print("You aren't smart enough to take such decisions")
         return
