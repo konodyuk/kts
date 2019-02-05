@@ -1,4 +1,4 @@
-from ..model.model import *
+from ..model import *
 from .. import config
 
 from xgboost import XGBRegressor as _XGBR
