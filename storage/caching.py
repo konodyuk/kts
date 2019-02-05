@@ -12,7 +12,7 @@ class Cache:
     """
 
     def __init__(self):
-        self.memory = dict()
+        self.__memory = dict()
         self.last_used = dict()
         self.current_volume = 0
         try:
@@ -41,8 +41,8 @@ class Cache:
         while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
             key = items[cur][1]
             cur += 1
-            self.current_volume -= cache_utils.get_df_volume(self.memory[key])
-            self.memory.pop(key)
+            self.current_volume -= cache_utils.get_df_volume(self.__memory[key])
+            self.__memory.pop(key)
             self.last_used.pop(key)
 
     def is_cached_df(self, name):
@@ -52,7 +52,7 @@ class Cache:
         :return: True or False (cache hit or miss)
         """
         dict_name = name + '_df'
-        return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
+        return dict_name in self.__memory or os.path.exists(cache_utils.get_path_df(name))
 
     def cache_df(self, df, name):
         """
@@ -68,7 +68,7 @@ class Cache:
 
         dict_name = name + '_df'
         self.__release_volume(df)
-        self.memory[dict_name] = df
+        self.__memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
         self.last_used[dict_name] = datetime.datetime.now()
         cache_utils.save_df(df, cache_utils.get_path_df(name))
@@ -84,12 +84,12 @@ class Cache:
 
         dict_name = name + '_df'
         self.last_used[dict_name] = datetime.datetime.now()
-        if dict_name in self.memory:
-            return self.memory[dict_name]
+        if dict_name in self.__memory:
+            return self.__memory[dict_name]
         else:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
             self.__release_volume(tmp)
-            self.memory[dict_name] = tmp
+            self.__memory[dict_name] = tmp
             return tmp
 
     @staticmethod
@@ -108,7 +108,7 @@ class Cache:
         :return: True or False (chache hit or miss)
         """
         dict_name = name + '_obj'
-        return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
+        return dict_name in self.__memory or os.path.exists(cache_utils.get_path_obj(name))
 
     def cache_obj(self, obj, name):
         """
@@ -121,7 +121,7 @@ class Cache:
             return
 
         dict_name = name + '_obj'
-        self.memory[dict_name] = obj
+        self.__memory[dict_name] = obj
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
@@ -134,11 +134,11 @@ class Cache:
             raise KeyError("No such object in cache")
 
         dict_name = name + '_obj'
-        if dict_name in self.memory:
-            return self.memory[dict_name]
+        if dict_name in self.__memory:
+            return self.__memory[dict_name]
         else:
             tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
-            self.memory[dict_name] = tmp
+            self.__memory[dict_name] = tmp
             return tmp
 
     @staticmethod
