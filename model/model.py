@@ -15,7 +15,10 @@ class Model:
         self.params = params
         self.n_jobs = n_jobs
         self.verbosity = verbosity
-        self.estimator = type(self).Estimator(**self.params, **type(self).system_params)
+        if self.params:
+            self.estimator = type(self).Estimator(**self.params, **type(self).system_params)
+        else:
+            self.estimator = type(self).Estimator(**type(self).system_params)
         self.reset_name()
         
     def reset_name(self):
