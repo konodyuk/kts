@@ -45,6 +45,7 @@ class FeatureSet:
         self.target_column = target_column
         if type(df_input) != type(None):
             self.set_df(df_input)
+        self.__name__ = f"fs({self.fc_before.__name__[:2]}-{self.fc_after.__name__[:2] if self.fc_after else ''})"
 
     def set_df(self, df_input):
         self.df_input = df_input
