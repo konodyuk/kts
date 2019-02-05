@@ -3,6 +3,7 @@ from .. import config
 import datetime
 from glob import glob
 import os
+from .info import info
 
 
 class Cache:
@@ -13,6 +14,14 @@ class Cache:
     def __init__(self):
         self.memory = dict()
         self.last_used = dict()
+        try:
+            _ = info.memory_limit # to check whether it exists
+        except Exception:
+            info.memory_limit = 4 * (1024 ** 3)
+
+    @staticmethod
+    def set_memory_limit(size):
+        info.memory_limit = size
 
     def cache_df(self, df, name):
         """
