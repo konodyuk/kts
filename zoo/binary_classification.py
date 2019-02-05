@@ -4,22 +4,6 @@ from .. import config
 from xgboost import XGBClassifier as _XGBC
 class XGBClassifier(Model):
     Estimator = _XGBC
-    default_params = {
-        "max_depth": 3, 
-        "learning_rate": 0.1, 
-        "n_estimators": 100, 
-        "booster": 'gbtree', 
-        "gamma": 0, 
-        "min_child_weight": 1, 
-        "max_delta_step": 0, 
-        "subsample": 1, 
-        "colsample_bytree": 1, 
-        "colsample_bylevel": 1, 
-        "reg_alpha": 0, 
-        "reg_lambda": 1, 
-        "scale_pos_weight": 1, 
-        "base_score": 0.5,
-    }
     search_spaces = {
         'max_depth': (0, 50),
         'learning_rate': (0.01, 1.0, 'log-uniform'),
@@ -39,12 +23,19 @@ class XGBClassifier(Model):
     system_params = {
         "objective": 'binary:logistic', 
         "silent": True,
-        "n_jobs": 1, 
         "random_state": 0, 
         "seed": config.seed
     }
     short_name = 'xgb'
-    
+
+    def __init__(self, params=None, n_jobs=-1, verbosity=0):
+        super().__init__(params, n_jobs, verbosity)
+        self.estimator.n_jobs = n_jobs
+        self.estimator.verbose = verbosity
+
+    def _fit(self, X, y, **kwargs):
+        self.estimator.fit(X, y, verbose=self.verbosity, **kwargs)
+
     def predict(self, X):
         return self.estimator.predict_proba(X)[:, 1]
     
