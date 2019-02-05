@@ -53,8 +53,8 @@ class FeatureSet:
         
     def __call__(self, df):
         return stl.merge([
-            self.fc_before(self.df_input),
-            self.fc_after(self.df_input)
+            self.fc_before(df),
+            self.fc_after(df)
         ])
         
     def __getitem__(self, idx):
@@ -64,6 +64,12 @@ class FeatureSet:
             self.df.iloc[idx], 
             self.fc_after(self.df_input.iloc[idx])
         ])
+    
+    def empty_copy(self):
+        return FeatureSet(self.fc_before, 
+                          self.fc_after,
+                          target_column=self.target_column
+                         )
 
     @property
     def target(self):
