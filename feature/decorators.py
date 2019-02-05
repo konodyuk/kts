@@ -91,8 +91,9 @@ def deregister(name, force=False):
         print("Doesn't match")
         return
 
-    paths = glob(config.storage_path + name + '.*') + glob(
-        config.storage_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
+    paths = glob(config.storage_path + name + '_fc_obj') + \
+            glob(config.storage_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f]_df') + \
+            glob(config.source_path + name + '.py')
     for path in paths:
         print(f'removing {path}')
         os.remove(path)
