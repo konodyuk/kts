@@ -25,13 +25,13 @@ def column_dropper(columns):
     return FeatureConstructor(__col_dropper, cache_default=False)
 
 
-def compose(funcs):
-    def __compose(df):
+def concat(funcs):
+    def __concat(df):
         return merge([func(df) for func in funcs])
 
-    fc = FeatureConstructor(__compose, cache_default=False)
-    fc.source = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
-    fc.__name__ = f"compose_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
+    fc = FeatureConstructor(__concat, cache_default=False)
+    fc.source = f"stl.concat([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
+    fc.__name__ = f"concat_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
     fc.stl = True
     return fc
 
