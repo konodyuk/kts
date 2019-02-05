@@ -2,6 +2,7 @@ from . import cache_utils
 from .. import config
 from glob import glob
 
+
 class Info:
     def __init__(self):
         super().__setattr__('__attributes', dict())
@@ -29,5 +30,6 @@ class Info:
         for key, value in self.__attributes.items():
             print(key, value)
             cache_utils.save_obj(value, cache_utils.get_path_info(key))
-            
+
+
 info = Info()

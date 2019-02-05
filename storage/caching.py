@@ -57,7 +57,6 @@ class Cache:
         self.memory[dict_name] = obj
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
-
     def load_obj(self, name):
         """
         Loads object from cache
