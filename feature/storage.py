@@ -106,6 +106,7 @@ class FeatureList(MutableSequence):
         self.name_to_idx = dict()
         files = glob.glob(config.storage_path + '*_fc_obj')
         files.sort(key=os.path.getmtime)
+        files = [file.split('/')[-1] for file in files]
         for idx, file in enumerate(files):
             functor = caching.cache.load_obj(file[:-4])
             self.functors.append(functor)
