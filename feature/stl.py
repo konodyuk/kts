@@ -36,16 +36,16 @@ def concat(funcs):
     return fc
 
 
-def sequence(funcs):
-    def __sequence(df):
+def compose(funcs):
+    def __compose(df):
         res = empty_like(df)
         for func in funcs:
             res = merge([res, func(res)])
         return res
 
-    fc = FeatureConstructor(__sequence, cache_default=False)
-    fc.source = f"stl.sequence([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
-    fc.__name__ = f"sequence_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
+    fc = FeatureConstructor(__compose, cache_default=False)
+    fc.source = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
+    fc.__name__ = f"compose_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
     fc.stl = True
     return fc
 
