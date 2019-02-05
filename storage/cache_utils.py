@@ -1,20 +1,23 @@
 from .. import config
-import pandas as pd
 import hashlib
+import pandas as pd
 import feather
-import inspect
 import dill
-import os
-from glob import glob
+
+
+def get_hash(df):
+    return hashlib.sha256(pd.util.hash_pandas_object(df, index=True).values).hexdigest()
+
 
 def get_path_df(name):
-    return config.feature_path + name
+    return config.storage_path + name + '_dataframe'
+
 
 def save_df(df, path):
-    '''
+    """
     Saves a dataframe as feather binary file. Adds to df and additional column filled
     with index values and having a special name.
-    '''
+    """
     index_name = f'{config.index_prefix}{df.index.name}'
     df[index_name] = df.index.values
     df.reset_index(drop=True, inplace=True)
@@ -24,10 +27,10 @@ def save_df(df, path):
 
 
 def load_df(path):
-    '''
+    """
     Loads a dataframe from feather format and sets as index that additional
     column added with saving by save_df. Restores original name of index column.
-    '''
+    """
     tmp = feather.read_dataframe(path, use_threads=True)
     col = tmp.columns[tmp.columns.str.contains(config.index_prefix)].values[0]
     tmp.set_index(col, inplace=True)
@@ -35,21 +38,19 @@ def load_df(path):
     return tmp
 
 
-def get_path_info(name):
-    return config.info_path + name
+def get_path_obj(name):
+    return config.storage_path + name + '_obj'
 
-def save_info(obj, path):
-    '''
+
+def save_obj(obj, path):
+    """
     Saves object
-    '''
+    """
     dill.dump(obj, open(path, 'wb'))
 
 
-def load_info(path):
-    '''
+def load_obj(path):
+    """
     Loads object
-    '''
+    """
     return dill.load(open(path, 'rb'))
-
-
-# def get_files_in_dir(path):

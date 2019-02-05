@@ -1,4 +1,5 @@
-from . import utils
+from ..storage import source_utils
+from ..storage.caching import cache
 from .. import config
 from .storage import FeatureConstructor
 from IPython.display import display
@@ -17,12 +18,14 @@ def test(df, sizes=[2, 4, 6]):
     ```
     """
     def __test(function):
+
         config.test_call = 1
         for sz in sizes:
             display(function(df.head(sz)))
         config.test_call = 0
     
     return __test
+
 
 def register(*args, cache_default=True):
     """
@@ -35,28 +38,29 @@ def register(*args, cache_default=True):
         ...
     ```
     """
-    
-    def __register(function):
-        if utils.is_cached_src(function) and not utils.matches_cache(function):
-            raise NameError(f"A function with the same name is already registered:\n{utils.load_src_func(function)()}")
 
-        functor = FeatureConstructor(function, cache_default)
-        # TODO: delete redundant recaching
-        if not utils.is_cached_src(function):
-            utils.cache_fc(functor)    
-            utils.cache_src(function)
+    def __register(func):
+        if source_utils.source_is_saved(func) and not source_utils.matches_cache(func):
+            raise NameError("A function with the same name is already registered")
+
+        functor = FeatureConstructor(func, cache_default)
+        if not source_utils.source_is_saved(func):
+            cache.cache_obj(functor, functor.__name__)
+            source_utils.save_source(func)
         return functor
+
     if args:
         function = args[0]
         return __register(function)
     else:
         return __register
-    
-def deregister(*args, force=False):
+
+
+def deregister(name, force=False):
     """
     Deletes sources and cached calls of a certain function.
     The interface is too rich now:
-    
+
     ``` python
     @deregister
     def make_new_features(df):
@@ -74,20 +78,25 @@ def deregister(*args, force=False):
 
     deregister('make_new_features', force=True)
     ```
-    
-    It's highly recommended to use only `deregister('function_name')` interface. 
+
+    It's highly recommended to use only `deregister('function_name')` interface.
     Other ones are deprecated.
     """
-#     print(args, kwargs)
-#     force = False
-#     if 'force' in kwargs:
-#         force = kwargs['force']
-    if args:
-        function = args[0]
-        utils.decache(force)(function)
-    else:
-        return utils.decache(force)
-    
+    confirmation = ''
+    if not force:
+        print("Are you sure you want to delete all the cached files?")
+        print("To confirm please print full name of the function:")
+        confirmation = input()
+    if not force and confirmation != name:
+        print("Doesn't match")
+        return
+
+    paths = glob(config.feature_path + name + '.*') + glob(
+        config.feature_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
+    for path in paths:
+        print(f'removing {path}')
+        os.remove(path)
+
 
 def dropper(function):
     """
@@ -108,6 +117,7 @@ def dropper(function):
     deregister(function.__name__, force=True)
     return register(function, cache_default=False)
 
+
 def selector(function):
     """
     Registers function that won't be cached.
@@ -123,3 +133,4 @@ def selector(function):
     
     deregister(function.__name__, force=True)
     return register(function, cache_default=False)
+
