@@ -3,6 +3,20 @@ import hashlib
 import pandas as pd
 import feather
 import dill
+from glob import glob
+import os
+import numpy as np
+
+
+def delete_cache():
+    a, b = np.random.randint(10, size=2)
+    c = int(input(f"{a} + {b} ="))
+    if a + b != c:
+        print("You aren't smart enough to take such decisions")
+        return
+    for path in glob(config.storage_path + '*_*') + glob(config.source_path + '*'):
+        print(f"deleting {path}")
+        os.remove(path)
 
 
 def get_hash(df):
