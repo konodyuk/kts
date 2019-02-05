@@ -39,7 +39,7 @@ class FeatureConstructor:
 from . import stl
 
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=None, df_input=None, target_column=None):
+    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None):
         self.fc_before = fc_before
         self.fc_after = fc_after
         self.target_column = target_column
@@ -57,6 +57,8 @@ class FeatureSet:
         ])
         
     def __getitem__(self, idx):
+        if isinstance(self.df_input, type(None)):
+            raise AttributeError("Input DataFrame is not defined")
         return stl.merge([
             self.df.iloc[idx], 
             self.fc_after(self.df_input.iloc[idx])
