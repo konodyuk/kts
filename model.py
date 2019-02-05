@@ -110,7 +110,7 @@ class WeightedModel(Model): # MulNode
         if type(self.model) == type(self):
             self.coeff *= self.model.coeff
             self.model = self.model.model
-        self.__name__ = f"{self.coeff} * "
+        self.__name__ = f"{round(self.coeff, 2)} * "
         if '+' in self.model.__name__:
             self.__name__ += f"({self.model.__name__})"
         else:
