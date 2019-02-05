@@ -1,30 +1,33 @@
 from . import cache_utils
 from .. import config
-import os
 from glob import glob
 
 class Info:
     def __init__(self):
-        super().__setattr__('attributes', dict())
-        #print(self.attributes)
+        super().__setattr__('__attributes', dict())
+        self.recalc()
+
+    def recalc(self):
         for name in glob(config.info_path + '*'):
-            #print(name)
-            self.attributes[name.split('/')[-1]] = cache_utils.load_info(name)
+            super().__getattribute__('__attributes')[name.split('/')[-1][:-5]] = cache_utils.load_obj(name)
             
     def __setattr__(self, key, value):
-        self.attributes[key] = value
-        cache_utils.save_info(value, cache_utils.get_path_info(key))
+        self.__attributes[key] = value
+        cache_utils.save_obj(value, cache_utils.get_path_info(key))
     
     def __getattr__(self, key):
-        if key in self.attributes:
-            return self.attributes[key]
+        self.recalc()
+        if key in self.__attributes:
+            return self.__attributes[key]
         else:
             raise KeyError
+
+    def __delattr__(self, key):
+        raise AttributeError("info is read-only")
             
     def __del__(self):
-        #print('del called')
-        for key, value in self.attributes.items():
+        for key, value in self.__attributes.items():
             print(key, value)
-            cache_utils.save_info(value, cache_utils.get_path_info(key))
+            cache_utils.save_obj(value, cache_utils.get_path_info(key))
             
 info = Info()

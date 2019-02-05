@@ -68,3 +68,7 @@ def load_obj(path):
     Loads object
     """
     return dill.load(open(path, 'rb'))
+
+
+def get_path_info(name):
+    return config.info_path + name + '_info'
