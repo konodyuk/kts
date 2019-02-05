@@ -14,14 +14,24 @@ class Cache:
     def __init__(self):
         self.memory = dict()
         self.last_used = dict()
+        self.current_volume = 0
         try:
-            _ = info.memory_limit # to check whether it exists
+            _ = info.memory_limit  # to check whether it exists
         except Exception:
-            info.memory_limit = 4 * (1024 ** 3)
+            info.memory_limit = 4 * (1024 ** 3)  # 4 Gb
 
     @staticmethod
     def set_memory_limit(size):
         info.memory_limit = size
+
+    def __release_volume(self, df):
+        """
+        Removes most unpopular dataframes
+        :param df: dataframe
+        :return:
+        """
+        while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
+            self.memory.pop(min(self.memory, key=self.memory.get))
 
     def cache_df(self, df, name):
         """
@@ -31,6 +41,7 @@ class Cache:
         :return:
         """
         dict_name = name + '_df'
+        self.__release_volume(df)
         self.memory[dict_name] = df
         self.last_used[dict_name] = datetime.datetime.now()
         cache_utils.save_df(df, cache_utils.get_path_df(name))
@@ -59,6 +70,7 @@ class Cache:
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
+            self.__release_volume(tmp)
             self.memory[dict_name] = tmp
             return tmp
 
@@ -80,7 +92,6 @@ class Cache:
         """
         dict_name = name + '_obj'
         self.memory[dict_name] = obj
-        self.last_used[dict_name] = datetime.datetime.now()
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def is_cached_obj(self, name):
@@ -102,7 +113,6 @@ class Cache:
             raise KeyError("No such object in cache")
 
         dict_name = name + '_obj'
-        self.last_used[dict_name] = datetime.datetime.now()
         if dict_name in self.memory:
             return self.memory[dict_name]
         else:
