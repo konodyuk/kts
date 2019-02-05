@@ -23,6 +23,10 @@ def get_hash(df):
     return hashlib.sha256(pd.util.hash_pandas_object(df, index=True).values).hexdigest()
 
 
+def get_df_volume(df):
+    return df.memory_usage(index=True).sum()
+
+
 def get_path_df(name):
     return config.storage_path + name + '_df'
 
