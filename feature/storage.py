@@ -4,7 +4,7 @@ from ..storage import cache_utils
 from ..storage import caching
 import glob
 import os
-from collections import MutableSequence
+from . import stl
 
 
 class FeatureConstructor:
@@ -63,7 +63,6 @@ class FeatureSet:
     @property
     def source(self):
         raise NotImplementedError
-        import inspect
         used_funcs = (self.features_before + self.features_after)[::-1]
         for func in used_funcs:
             for func_stored in feature_list:
@@ -96,10 +95,10 @@ class FeatureList(MutableSequence):
     def recalc(self):
         self.functors = []
         self.name_to_idx = dict()
-        files = glob.glob(config.feature_path + '*.fc')
+        files = glob.glob(config.storage_path + '*_fc_obj')
         files.sort(key=os.path.getmtime)
         for idx, file in enumerate(files):
-            functor = caching.cache.load_obj(file)
+            functor = caching.cache.load_obj(file[:-4])
             self.functors.append(functor)
             self.name_to_idx[functor.__name__] = idx
 

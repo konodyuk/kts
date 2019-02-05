@@ -45,7 +45,7 @@ def register(*args, cache_default=True):
 
         functor = FeatureConstructor(func, cache_default)
         if not source_utils.source_is_saved(func):
-            cache.cache_obj(functor, functor.__name__)
+            cache.cache_obj(functor, functor.__name__ + '_fc')
             source_utils.save_source(func)
         return functor
 
@@ -91,8 +91,8 @@ def deregister(name, force=False):
         print("Doesn't match")
         return
 
-    paths = glob(config.feature_path + name + '.*') + glob(
-        config.feature_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
+    paths = glob(config.storage_path + name + '.*') + glob(
+        config.storage_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f].*')
     for path in paths:
         print(f'removing {path}')
         os.remove(path)

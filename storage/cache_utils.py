@@ -10,7 +10,7 @@ def get_hash(df):
 
 
 def get_path_df(name):
-    return config.storage_path + name + '_dataframe'
+    return config.storage_path + name + '_df'
 
 
 def save_df(df, path):

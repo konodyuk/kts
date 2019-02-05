@@ -16,7 +16,7 @@ def get_source(function):
 
 
 def source_path(function):
-    return config.storage_path + f"{function.__name__}.py"
+    return config.source_path + f"{function.__name__}.py"
 
 
 def save_source(function):
