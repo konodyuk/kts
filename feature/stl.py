@@ -30,7 +30,7 @@ def compose(funcs):
         return merge([func(df) for func in funcs])
 
     fc = FeatureConstructor(__compose, cache_default=False)
-    fc.src = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.src for func in funcs])}])"
+    fc.source = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
     fc.__name__ = f"compose_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
     fc.stl = True
     return fc
@@ -44,7 +44,7 @@ def sequence(funcs):
         return res
 
     fc = FeatureConstructor(__sequence, cache_default=False)
-    fc.src = f"stl.sequence([{', '.join([func.__name__ if not func.stl else func.src for func in funcs])}])"
+    fc.source = f"stl.sequence([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
     fc.__name__ = f"sequence_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
     fc.stl = True
     return fc

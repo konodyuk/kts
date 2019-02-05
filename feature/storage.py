@@ -4,7 +4,6 @@ from ..storage import cache_utils
 from ..storage import caching
 import glob
 import os
-from . import stl
 
 
 class FeatureConstructor:
@@ -37,10 +36,13 @@ class FeatureConstructor:
         return self.__name__
 
 
+from . import stl
+
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=None, df_input=None):
+    def __init__(self, fc_before, fc_after=None, df_input=None, target_column=None):
         self.fc_before = fc_before
         self.fc_after = fc_after
+        self.target_column = target_column
         if type(df_input) != type(None):
             self.set_df(df_input)
 
@@ -59,7 +61,14 @@ class FeatureSet:
             self.df.iloc[idx], 
             self.fc_after(self.df_input.iloc[idx])
         ])
-    
+
+    @property
+    def target(self):
+        if self.target_column:
+            return self.df[self.target_column]
+        else:
+            raise AttributeError("Target column is not defined.")
+
     @property
     def source(self):
         raise NotImplementedError
