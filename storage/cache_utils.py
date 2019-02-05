@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 
-def delete_cache():
+def clear_storage():
     a, b = np.random.randint(10, size=2)
     c = int(input(f"{a} + {b} ="))
     if a + b != c:
