@@ -1,4 +1,6 @@
 from . import cache_utils
+from .. import config
+from glob import glob
 import os
 
 
@@ -46,6 +48,15 @@ class Cache:
         dict_name = name + '_df'
         return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
 
+    @staticmethod
+    def cached_dfs():
+        """
+        Returns list of cached dataframes
+        :return:
+        """
+        return [df.split('/')[-1][:-3] for df in
+                glob(config.storage_path + '*' + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f]_df')]
+
     def cache_obj(self, obj, name):
         """
         Caches object with given name
@@ -81,6 +92,15 @@ class Cache:
         """
         dict_name = name + '_obj'
         return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
+
+    @staticmethod
+    def cached_objs():
+        """
+        Returns list of cached
+        :return:
+        """
+        return [df.split('/')[-1][:-4] for df in
+                glob(config.storage_path + '*' + '_obj')]
 
 
 cache = Cache()
