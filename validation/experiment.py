@@ -4,15 +4,16 @@ from .. import config
 import glob
 
 class Experiment(Model):
-    def __init__(self, model, featureset, oofs, score):
+    def __init__(self, model, featureset, oofs, score, std):
         self.model = model
         self.featureset = featureset
         self.oofs = oofs
         self.score = score
-        self.__name__ = f"{score}:exp({model.__name__}-{featureset.__name__})"
+        self.std = std
+        self.__name__ = f"{round(score, 3)}:exp({model.__name__}-{featureset.__name__})"
         
     def __str__(self):
-        string = f"({round(self.score, 5)}: \n\tModel: {self.model.__name__}\n\t{self.featureset.__name__})"
+        string = f"({round(self.score, 5)}, std:{round(self.std, 3)}: \n\tModel: {self.model.__name__}\n\t{self.featureset.__name__})"
         return string
     
     def predict(self, df):

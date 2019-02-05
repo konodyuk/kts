@@ -32,12 +32,14 @@ class Validator:
         final_ensemble = final_ensemble / len(models)
         final_ensemble.__name__ = model_name
         score = np.mean(scores)
+        std = np.std(scores)
         experiment_list.register(
             Experiment(
                 final_ensemble,
                 featureset,
                 oofs,
-                score
+                score,
+                std
             )
         )
         return score
