@@ -43,7 +43,7 @@ class Cache:
             cur += 1
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
             self.memory.pop(key)
-            print(self.current_volume)
+            self.last_used.pop(key)
 
     def is_cached_df(self, name):
         """
