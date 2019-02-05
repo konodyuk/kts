@@ -25,4 +25,9 @@ def source_path(config):
     return storage_path + 'sources/'
 
 
+@property
+def experiment_path(config):
+    return storage_path + 'experiment/'
+
+
 mprop.init()
