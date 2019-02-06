@@ -54,7 +54,8 @@ def load_df(path):
     """
     tmp = feather.read_dataframe(path, use_threads=True)
     index_col = tmp.columns[tmp.columns.str.contains(config.index_prefix)]
-    if index_col:
+    # print(index_col)
+    if any(index_col):
         tmp.set_index(index_col.values[0], inplace=True)
         tmp.index.name = tmp.index.name[len(config.index_prefix):]
     return tmp
