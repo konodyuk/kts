@@ -73,11 +73,11 @@ class Cache:
 
         dict_name = name + '_df'
         self.__release_volume(df)
+        cache_utils.save_df(df, cache_utils.get_path_df(name))
         self.memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
         self.last_used[dict_name] = datetime.datetime.now()
         print(cache_utils.get_df_volume(df))
-        cache_utils.save_df(df, cache_utils.get_path_df(name))
 
     def load_df(self, name):
         """
