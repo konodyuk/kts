@@ -12,8 +12,8 @@ class Validator:
     def score(self, model, featureset, target):
         models = []
         scores = []
-        oofs = np.zeros_like(target)
-        weights = np.zeros_like(target)
+        oofs = np.zeros_like(target, dtype=np.float)
+        weights = np.zeros_like(target, dtype=np.float)
         for spl in self.splitter.split:
             idx_train = spl['train']
             idx_test = spl['test']
