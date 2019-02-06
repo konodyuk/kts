@@ -1,6 +1,7 @@
 from . import cache_utils
 from .. import config
 from glob import glob
+import os
 
 
 class Info:
@@ -13,7 +14,6 @@ class Info:
             super().__getattribute__('__attributes')[name.split('/')[-1][:-5]] = cache_utils.load_obj(name)
             
     def __setattr__(self, key, value):
-        # print(key, value)
         super().__getattribute__('__attributes')[key] = value
         cache_utils.save_obj(value, cache_utils.get_path_info(key))
 
@@ -21,7 +21,6 @@ class Info:
         return item in super().__getattribute__('__attributes')
 
     def __getattr__(self, key):
-        # print(key)
         self.recalc()
         if key in super().__getattribute__('__attributes'):
             return super().__getattribute__('__attributes')[key]
