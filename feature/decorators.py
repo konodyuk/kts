@@ -7,25 +7,25 @@ from glob import glob
 import os
 
 
-def test(df, sizes=(2, 4, 6)):
+def preview(df, sizes=(2, 4, 6)):
     """
     Applies function to heads of particular dataframe.
     
     Example:
     ``` python
-    @test(df, sizes=[5, 15])
+    @preview(df, sizes=[5, 15])
     def make_ohe_pclass(df):
         ...
     ```
     """
 
-    def __test(function):
-        config.test_call = 1
+    def __preview(function):
+        config.preview_call = 1
         for sz in sizes:
             display(function(df.head(sz)))
-        config.test_call = 0
+        config.preview_call = 0
 
-    return __test
+    return __preview
 
 
 def register(*args, cache_default=True):
@@ -135,3 +135,6 @@ def selector(function):
 
     deregister(function.__name__, force=True)
     return register(function, cache_default=False)
+
+
+# def trainable(function):

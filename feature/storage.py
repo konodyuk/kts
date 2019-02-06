@@ -18,7 +18,7 @@ class FeatureConstructor:
     def __call__(self, df, cache=None):
         if type(cache) == type(None):
             cache = self.cache_default
-        if not cache or config.test_call:  # dirty hack to avoid  caching when @test function uses @registered function inside
+        if not cache or config.preview_call:  # dirty hack to avoid  caching when @test function uses @registered function inside
             return self.function(df)
 
         name = f"{self.function.__name__}__{cache_utils.get_hash(df)[:4]}"
@@ -98,6 +98,17 @@ class FeatureSet:
         src += 'features_after=[' + ', '.join([i.__name__ for i in self.features_after]) + ']'
         src += ')'
         return src
+
+
+# class FeatureSlice:
+#     def __init__(self, featureset, slice):
+#         self.featureset = featureset
+#         self.slice = slice
+#
+#     def __call__(self, df=None):
+#         if isinstance(df, type(None)):
+#             return self.featureset
+
     
 from collections import MutableSequence
 
