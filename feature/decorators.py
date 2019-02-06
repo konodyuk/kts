@@ -6,7 +6,8 @@ from IPython.display import display
 from glob import glob
 import os
 
-def test(df, sizes=[2, 4, 6]):
+
+def test(df, sizes=(2, 4, 6)):
     """
     Applies function to heads of particular dataframe.
     
@@ -17,13 +18,13 @@ def test(df, sizes=[2, 4, 6]):
         ...
     ```
     """
-    def __test(function):
 
+    def __test(function):
         config.test_call = 1
         for sz in sizes:
             display(function(df.head(sz)))
         config.test_call = 0
-    
+
     return __test
 
 
@@ -111,10 +112,10 @@ def dropper(function):
         return stl.column_dropper(['Pclass'])(df)
     ```
     """
-#     TODO:
-#     if cache.is_cached(function.__name__):
-#         print('Dropper is already registered. Deregistering: ')
-#         deregister(function.__name__, force=True)
+    #     TODO:
+    #     if cache.is_cached(function.__name__):
+    #         print('Dropper is already registered. Deregistering: ')
+    #         deregister(function.__name__, force=True)
     deregister(function.__name__, force=True)
     return register(function, cache_default=False)
 
@@ -131,7 +132,6 @@ def selector(function):
         return stl.column_selector(['Pclass', 'Cabin'])(df)
     ```
     """
-    
+
     deregister(function.__name__, force=True)
     return register(function, cache_default=False)
-
