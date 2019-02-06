@@ -23,7 +23,7 @@ class Cache:
     @staticmethod
     def set_memory_limit(volume):
         """
-        Sets new memory limit
+        Sets new memory limit in bytes
         :param volume: new memory volume limit
         :return:
         """
@@ -38,15 +38,10 @@ class Cache:
 
         items = sorted([(time, key) for (key, time) in self.last_used.items()])
         cur = 0
-        # print(self.current_volume)
         while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
             key = items[cur][1]
             cur += 1
-            print(cache_utils.get_df_volume(self.memory[key]))
-            print(self.memory[key])
-            print(self.current_volume, end=' -> ')
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
-            print(self.current_volume)
             self.memory.pop(key)
             self.last_used.pop(key)
 
@@ -77,7 +72,6 @@ class Cache:
         self.memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
         self.last_used[dict_name] = datetime.datetime.now()
-        print(cache_utils.get_df_volume(df))
 
     def load_df(self, name):
         """
