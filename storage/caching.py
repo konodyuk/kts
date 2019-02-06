@@ -38,9 +38,12 @@ class Cache:
 
         items = sorted([(time, key) for (key, time) in self.last_used.items()])
         cur = 0
+        # print(self.current_volume)
         while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
             key = items[cur][1]
             cur += 1
+            print(cache_utils.get_df_volume(self.__memory[key]))
+            print(self.__memory[key])
             self.current_volume -= cache_utils.get_df_volume(self.__memory[key])
             self.__memory.pop(key)
             self.last_used.pop(key)
@@ -71,6 +74,7 @@ class Cache:
         self.__memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
         self.last_used[dict_name] = datetime.datetime.now()
+        print(cache_utils.get_df_volume(df))
         cache_utils.save_df(df, cache_utils.get_path_df(name))
 
     def load_df(self, name):
@@ -99,7 +103,7 @@ class Cache:
         :return:
         """
         return [df.split('/')[-1][:-3] for df in
-                glob(config.storage_path + '*' + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f]_df')]
+                glob(config.storage_path + '*' + '_df')]
 
     def is_cached_obj(self, name):
         """
