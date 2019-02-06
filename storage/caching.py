@@ -96,6 +96,7 @@ class Cache:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
             self.__release_volume(tmp)
             self.memory[dict_name] = tmp
+            self.current_volume += cache_utils.get_df_volume(tmp)
             return tmp
 
     @staticmethod
