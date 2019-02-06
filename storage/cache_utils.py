@@ -36,12 +36,15 @@ def save_df(df, path):
     Saves a dataframe as feather binary file. Adds to df and additional column filled
     with index values and having a special name.
     """
-    index_name = f'{config.index_prefix}{df.index.name}'
-    df[index_name] = df.index.values
-    df.reset_index(drop=True, inplace=True)
+    not_trivial_index = type(df.index) != pd.RangeIndex
+    if not_trivial_index:
+        index_name = f'{config.index_prefix}{df.index.name}'
+        df[index_name] = df.index.values
+        df.reset_index(drop=True, inplace=True)
     feather.write_dataframe(df, path)
-    df.set_index(index_name, inplace=True)
-    df.index.name = df.index.name[len(config.index_prefix):]
+    if not_trivial_index:
+        df.set_index(index_name, inplace=True)
+        df.index.name = df.index.name[len(config.index_prefix):]
 
 
 def load_df(path):
@@ -50,9 +53,10 @@ def load_df(path):
     column added with saving by save_df. Restores original name of index column.
     """
     tmp = feather.read_dataframe(path, use_threads=True)
-    col = tmp.columns[tmp.columns.str.contains(config.index_prefix)].values[0]
-    tmp.set_index(col, inplace=True)
-    tmp.index.name = tmp.index.name[len(config.index_prefix):]
+    index_col = tmp.columns[tmp.columns.str.contains(config.index_prefix)]
+    if index_col:
+        tmp.set_index(index_col.values[0], inplace=True)
+        tmp.index.name = tmp.index.name[len(config.index_prefix):]
     return tmp
 
 
