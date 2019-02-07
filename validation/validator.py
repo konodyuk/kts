@@ -40,7 +40,6 @@ class Validator:
         experiment_list.register(
             Experiment(
                 final_ensemble,
-                featureset,
                 oofs,
                 score,
                 std
