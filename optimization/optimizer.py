@@ -32,7 +32,7 @@ class Optimizer:
             pt = self.opt.ask()
             self.model.params = {k: v for k, v in zip(self.parameter_names, 
                                                       pt)}
-            val = self.coeff * self.validator.score(self.model, self.featureset, self.target)
+            val = self.coeff * self.validator.score(self.model, self.featureset)
             clear_output(True)
             plot_convergence(self.opt.tell(pt, val));
             plt.show()
