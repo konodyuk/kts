@@ -9,6 +9,8 @@ import numpy as np
 
 
 def clear_storage():
+    from .caching import cache
+    cache.memory.clear()
     np.random.seed(int(__import__("time").time()))
     a, b = np.random.randint(5, 30, size=2)
     c = int(input(f"{a} + {b} = "))
