@@ -57,3 +57,14 @@ class NM(BaseSplitter):
     @property
     def size(self):
         return self.n_folds * self.n_splits
+
+
+from sklearn.model_selection import train_test_split
+class Holdout(BaseSplitter):
+    def __init__(self, y, test_size=0.3):
+        self.y = y
+        self.test_size = test_size
+
+    def _split(self):
+        idx_train, idx_test = train_test_split(y, test_size)
+        yield {'train': idx_train, 'test': idx_test}
