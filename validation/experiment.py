@@ -4,9 +4,9 @@ from .. import config
 import glob
 
 class Experiment(Model):
-    def __init__(self, pipeline, single_model, oofs, score, std):
+    def __init__(self, pipeline, oofs, score, std):
         self.pipeline = pipeline
-        self.model = single_model
+        self.model = self.pipeline.models[0].model  # TODO: test out
         self.oofs = oofs
         self.score = score
         self.std = std
@@ -33,7 +33,7 @@ class ExperimentList(MutableSequence):
         files = glob.glob(config.storage_path + '*_exp_obj')
         files = [file.split('/')[-1] for file in files]
         for idx, file in enumerate(files):
-            print(idx, file)
+            # print(idx, file)
             experiment = cache.load_obj(file[:-4])
             self.experiments.append(experiment)
             self.name_to_idx[experiment.__name__] = idx
