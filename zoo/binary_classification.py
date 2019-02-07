@@ -51,7 +51,15 @@ from catboost import CatBoostClassifier as _CBC
 class CBClassifier(Model):
     Estimator = _CBC
     short_name = 'cb'
-    
+    def __init__(self, params=None, n_jobs=-1, verbosity=0):
+        super().__init__(params, n_jobs, verbosity)
+        self.verbose = verbosity
+        self.estimator.thread_count = n_jobs
+        # self.estimator.verbose = verbosity
+
+    def _fit(self, X, y, **kwargs):
+        self.estimator.fit(X, y, verbose=self.verbose)
+
     def predict(self, X):
         return self.estimator.predict_proba(X)[:, 1]
-    
+
