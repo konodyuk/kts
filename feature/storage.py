@@ -25,7 +25,7 @@ class FeatureConstructor:
         if not cache or config.preview_call:  # dirty hack to avoid  caching when @test function uses @registered function inside
             return self.function(ktdf, **kwargs)
 
-        name = f"{self.function.__name__}__{cache_utils.get_hash(df)[:4]}"
+        name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
         if caching.cache.is_cached_df(name):
             # return caching.cache.load_df(name)
             return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders)
@@ -73,9 +73,10 @@ class FeatureSet:
             raise AttributeError("Input DataFrame is not defined")
         return stl.merge([
             self.df.iloc[idx], 
-            self.fc_after(dataframe.DataFrame(self.df_input.iloc[idx])) # BUG: should have .train=True?
-        ])
-    
+            self.fc_after(dataframe.DataFrame(self.df_input.iloc[idx], train=1))  # BUG: should have .train=True?
+        ])                                                                        # made .train=1 only for preview purposes
+                                                                                  # actually, FS[a:b] functionality is made only for debug
+                                                                                  # why not write config.preview_call = 1 then?
     def empty_copy(self):
         return FeatureSet(self.fc_before, 
                           self.fc_after,
@@ -119,6 +120,7 @@ class FeatureSlice:
     def __init__(self, featureset, slice):
         self.featureset = featureset
         self.slice = slice
+        self.slice_id = cache_utils.get_hash_slice(slice)
         self.first_level_encoders = self.featureset.df_input.encoders
         self.second_level_encoders = {}
         self.columns = None
@@ -127,6 +129,7 @@ class FeatureSlice:
     def __call__(self, df=None):
         if isinstance(df, type(None)):
             fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[self.slice],  # ALERT: may face memory leak here
+                                               slice_id=self.slice_id,
                                                train=True,
                                                encoders=self.second_level_encoders)
             result = stl.merge([
@@ -140,6 +143,7 @@ class FeatureSlice:
             fs_level_df.encoders = self.first_level_encoders
             fsl_level_df = dataframe.DataFrame(df)
             fsl_level_df.encoders = self.second_level_encoders
+            fsl_level_df.slice_id = self.slice_id
             return stl.merge([
                 self.featureset.fc_before(fs_level_df),  # uses FeatureSet-level encoders
                 self.featureset.fc_after(fsl_level_df)  # uses FeatureSlice-level encoders
