@@ -1,5 +1,4 @@
 from .. import config
-from ..storage import split_manager
 import numpy as np
 
 class BaseSplitter:
