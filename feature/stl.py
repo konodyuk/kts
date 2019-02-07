@@ -1,5 +1,6 @@
 from .storage import FeatureConstructor
 import pandas as pd
+from ..storage.dataframe import DataFrame as KTDF
 
 
 def empty_like(df):
@@ -8,7 +9,7 @@ def empty_like(df):
 identity = FeatureConstructor(lambda df: df, cache_default=False)
 
 def merge(dfs):
-    return pd.concat(dfs, axis=1)
+    return pd.concat([df.df if isinstance(df, KTDF) else df for df in dfs], axis=1)
 
 
 def column_selector(columns):
