@@ -26,7 +26,7 @@ class DataFrame(object):
         return res
     ```
     """
-    def __init__(self, df, slice_id=None, train=None, encoders=None):
+    def __init__(self, df, train=None, encoders=None, slice_id=None):
         # print('making custom DF', type(df))
         if isinstance(df, DataFrame):
             # print('out of custom')
