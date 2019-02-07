@@ -45,10 +45,11 @@ class FeatureConstructor:
 from . import stl
 
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None):
+    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, encoders={}):
         self.fc_before = fc_before
         self.fc_after = fc_after
         self.target_column = target_column
+        self.encoders = encoders
         if type(df_input) != type(None):
             self.set_df(df_input)
         self.__name__ = f"fs({self.fc_before.__name__[:2]}-{self.fc_after.__name__[:2] if self.fc_after else ''})"
@@ -56,6 +57,7 @@ class FeatureSet:
     def set_df(self, df_input):
         self.df_input = dataframe.DataFrame(df_input)
         self.df_input.train = True
+        self.df_input.encoders = self.encoders
         self.df = self.fc_before(self.df_input)
         
     def __call__(self, df):
@@ -71,13 +73,14 @@ class FeatureSet:
             raise AttributeError("Input DataFrame is not defined")
         return stl.merge([
             self.df.iloc[idx], 
-            self.fc_after(dataframe.DataFrame(df_input.iloc[idx])) # BUG: should have .train=True?
+            self.fc_after(dataframe.DataFrame(self.df_input.iloc[idx])) # BUG: should have .train=True?
         ])
     
     def empty_copy(self):
         return FeatureSet(self.fc_before, 
                           self.fc_after,
-                          target_column=self.target_column
+                          target_column=self.target_column,
+                          encoders=self.encoders
                          )
 
     def slice(self, idxs):
@@ -116,24 +119,41 @@ class FeatureSlice:
     def __init__(self, featureset, slice):
         self.featureset = featureset
         self.slice = slice
-        self.df_input = copy(self.featureset.df_input)
+        self.first_level_encoders = self.featureset.df_input.encoders
+        self.second_level_encoders = {}
+        self.columns = None
+        # self.df_input = copy(self.featureset.df_input)
 
     def __call__(self, df=None):
         if isinstance(df, type(None)):
-            return stl.merge([
+            fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[self.slice],  # ALERT: may face memory leak here
+                                               train=True,
+                                               encoders=self.second_level_encoders)
+            result = stl.merge([
                 self.featureset.df.iloc[self.slice],
-                self.featureset.fc_after(self.df_input)
+                self.featureset.fc_after(fsl_level_df)
             ])
+            self.columns = [i for i in result.columns if i != self.featureset.target_column]
+            return result[self.columns]
         else:
-            ktdf = dataframe.DataFrame(df)
-            ktdf.encoders = self.df_input.encoders
+            fs_level_df = dataframe.DataFrame(df)
+            fs_level_df.encoders = self.first_level_encoders
+            fsl_level_df = dataframe.DataFrame(df)
+            fsl_level_df.encoders = self.second_level_encoders
             return stl.merge([
-                self.featureset.fc_before(ktdf),
-                self.featureset.fc_after(ktdf)
-            ])
+                self.featureset.fc_before(fs_level_df),  # uses FeatureSet-level encoders
+                self.featureset.fc_after(fsl_level_df)  # uses FeatureSlice-level encoders
+            ])[self.columns]
+
+    @property
+    def target(self):
+        return self.featureset.target.iloc[self.slice]
 
     def compress(self):
-        self.df_input = None
+        self.featureset = self.featureset.empty_copy()
+        # self.df_input = dataframe.DataFrame(None, False)
+        # self.df_input.compress()
+        self.df_input = None  # bug: df_input is used in line 129
 
     
 from collections import MutableSequence
