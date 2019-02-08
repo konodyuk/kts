@@ -3,6 +3,11 @@ import shutil
 
 
 def check_existance(paths):
+    """
+    Checks necessity clearing the folder.
+    :param paths: list of directories
+    :return: True if at least one directory exists, False otherwise
+    """
     for path in paths:
         if os.path.isdir(path):
             return True
@@ -10,6 +15,10 @@ def check_existance(paths):
 
 
 def clear_all():
+    """
+    Clears current folder.
+    :return:
+    """
     folder = './'
     for the_file in os.listdir(folder):
         file_path = os.path.join(folder, the_file)
@@ -22,10 +31,18 @@ def clear_all():
             print(e)
 
 
-def build_file_system():
+def build_file_system(force=False):
+    """
+    Builds directory structure for correct running kts.
+    :param force: True or False (without confirmation or not)
+    :return:
+    """
     paths = ['./input', './notebooks', './storage/info', './storage/sources']
 
     if check_existance(paths):
+        if force:
+            clear_all()
+
         print('Do you want to clear existing file system? (y/n)')
         try:
             answer = str(input())
