@@ -5,7 +5,7 @@
 ### KTS example cache ###
 */storage/features/*
 */storage/runs/*
-
+example*
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
