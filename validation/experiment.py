@@ -41,22 +41,19 @@ class ExperimentList(MutableSequence):
 
     def __getitem__(self, item):
         """
-        Implements calling to experiments by score and name
-        :param item: str(name) or float(score)
+        Implements calling to experiments by score, name and index
+        :param item: str(name) or float(score), slice(score range or index range)
         :return: experiment or list of experiments
         """
         self.recalc()
         if isinstance(item, str):
-            print('ok')
             ans = [experiment for experiment in self.experiments if experiment.__name__.count(item) > 0]
         elif isinstance(item, float):
-            print('ok')
-            ans = [experiment for experiment in self.experiments if round(experiment.score, 5) == round(item, 5)]
+            mul = 10 ** len(str(item).split('.')[1])
+            ans = [experiment for experiment in self.experiments if int(experiment.score * mul) == int(item * mul)]
         elif isinstance(item, int):
             return self.experiments[item]
         elif isinstance(item, slice):
-            print('ok', item)
-            print(type(item.start))
             if type(item.start) == float:
                 ans = [experiment for experiment in self.experiments if
                        item.start <= experiment.score and experiment.score < item.stop]
@@ -76,15 +73,6 @@ class ExperimentList(MutableSequence):
         self.recalc()
         string = "Experiments: [\n" + '\n'.join([experiment.__str__() for experiment in self.experiments]) + '\n]'
         return string
-
-    # def __getitem__(self, key):
-    #     self.recalc()
-    #     if type(key) in [int, slice]:
-    #         return self.experiments[key]
-    #     elif type(key) == str:
-    #         return self.experiments[self.name_to_idx[key]]
-    #     else:
-    #         raise TypeError('Index should be int, slice or str')
 
     def __delitem__(self, key):
         raise AttributeError('This object is read-only')
