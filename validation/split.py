@@ -67,3 +67,7 @@ class Holdout(BaseSplitter):
     def _split(self):
         idx_train, idx_test = train_test_split(np.arange(self.sz), test_size=self.test_size, shuffle=True, random_state=config.seed)
         yield {'train': idx_train, 'test': idx_test}
+
+    @property
+    def size(self):
+        return 1
