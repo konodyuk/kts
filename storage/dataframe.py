@@ -2,7 +2,15 @@ import pandas as pd
 from copy import deepcopy
 
 
-class DataFrame(object):
+class SubDF(pd.DataFrame):
+    def __getattr__(self, item):
+        return
+
+    def __dir__(self):
+        return []
+
+
+class DataFrame(SubDF):
     """
     A wrapper over the standard DataFrame class.
     Complements it with .train and .encoders attributes.
@@ -27,19 +35,19 @@ class DataFrame(object):
     ```
     """
     def __init__(self, df, train=None, encoders=None, slice_id=None):
-        # print('making custom DF', type(df))
         if isinstance(df, DataFrame):
-            # print('out of custom')
             super().__setattr__('df', df.df)
             super().__setattr__('slice_id', df.slice_id if isinstance(slice_id, type(None)) else slice_id)
             super().__setattr__('train', df.train if isinstance(train, type(None)) else train)  # ALERT: may cause errors during constructing like DF(DF(df), train=True)
             super().__setattr__('encoders', df.encoders if isinstance(encoders, type(None)) else encoders)  # not deepcopy to allow DF(df) init in FeatureConstructors
         else:
-            # print('out of std')
             super().__setattr__('df', df)
             super().__setattr__('slice_id', "0" * 16 if isinstance(slice_id, type(None)) else slice_id)
             super().__setattr__('train', False if isinstance(train, type(None)) else train)
             super().__setattr__('encoders', dict() if isinstance(encoders, type(None)) else encoders)
+
+    def __dir__(self):
+        return dir(self.df) + ['df', 'train', 'encoders', 'slice_id']
 
     def __copy__(self):
         return DataFrame(self.df, self.slice_id, self.train, deepcopy(self.encoders))
