@@ -2,7 +2,7 @@ import pandas as pd
 from copy import deepcopy
 
 
-class DataFrame(object):
+class DataFrame(pd.DataFrame):
     """
     A wrapper over the standard DataFrame class.
     Complements it with .train and .encoders attributes.
@@ -37,6 +37,7 @@ class DataFrame(object):
         else:
             # print('out of std')
             super().__setattr__('df', df)
+            # print('df - done')
             super().__setattr__('slice_id', "0" * 16 if isinstance(slice_id, type(None)) else slice_id)
             super().__setattr__('train', False if isinstance(train, type(None)) else train)
             super().__setattr__('encoders', dict() if isinstance(encoders, type(None)) else encoders)
@@ -44,11 +45,29 @@ class DataFrame(object):
     def __copy__(self):
         return DataFrame(self.df, self.slice_id, self.train, deepcopy(self.encoders))
 
-    def __getattr__(self, key):
-        if key in ['train', 'encoders', 'df', 'slice_id']:
-            return super().__getattr__(key)
+    def __dir__(self):
+        return dir(self.df) + ['train',
+                   'encoders',
+                   'df',
+                   'slice_id']
+
+    def __getattribute__(self, key):
+        # print('getattribute: ', key)
+        if key in ['train',
+                   'encoders',
+                   'df',
+                   'slice_id']:
+            return super().__getattribute__(key)
+        elif key in ['_internal_names',
+                     '_internal_names_set',
+                     '_metadata']:
+            names = pd.DataFrame._internal_names + ['train', 'encoders', 'df', 'slice_id']
+            attrs = {'_internal_names': names,
+                     '_internal_names_set': set(names),
+                     '_metadata': []}
+            return attrs[key]
         else:
-            tmp = self.df.__getattr__(key)
+            tmp = getattr(self.df, key)
             if isinstance(tmp, pd.DataFrame):
                 return DataFrame(tmp, self.train, self.encoders)
             else:
@@ -56,8 +75,10 @@ class DataFrame(object):
 
     def __setattr__(self, key, value):
         if key in ['train', 'encoders', 'df', 'slice_id']:
+            print('setattr for super', key, value)
             super().__setattr__(key, value)
         else:
+            print('setattr for df ', key, value)
             self.df.__setattr__(key, value)
 
     def __setitem__(self, key, value):
@@ -69,3 +90,18 @@ class DataFrame(object):
             return DataFrame(tmp, self.train, self.encoders)
         else:
             return tmp
+
+
+def main():
+    a = 1
+    b = 2
+    c = a + b
+    print (__import__('os').getcwd())
+    df = pd.read_csv('../example/input/train.csv')
+    ktdf = DataFrame(df)
+    ktdf.encoders = {'kek': 1}
+    print(ktdf)
+    print(type(ktdf))
+    kktdf = DataFrame(ktdf)
+
+# main()
