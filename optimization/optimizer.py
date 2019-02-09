@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 plt.style.use('dark_background')
 
+
 class Optimizer:
     def __init__(self, model, featureset, target, validator, goal='maximize', search_spaces=None):
         if isinstance(search_spaces, type(None)):
@@ -45,8 +46,7 @@ class Optimizer:
                             models=self.opt.models)
         plot_objective(res, dimensions=self.parameter_names);
         plt.show()
-        
-        
+
     def plot_evaluations(self):
         res = create_result(Xi=self.opt.Xi, 
                             yi=self.opt.yi, 

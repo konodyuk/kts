@@ -1,7 +1,12 @@
 from ..model import *
 from .. import config
-
 from xgboost import XGBClassifier as _XGBC
+from lightgbm import LGBMClassifier as _LGBMC
+from catboost import CatBoostClassifier as _CBC
+from sklearn.linear_model import LogisticRegression as _LOGR
+from sklearn.neighbors import KNeighborsClassifier as _KNC
+
+
 class XGBClassifier(Model):
     Estimator = _XGBC
     search_spaces = {
@@ -38,8 +43,8 @@ class XGBClassifier(Model):
 
     def predict(self, X):
         return self.estimator.predict_proba(X)[:, 1]
-    
-from lightgbm import LGBMClassifier as _LGBMC
+
+
 class LGBMClassifier(Model):
     Estimator = _LGBMC
     search_spaces = {
@@ -58,8 +63,8 @@ class LGBMClassifier(Model):
     
     def predict(self, X):
         return self.estimator.predict_proba(X)[:, 1]
-    
-from catboost import CatBoostClassifier as _CBC
+
+
 class CBClassifier(Model):
     Estimator = _CBC
     short_name = 'cb'
@@ -75,7 +80,7 @@ class CBClassifier(Model):
     def predict(self, X):
         return self.estimator.predict_proba(X)[:, 1]
 
-from sklearn.linear_model import LogisticRegression as _LOGR
+
 class LogisticRegression(Model):
     Estimator = _LOGR
     short_name = 'logr'
@@ -94,6 +99,17 @@ class LogisticRegression(Model):
         'verbose': 0,
         'random_state': 42
     }
+
+    def predict(self, X):
+        return self.estimator.predict_proba(X)[:, 1]
+
+
+class KNeighborsClassifier(Model):
+    Estimator = _KNC
+    system_params = {
+        "n_jobs": -1,
+    }
+    short_name = 'knc'
 
     def predict(self, X):
         return self.estimator.predict_proba(X)[:, 1]
