@@ -9,7 +9,10 @@ def empty_like(df):
 
 identity = FeatureConstructor(lambda df: df, cache_default=False)
 
+
 def merge(dfs):
+    if len(dfs) == 1:
+        return dfs[0]
     return pd.concat([df.df if isinstance(df, KTDF) else df for df in dfs], axis=1)
 
 
