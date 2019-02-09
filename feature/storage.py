@@ -139,7 +139,7 @@ class FeatureSlice:
             ])
             self.columns = [i for i in result.columns if i != self.featureset.target_column]
             return result[self.columns]
-        elif isinstance(df, slice) or isinstance(df, np.array) or isinstance(df, list):
+        elif isinstance(df, slice) or isinstance(df, np.ndarray) or isinstance(df, list):
             fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[df],  # ALERT: may face memory leak here
                                                slice_id=self.slice_id,
                                                train=False,
