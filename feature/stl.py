@@ -1,5 +1,7 @@
 from .storage import FeatureConstructor
 import pandas as pd
+import numpy as np
+from ..storage.dataframe import DataFrame as KTDF
 
 
 def empty_like(df):
@@ -8,7 +10,7 @@ def empty_like(df):
 identity = FeatureConstructor(lambda df: df, cache_default=False)
 
 def merge(dfs):
-    return pd.concat(dfs, axis=1)
+    return pd.concat([df.df if isinstance(df, KTDF) else df for df in dfs], axis=1)
 
 
 def column_selector(columns):
@@ -50,21 +52,37 @@ def compose(funcs):
     return fc
 
 
+# TODO: reimplement using sklearn.preprocessing.OHE
 def make_ohe(cols, sep='_ohe_'):
     def __make_ohe(df):
-        return pd.get_dummies(df[cols], prefix_sep=sep, columns=cols)
+        return pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
 
     return FeatureConstructor(__make_ohe, cache_default=False)
 
 
 def make_mean_encoding(cols, target_col, prefix='me_'):
     def __make_mean_encoding(df):
+        # print("ME call: ", type(df))
+        # print(df.train)
         res = empty_like(df)
         for col in cols:
             res[prefix + col] = 0
-            for value in set(df[col]):
-                idxs = (df[col] == value)
-                res.loc[idxs, prefix + col] = df[idxs][target_col].mean()
+            if df.train:
+                enc = dict()
+                for value in set(df[col]):
+                    idxs = (df[col] == value)
+                    enc[value] = res.loc[idxs, prefix + col] = df[idxs][target_col].mean()
+                df.encoders['__me_' + col] = enc
+            else:
+                enc = df.encoders['__me_' + col]
+                for value in set(df[col]):
+                    if value in enc.keys():
+                        encoding_value = enc[value]
+                    else:
+                        encoding_value = np.mean(list(enc.values()))
+                        print(f'Unknown value: {value}, inplacing with {encoding_value}')
+                    idxs = (df[col] == value)
+                    res.loc[idxs, prefix + col] = encoding_value
         return res
 
     return FeatureConstructor(__make_mean_encoding, cache_default=False)

@@ -2,6 +2,7 @@ from ..storage import source_utils
 from ..storage.caching import cache
 from .. import config
 from .storage import FeatureConstructor
+from ..storage import dataframe
 from IPython.display import display
 from glob import glob
 import os
@@ -22,7 +23,12 @@ def preview(df, sizes=(2, 4, 6)):
     def __preview(function):
         config.preview_call = 1
         for sz in sizes:
-            display(function(df.head(sz)))
+            # if isinstance(df, dataframe.DataFrame):
+            #     ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
+            # else:
+            #     ktdf = dataframe.DataFrame(df.head(sz), True, {})
+            ktdf = dataframe.DataFrame(df.head(sz), True, {})  # not a bug, but a feature: here we use KTDF's property that its methods return pd.DataFrames
+            display(function(ktdf))
         config.preview_call = 0
 
     return __preview
@@ -138,3 +144,4 @@ def selector(function):
 
 
 # def trainable(function):
+#     def __trainable(df, )
