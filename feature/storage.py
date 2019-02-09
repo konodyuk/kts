@@ -5,6 +5,7 @@ from ..storage import caching
 from ..storage import dataframe
 import glob
 import os
+import numpy as np
 
 
 class FeatureConstructor:
@@ -134,6 +135,17 @@ class FeatureSlice:
                                                encoders=self.second_level_encoders)
             result = stl.merge([
                 self.featureset.df.iloc[self.slice],
+                self.featureset.fc_after(fsl_level_df)
+            ])
+            self.columns = [i for i in result.columns if i != self.featureset.target_column]
+            return result[self.columns]
+        elif isinstance(df, slice) or isinstance(df, np.array) or isinstance(df, list):
+            fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[df],  # ALERT: may face memory leak here
+                                               slice_id=self.slice_id,
+                                               train=False,
+                                               encoders=self.second_level_encoders)
+            result = stl.merge([
+                self.featureset.df.iloc[df],
                 self.featureset.fc_after(fsl_level_df)
             ])
             self.columns = [i for i in result.columns if i != self.featureset.target_column]

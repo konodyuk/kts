@@ -13,7 +13,7 @@ class Validator:
         self.metric = metric
         self.bar = (tqdm.tqdm_notebook if enable_widget else tqdm.tqdm)
         
-    def score(self, model, featureset):
+    def score(self, model, featureset, **fit_params):
         pipelines = []
         scores = []
         oofs = np.zeros_like(featureset.target, dtype=np.float)
@@ -25,8 +25,8 @@ class Validator:
             idx_test = spl['test']
             c_model = deepcopy(model)
             pl = Pipeline(c_model, featureset.slice(idx_train))
-            pl.fit()
-            pred = pl.predict(featureset.df_input.iloc[idx_test])  # CODESTYLE: looks like rubbish
+            pl.fit(**fit_params)
+            pred = pl.predict(idx_test)
             oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
             weights[idx_test] += 1
             # print(featureset.target[idx_test].values[:10], pred[:10])
