@@ -1,5 +1,4 @@
 from .. import config
-from ..storage import split_manager
 import numpy as np
 
 class BaseSplitter:
@@ -57,3 +56,14 @@ class NM(BaseSplitter):
     @property
     def size(self):
         return self.n_folds * self.n_splits
+
+
+from sklearn.model_selection import train_test_split
+class Holdout(BaseSplitter):
+    def __init__(self, y, test_size=0.3):
+        self.sz = len(y)
+        self.test_size = test_size
+
+    def _split(self):
+        idx_train, idx_test = train_test_split(np.arange(self.sz), test_size=self.test_size, shuffle=True, random_state=config.seed)
+        yield {'train': idx_train, 'test': idx_test}

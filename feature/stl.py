@@ -1,5 +1,7 @@
 from .storage import FeatureConstructor
 import pandas as pd
+import numpy as np
+from ..storage.dataframe import DataFrame as KTDF
 
 
 def empty_like(df):
@@ -8,7 +10,7 @@ def empty_like(df):
 identity = FeatureConstructor(lambda df: df, cache_default=False)
 
 def merge(dfs):
-    return pd.concat(dfs, axis=1)
+    return pd.concat([df.df if isinstance(df, KTDF) else df for df in dfs], axis=1)
 
 
 def column_selector(columns):
@@ -61,6 +63,7 @@ def make_ohe(cols, sep='_ohe_'):
 def make_mean_encoding(cols, target_col, prefix='me_'):
     def __make_mean_encoding(df):
         # print("ME call: ", type(df))
+        # print(df.train)
         res = empty_like(df)
         for col in cols:
             res[prefix + col] = 0

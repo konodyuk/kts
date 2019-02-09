@@ -4,21 +4,22 @@ from .. import config
 import glob
 
 class Experiment(Model):
-    def __init__(self, model, featureset, oofs, score, std):
-        self.model = model
-        self.featureset = featureset.empty_copy()
+    def __init__(self, pipeline, oofs, score, std):
+        self.pipeline = pipeline
+        self.model = self.pipeline.models[0].model  # TODO: test out
         self.oofs = oofs
         self.score = score
         self.std = std
-        self.__name__ = f"{round(score, 3)}:exp({model.__name__}-{featureset.__name__})"
+        self.__name__ = f"{round(score, 3)}:exp({pipeline.__name__})"
         
     def __str__(self):
-        string = f"({round(self.score, 5)}, std:{round(self.std, 3)}: \n\tModel: {self.model.__name__}\n\t{self.featureset.__name__})"
+        string = f"({round(self.score, 5)}, std:{round(self.std, 3)}: \n\tModel: {self.pipeline.__name__})"
         return string
     
     def predict(self, df):
-        return self.model.predict(self.featureset(df))
-    
+        return self.pipeline.predict(df)
+
+
 from collections import MutableSequence
 
 class ExperimentList(MutableSequence):
@@ -32,6 +33,7 @@ class ExperimentList(MutableSequence):
         files = glob.glob(config.storage_path + '*_exp_obj')
         files = [file.split('/')[-1] for file in files]
         for idx, file in enumerate(files):
+            # print(idx, file)
             experiment = cache.load_obj(file[:-4])
             self.experiments.append(experiment)
             self.name_to_idx[experiment.__name__] = idx

@@ -23,10 +23,11 @@ def preview(df, sizes=(2, 4, 6)):
     def __preview(function):
         config.preview_call = 1
         for sz in sizes:
-            if isinstance(df, dataframe.DataFrame):
-                ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
-            else:
-                ktdf = dataframe.DataFrame(df.head(sz), True, {})
+            # if isinstance(df, dataframe.DataFrame):
+            #     ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
+            # else:
+            #     ktdf = dataframe.DataFrame(df.head(sz), True, {})
+            ktdf = dataframe.DataFrame(df.head(sz), True, {})  # not a bug, but a feature: here we use KTDF's property that its methods return pd.DataFrames
             display(function(ktdf))
         config.preview_call = 0
 

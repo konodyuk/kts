@@ -9,6 +9,8 @@ import numpy as np
 
 
 def clear_storage():
+    from .caching import cache
+    cache.memory.clear()
     np.random.seed(int(__import__("time").time()))
     a, b = np.random.randint(5, 30, size=2)
     c = int(input(f"{a} + {b} = "))
@@ -20,8 +22,14 @@ def clear_storage():
         os.remove(path)
 
 
-def get_hash(df):
+def get_hash_df(df):
     return hashlib.sha256(pd.util.hash_pandas_object(df, index=True).values).hexdigest()
+
+
+def get_hash_slice(idxs):
+    if isinstance(idxs, slice):
+        idxs = (-1337, idxs.start, idxs.stop, idxs.step)
+    return hex(hash(frozenset(idxs)))[2:]
 
 
 def get_df_volume(df):
@@ -37,6 +45,11 @@ def save_df(df, path):
     Saves a dataframe as feather binary file. Adds to df and additional column filled
     with index values and having a special name.
     """
+    # print('saving df', path)
+    # try:
+    #     print('enc', df.encoders)
+    # except:
+    #     print('enc: no attr')
     not_trivial_index = type(df.index) != pd.RangeIndex
     if not_trivial_index:
         index_name = f'{config.index_prefix}{df.index.name}'
@@ -53,6 +66,7 @@ def load_df(path):
     Loads a dataframe from feather format and sets as index that additional
     column added with saving by save_df. Restores original name of index column.
     """
+    # print('loading df', path)
     tmp = feather.read_dataframe(path, use_threads=True)
     index_col = tmp.columns[tmp.columns.str.contains(config.index_prefix)]
     # print(index_col)
