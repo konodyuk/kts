@@ -27,5 +27,6 @@ if True or not sys.argv[0]:
         'cli'
     ]
 
-    with open("version.py", 'r') as f:
+    VERSION_FILE = os.path.join(os.path.dirname(__file__), 'VERSION')
+    with open(VERSION_FILE) as f:
         __version__ = f"0.0.{int(f.read().strip()) + 1}"

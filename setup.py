@@ -3,12 +3,12 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('kts/version.py', 'r') as f:
+with open('kts/VERSION', 'r') as f:
     VERSION = int(f.read().strip())
 
 VERSION += 1
 
-with open('kts/version.py', 'w') as f:
+with open('kts/VERSION', 'w') as f:
     f.write(str(VERSION))
 
 setuptools.setup(
