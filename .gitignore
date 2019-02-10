@@ -282,3 +282,7 @@ GitHub.sublime-settings
 
 # Pycharm files
 feature/.idea/*
+
+# pip deployment scripts
+code_counter.sh
+push-to-pip.sh
