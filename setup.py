@@ -41,5 +41,8 @@ setuptools.setup(
         "xgboost",
         "lightgbm",
         "catboost"
-    ]
+    ],
+    package_data={
+        'kts': ['VERSION'],
+    }
 )
