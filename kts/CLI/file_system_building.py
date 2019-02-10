@@ -2,6 +2,16 @@ import os
 import shutil
 
 
+def list_files(startpath):
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * level
+        print('{}{}/'.format(indent, os.path.basename(root)))
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            print('{}{}'.format(subindent, f))
+
+
 def check_existance(paths):
     """
     Checks necessity clearing the folder.
@@ -43,14 +53,36 @@ def build_file_system(force=False):
         if force:
             clear_all()
 
-        print('Do you want to clear existing file system? (y/n)')
+        list_files('./')
+        print('Do you want to clear existing kts file system? [y/N]')
         try:
             answer = str(input())
-            if answer == 'y':
+            if answer.lower() == 'y' or answer.lower() == 'yes':
                 clear_all()
         except Exception as e:
             raise TypeError('Invalid answer')
 
-    for path in paths:
-        if not os.path.isdir(path):
-            os.makedirs(path)
+    print('Do you want to build the file system? [y/N]')
+    try:
+        answer = str(input())
+        if answer.lower() == 'y' or answer.lower() == 'yes':
+            for path in paths:
+                if not os.path.isdir(path):
+                    os.makedirs(path)
+    except Exception as e:
+        raise TypeError('Invalid answer')
+
+
+def init_file_system():
+    paths = ['./input', './notebooks', './storage/info', './storage/sources']
+
+    print('Do you want to build kts file system? [y/N]')
+    try:
+        answer = str(input())
+        if answer.lower() == 'y' or answer.lower() == 'yes':
+            for path in paths:
+                if not os.path.isdir(path):
+                    os.makedirs(path)
+    except Exception as e:
+        raise TypeError('Invalid answer')
+
