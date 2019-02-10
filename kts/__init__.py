@@ -27,5 +27,5 @@ if True or not sys.argv[0]:
         'cli'
     ]
 
-    with open("VERSION", 'r') as f:
+    with open("version.py", 'r') as f:
         __version__ = f"0.0.{int(f.read().strip()) + 1}"

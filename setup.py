@@ -3,17 +3,17 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('kts/VERSION', 'r') as f:
+with open('kts/version.py', 'r') as f:
     VERSION = int(f.read().strip())
 
 VERSION += 1
 
-with open('kts/VERSION', 'w') as f:
+with open('kts/version.py', 'w') as f:
     f.write(str(VERSION))
 
 setuptools.setup(
     name="kts",
-    version=f"0.0.{VERSION}",
+    version=f"0.0.{version.py}",
     author="Nikita Konodyuk",
     author_email="konodyuk@gmail.com",
     description="Competition-oriented framework for interactive feature engineering and building pipelines",
