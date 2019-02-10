@@ -1,9 +1,9 @@
 import argparse
 import sys
-from .file_system import build_file_system
+from .file_system import build_file_system, check_file_system
 
 
-def main():
+def run():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="subcommand",
                                        title='subcommands',

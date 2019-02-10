@@ -27,7 +27,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     entry_points={
-        "console_scripts": ['kts = kts.cli:main']
+        "console_scripts": ['kts = kts.cli:run']
         },
     install_requires=[
         "mprop",
