@@ -13,7 +13,7 @@ with open('kts/version.py', 'w') as f:
 
 setuptools.setup(
     name="kts",
-    version=f"0.0.{version.py}",
+    version=f"0.0.{VERSION}",
     author="Nikita Konodyuk",
     author_email="konodyuk@gmail.com",
     description="Competition-oriented framework for interactive feature engineering and building pipelines",
