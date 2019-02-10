@@ -1,13 +1,13 @@
 import sys
 
-# from . import cli
+# from . import cl_util
 
 print(sys.argv)
 
 if True or not sys.argv[0]:
-    from . import cli
-    # from cli import check_file_system
-    cli.check_file_system()
+    from . import cl_util
+    # from cl_util import check_file_system
+    cl_util.check_file_system()
     from .feature.decorators import preview, register, deregister, dropper, selector
     from .feature.stl import *
     from .feature import stl
