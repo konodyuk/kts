@@ -26,6 +26,9 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    entry_points={
+        "console_scripts": ['kts = kts.CLI:main']
+        },
     install_requires=[
         "mprop",
         "pandas",

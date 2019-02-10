@@ -1,6 +1,6 @@
 import os
 import shutil
-
+from .. import config
 
 def list_files(startpath):
     for root, dirs, files in os.walk(startpath):
@@ -14,7 +14,7 @@ def list_files(startpath):
 
 def check_existance(paths):
     """
-    Checks necessity clearing the folder.
+    Checks necessity of clearing the folder.
     :param paths: list of directories
     :return: True if at least one directory exists, False otherwise
     """
@@ -22,6 +22,13 @@ def check_existance(paths):
         if os.path.isdir(path):
             return True
     return False
+
+
+def check_structure(paths):
+    for path in paths:
+        if not os.path.isdir(path):
+            return False
+    return True
 
 
 def clear_all():
@@ -47,7 +54,7 @@ def build_file_system(force=False):
     :param force: True or False (without confirmation or not)
     :return:
     """
-    paths = ['./input', './notebooks', './storage/info', './storage/sources']
+    paths = ['./input', './notebooks', './storage/info', './storage/sources', './output']
 
     if check_existance(paths):
         if force:
@@ -73,16 +80,11 @@ def build_file_system(force=False):
         raise TypeError('Invalid answer')
 
 
-def init_file_system():
-    paths = ['./input', './notebooks', './storage/info', './storage/sources']
+def check_file_system():
+    paths = ['../input', '../notebooks', '../storage/info', '../storage/sources', '../output']
 
-    print('Do you want to build kts file system? [y/N]')
-    try:
-        answer = str(input())
-        if answer.lower() == 'y' or answer.lower() == 'yes':
-            for path in paths:
-                if not os.path.isdir(path):
-                    os.makedirs(path)
-    except Exception as e:
-        raise TypeError('Invalid answer')
+    if check_structure(paths):
+        return
 
+    print("This directory doesn't look like kts project. Use `kts init` to initialize a project.")
+    raise ImportError("You can't use kts without its file system.")
