@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.insert(0, '.')
 
-if not sys.argv[0].endwith(os.path.split(__file__)[-1]):
+if not sys.argv[0].endswith(os.path.split(__file__)[-1]):
     from .cli import check_file_system
     check_file_system()
     from .feature.decorators import preview, register, deregister, dropper, selector
