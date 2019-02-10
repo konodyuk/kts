@@ -79,6 +79,11 @@ def build_file_system(force=False):
     except Exception as e:
         raise TypeError('Invalid answer')
 
+IMPORT_ERROR_MESSAGE = """
+This directory doesn't look like kts project.
+Use `kts init` to initialize a project. You can't use kts without its file system.
+This error could also be raised by importing kts from a directory of existing project other than /notebooks.
+"""
 
 def check_file_system():
     paths = ['../input', '../notebooks', '../storage/info', '../storage/sources', '../output']
@@ -86,5 +91,4 @@ def check_file_system():
     if check_structure(paths):
         return
 
-    print("This directory doesn't look like kts project. Use `kts init` to initialize a project.")
-    raise ImportError("You can't use kts without its file system.")
+    raise ImportError(IMPORT_ERROR_MESSAGE)
