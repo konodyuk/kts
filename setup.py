@@ -3,12 +3,12 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('kts/VERSION', 'r') as f:
+with open('VERSION', 'r') as f:
     VERSION = int(f.read().strip())
 
 VERSION += 1
 
-with open('kts/VERSION', 'w') as f:
+with open('VERSION', 'w') as f:
     f.write(str(VERSION))
 
 setuptools.setup(
@@ -41,8 +41,5 @@ setuptools.setup(
         "xgboost",
         "lightgbm",
         "catboost"
-    ],
-    package_data={
-        'kts': ['VERSION'],
-    }
+    ]
 )
