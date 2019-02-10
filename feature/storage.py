@@ -63,7 +63,7 @@ class FeatureSet:
         
     def __call__(self, df):
         ktdf = dataframe.DataFrame(df)
-        ktdf.encoders = self.df_input.encoders
+        ktdf.encoders = self.encoders
         return stl.merge([
             self.fc_before(ktdf),
             self.fc_after(ktdf)
@@ -122,7 +122,7 @@ class FeatureSlice:
         self.featureset = featureset
         self.slice = slice
         self.slice_id = cache_utils.get_hash_slice(slice)
-        self.first_level_encoders = self.featureset.df_input.encoders
+        self.first_level_encoders = self.featureset.encoders
         self.second_level_encoders = {}
         self.columns = None
         # self.df_input = copy(self.featureset.df_input)
@@ -167,9 +167,6 @@ class FeatureSlice:
 
     def compress(self):
         self.featureset = self.featureset.empty_copy()
-        # self.df_input = dataframe.DataFrame(None, False)
-        # self.df_input.compress()
-        self.df_input = None  # bug: df_input is used in line 129
 
     
 from collections import MutableSequence
