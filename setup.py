@@ -38,6 +38,7 @@ setuptools.setup(
         "xgboost",
         "lightgbm",
         "catboost",
+        "swifter",
         "kts-cli"
     ]
 )

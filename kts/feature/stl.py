@@ -58,6 +58,16 @@ def compose(funcs):
 # TODO: reimplement using sklearn.preprocessing.OHE
 def make_ohe(cols, sep='_ohe_'):
     def __make_ohe(df):
+        # encoder_name = '__ohe_' + '-'.join(cols)
+        # if df.train:
+        #     res = pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
+        #     df.encoders[encoder_name] = list(res.columns)
+        # else:
+        #     res = pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
+        #     for col in (set(res.columns) - set(df.encoders[encoder_name])):
+        #         res[col] = 0
+        #     return res[df.encoders[encoder_name]]
+
         return pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
 
     return FeatureConstructor(__make_ohe, cache_default=False)
@@ -89,3 +99,31 @@ def make_mean_encoding(cols, target_col, prefix='me_'):
         return res
 
     return FeatureConstructor(__make_mean_encoding, cache_default=False)
+
+
+import multiprocessing
+import swifter
+
+
+def apply(dataframe, function, **kwargs):
+    """
+    Applies function to dataframe faster.
+    If n_threads is in kwargs and is greater than 1, applies by multiprocessing.
+    :return: same as df.apply(function)
+    """
+    if 'n_threads' in kwargs:
+        n_threads = kwargs.pop('n_threads')
+    else:
+        n_threads = 1
+    if n_threads == 1:
+        return dataframe.swifter.apply(function, **kwargs)
+
+    def _apply_df(args):
+        df, func, num, kw = args
+        return num, df.swifter.apply(func, **kw)
+
+    pool = multiprocessing.Pool(processes=n_threads)
+    result = pool.map(_apply_df, [(d, function, i, kwargs) for i, d in enumerate(np.array_split(dataframe, n_threads))])
+    pool.close()
+    result = sorted(result, key=lambda x: x[0])
+    return pd.concat([i[1] for i in result])
