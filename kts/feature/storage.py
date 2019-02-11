@@ -29,12 +29,12 @@ class FeatureConstructor:
         name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
         if caching.cache.is_cached_df(name):
             # return caching.cache.load_df(name)
-            return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders)
+            return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders, ktdf.slice_id)
         else:
             result = self.function(ktdf)
             caching.cache.cache_df(result, name)
             # return result
-            return dataframe.DataFrame(result, ktdf.train, ktdf.encoders)
+            return dataframe.DataFrame(result, ktdf.train, ktdf.encoders, ktdf.slice_id)
 
     def __repr__(self):
         return f'<Feature Constructor "{self.__name__}">'
@@ -151,11 +151,11 @@ class FeatureSlice:
             self.columns = [i for i in result.columns if i != self.featureset.target_column]
             return result[self.columns]
         else:
-            fs_level_df = dataframe.DataFrame(df)
-            fs_level_df.encoders = self.first_level_encoders
-            fsl_level_df = dataframe.DataFrame(df)
-            fsl_level_df.encoders = self.second_level_encoders
-            fsl_level_df.slice_id = self.slice_id
+            fs_level_df = dataframe.DataFrame(df,
+                                              encoders=self.first_level_encoders)
+            fsl_level_df = dataframe.DataFrame(df,
+                                               encoders=self.second_level_encoders,
+                                               slice_id=self.slice_id)
             return stl.merge([
                 self.featureset.fc_before(fs_level_df),  # uses FeatureSet-level encoders
                 self.featureset.fc_after(fsl_level_df)  # uses FeatureSlice-level encoders
