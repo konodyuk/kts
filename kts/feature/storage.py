@@ -27,13 +27,16 @@ class FeatureConstructor:
             return self.function(ktdf, **kwargs)
 
         name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
+        name_metadata = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}_meta"
         if caching.cache.is_cached_df(name):
-            # return caching.cache.load_df(name)
+            cached_encoders = caching.cache.load_obj(name_metadata)
+            for key, value in cached_encoders:
+                ktdf.encoders[key] = value
             return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders, ktdf.slice_id)
         else:
             result = self.function(ktdf)
             caching.cache.cache_df(result, name)
-            # return result
+            caching.cache.cache_obj(ktdf.encoders, name_metadata)
             return dataframe.DataFrame(result, ktdf.train, ktdf.encoders, ktdf.slice_id)
 
     def __repr__(self):
