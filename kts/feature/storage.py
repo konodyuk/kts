@@ -151,7 +151,8 @@ class FeatureSlice:
                 self.featureset.df.iloc[df],
                 self.featureset.fc_after(fsl_level_df)
             ])
-            self.columns = [i for i in result.columns if i != self.featureset.target_column]
+            for column in set(self.columns) - set(result.columns):
+                result[column] = 0
             return result[self.columns]
         else:
             fs_level_df = dataframe.DataFrame(df,
@@ -159,10 +160,13 @@ class FeatureSlice:
             fsl_level_df = dataframe.DataFrame(df,
                                                encoders=self.second_level_encoders,
                                                slice_id=self.slice_id)
-            return stl.merge([
+            result = stl.merge([
                 self.featureset.fc_before(fs_level_df),  # uses FeatureSet-level encoders
                 self.featureset.fc_after(fsl_level_df)  # uses FeatureSlice-level encoders
-            ])[self.columns]
+            ])
+            for column in set(self.columns) - set(result.columns):
+                result[column] = 0
+            return result[self.columns]
 
     @property
     def target(self):
