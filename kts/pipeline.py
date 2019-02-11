@@ -8,7 +8,7 @@ class Pipeline(Model):
 
     def fit(self, **kwargs):
         tmp = self.featureslice()
-        self.model.fit(tmp.values, self.featureslice.target, **kwargs)
+        self.model.fit(tmp.values, self.featureslice.target.values, **kwargs)
 
     def predict(self, df, **kwargs):
         return self.model.predict(self.featureslice(df).values, **kwargs)
