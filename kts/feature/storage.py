@@ -30,7 +30,7 @@ class FeatureConstructor:
         name_metadata = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}_meta"
         if caching.cache.is_cached_df(name):
             cached_encoders = caching.cache.load_obj(name_metadata)
-            for key, value in cached_encoders:
+            for key, value in cached_encoders.items():
                 ktdf.encoders[key] = value
             return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders, ktdf.slice_id)
         else:
