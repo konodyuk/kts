@@ -27,6 +27,7 @@ class Validator:
             pl = Pipeline(c_model, featureset.slice(idx_train))
             pl.fit(**fit_params)
             pred = pl.predict(idx_test)
+            pl.featureslice.compress()
             oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
             weights[idx_test] += 1
             # print(featureset.target[idx_test].values[:10], pred[:10])
