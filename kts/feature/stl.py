@@ -83,7 +83,7 @@ def make_mean_encoding(cols, target_col, prefix='me_'):
                         encoding_value = enc[value]
                     else:
                         encoding_value = np.mean(list(enc.values()))
-                        print(f'Unknown value: {value}, inplacing with {encoding_value}')
+                        # print(f'Unknown value: {value}, inplacing with {encoding_value}')
                     idxs = (df[col] == value)
                     res.loc[idxs, prefix + col] = encoding_value
         return res
