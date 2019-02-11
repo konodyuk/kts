@@ -23,9 +23,9 @@ def clear_storage():
 
 
 def get_hash_df(df):
-    idx_hash = hashlib.sha256(train.index.values).hexdigest()
+    idx_hash = hashlib.sha256(df.index.values).hexdigest()
 
-    sorted_cols = train.columns.sort_values().values
+    sorted_cols = df.columns.sort_values().values
     col_hash = hashlib.sha256(sorted_cols).hexdigest()
 
     hash_first, hash_last = pd.util.hash_pandas_object(df.iloc[[0, -1]][sorted_cols]).values
