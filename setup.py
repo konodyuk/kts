@@ -16,7 +16,7 @@ setuptools.setup(
     version=f"0.0.{VERSION}",
     author="Nikita Konodyuk",
     author_email="konodyuk@gmail.com",
-    description="Competition-oriented framework for interactive feature engineering and building pipelines",
+    description="Competition-oriented framework for interactive feature engineering and building reproducible pipelines",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/konodyuk/kts",
@@ -26,9 +26,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    entry_points={
-        "console_scripts": ['kts = kts.cli:run']
-        },
     install_requires=[
         "mprop",
         "pandas",
@@ -40,6 +37,7 @@ setuptools.setup(
         "feather-format",
         "xgboost",
         "lightgbm",
-        "catboost"
+        "catboost",
+        "kts-cli"
     ]
 )
