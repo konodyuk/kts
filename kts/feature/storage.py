@@ -27,7 +27,7 @@ class FeatureConstructor:
             return self.function(ktdf, **kwargs)
 
         name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
-        name_metadata = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}_meta"
+        name_metadata = name + "_meta"
         if caching.cache.is_cached_df(name):
             if caching.cache.is_cached_obj(name_metadata):
                 cached_encoders = caching.cache.load_obj(name_metadata)
