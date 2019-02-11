@@ -29,14 +29,16 @@ class FeatureConstructor:
         name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
         name_metadata = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}_meta"
         if caching.cache.is_cached_df(name):
-            cached_encoders = caching.cache.load_obj(name_metadata)
-            for key, value in cached_encoders.items():
-                ktdf.encoders[key] = value
+            if caching.cache.is_cached_obj(name_metadata):
+                cached_encoders = caching.cache.load_obj(name_metadata)
+                for key, value in cached_encoders.items():
+                    ktdf.encoders[key] = value
             return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders, ktdf.slice_id)
         else:
             result = self.function(ktdf)
             caching.cache.cache_df(result, name)
-            caching.cache.cache_obj(ktdf.encoders, name_metadata)
+            if ktdf.encoders:
+                caching.cache.cache_obj(ktdf.encoders, name_metadata)
             return dataframe.DataFrame(result, ktdf.train, ktdf.encoders, ktdf.slice_id)
 
     def __repr__(self):
@@ -47,6 +49,7 @@ class FeatureConstructor:
 
 
 from . import stl
+
 
 class FeatureSet:
     def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, encoders={}):
@@ -63,7 +66,7 @@ class FeatureSet:
         self.df_input.train = True
         self.df_input.encoders = self.encoders
         self.df = self.fc_before(self.df_input)
-        
+
     def __call__(self, df):
         ktdf = dataframe.DataFrame(df)
         ktdf.encoders = self.encoders
@@ -71,18 +74,18 @@ class FeatureSet:
             self.fc_before(ktdf),
             self.fc_after(ktdf)
         ])
-        
+
     def __getitem__(self, idx):
         if isinstance(self.df_input, type(None)):
             raise AttributeError("Input DataFrame is not defined")
         return stl.merge([
-            self.df.iloc[idx], 
+            self.df.iloc[idx],
             self.fc_after(dataframe.DataFrame(self.df_input.iloc[idx], train=1))  # BUG: should have .train=True?
         ])                                                                        # made .train=1 only for preview purposes
                                                                                   # actually, FS[a:b] functionality is made only for debug
                                                                                   # why not write config.preview_call = 1 then?
     def empty_copy(self):
-        return FeatureSet(self.fc_before, 
+        return FeatureSet(self.fc_before,
                           self.fc_after,
                           target_column=self.target_column,
                           encoders=self.encoders
@@ -107,8 +110,8 @@ class FeatureSet:
                 if func_stored.__name__ in func.source and \
                 func_stored.__name__ not in [i.__name__ for i in used_funcs]:
                     used_funcs.append(func_stored)
-        src = '\n'.join([i.source for i in used_funcs[::-1]]) 
-        
+        src = '\n'.join([i.source for i in used_funcs[::-1]])
+
         src += '\n\n'
 #         src += inspect.getsource(type(self))
 #         src += '\n\n'
@@ -177,6 +180,7 @@ class FeatureSlice:
 
     
 from collections import MutableSequence
+
 
 class FeatureList(MutableSequence):
     def __init__(self):
