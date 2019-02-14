@@ -53,7 +53,12 @@ from . import stl
 
 class FeatureSet:
     def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, encoders={}):
-        self.fc_before = fc_before
+        if type(fc_before) == list:
+            self.fc_before = stl.concat(fc_before)
+        elif type(fc_before) == tuple:
+            self.fc_before = stl.compose(fc_before)
+        else:
+            self.fc_before = fc_before
         self.fc_after = fc_after
         self.target_column = target_column
         self.encoders = encoders
@@ -97,7 +102,7 @@ class FeatureSet:
     @property
     def target(self):
         if self.target_column:
-            return self.df_input[self.target_column]
+            return self.df_input[self.target_column].values
         else:
             raise AttributeError("Target column is not defined.")
 
