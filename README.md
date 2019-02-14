@@ -1,49 +1,32 @@
-## What is `kts` designed for
+# kts
 
-The framework is designed to help people during data science competitions. It has tools to make some steps of a competition workflow easier.
+`kts` is the first competition-oriented framework for interactive feature engineering and building reproducible pipelines.
 
 ## Getting started
 
-To install the package, just clone the repo to a directory included in `PYTHONPATH` or type `pip install kts` in the command line
-Before starting new project, create a directory for it, go to that directory and type `kts init`
+To get the latest version of the framework, you can either use `pip` or download the source code via `git clone`.
 
-## How it works
-
-First of all, you need to import the module:
-
-``` python
-import kts
-from kts import *
+``` sh
+$ pip3 install kts
+```
+or
+``` sh
+$ git clone github.com/konodyuk/kts.git
 ```
 
-Then you should define a function to make new features based on your input dataframe:
+The second option is better only if you want to download our example.
 
-``` python
-def make_new_features(df):
-    ...
+After installation you need to initialize you kts project:
+
+``` sh
+$ cd project/
+$ kts init
 ```
 
-To test it out, use `@preview(train)` decorator from `kts.feature.decorators` (`train` is your training dataset):
+We highly recommend that you use an empty folder for that, but if you want to use already downloaded data, make sure that it is stored in `project/input` and follow the instructions.
 
-``` python
-@preview(train)
-def make_new_features(df):
-    ...
-```
+## Example
 
-When you're sure that your function works fine, `@register` it:
+To get used to kts interface, run the example notebook. It contains a full data processing cycle with kts. Of course, the example is not comprehensive, so don't hesitate to ask [me](https://telegram.me/konodyuk) any questions. 
 
-``` python
-@register
-def make_new_features(df):
-    ...
-```
-
-Since registering source of the function is stored in `storage/features` and calls are cached unless `no_cache=True` is used.
-
-The function will also be contained in `kts.storage.features`. If you want to separate feature engineering from other steps of your pipeline, you can easily define all registered functions in a new notebook via 
-``` python
-kts.storage.features.define_in_scope(globals())
-```
-
-To learn more, read example notebook and source code. In the example there is a demonstration of the most of kts modules and features.
+Leave your bug reports in the issues.
