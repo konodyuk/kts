@@ -1,14 +1,11 @@
-# Kaggle Tool Set
+## What is `kts` designed for
 
-kts is a working title, highly likely it will be changed to avoid legal consequences. 
+The framework is designed to help people during data science competitions. It has tools to make some steps of a competition workflow easier.
 
 ## Getting started
 
-To install the package, just clone the repo to a directory included in `PYTHONPATH`.
-
-## What works by now
-
-- Base of feature engineering submodule
+To install the package, just clone the repo to a directory included in `PYTHONPATH` or type `pip install kts` in the command line
+Before starting new project, create a directory for it, go to that directory and type `kts init`
 
 ## How it works
 
@@ -26,10 +23,10 @@ def make_new_features(df):
     ...
 ```
 
-To test it out, use `@test` decorator from `kts` or `kts.feature`:
+To test it out, use `@preview(train)` decorator from `kts.feature.decorators` (`train` is your training dataset):
 
 ``` python
-@test
+@preview(train)
 def make_new_features(df):
     ...
 ```
@@ -44,9 +41,9 @@ def make_new_features(df):
 
 Since registering source of the function is stored in `storage/features` and calls are cached unless `no_cache=True` is used.
 
-The function will also be contained in `kts.storage.feature_constructors`. If you want to separate feature engineering from other steps of your pipeline, you can easily define all registered functions in a new notebook via 
+The function will also be contained in `kts.storage.features`. If you want to separate feature engineering from other steps of your pipeline, you can easily define all registered functions in a new notebook via 
 ``` python
-kts.storage.feature_constructors.define_in_scope(globals())
+kts.storage.features.define_in_scope(globals())
 ```
 
-To learn more, read source and example notebook.
+To learn more, read example notebook and source code. In the example there is a demonstration of the most of kts modules and features.
