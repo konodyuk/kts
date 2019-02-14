@@ -103,7 +103,7 @@ class FeatureSet:
     @property
     def target(self):
         if self.target_column:
-            return self.df_input[self.target_column].values
+            return self.df_input[self.target_column]
         else:
             raise AttributeError("Target column is not defined.")
 
