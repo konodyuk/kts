@@ -86,15 +86,16 @@ class FeatureSet:
         return stl.merge([
             self.df.iloc[idx],
             self.fc_after(dataframe.DataFrame(self.df_input.iloc[idx], train=1))  # BUG: should have .train=True?
-        ])                                                                        # made .train=1 only for preview purposes
-                                                                                  # actually, FS[a:b] functionality is made only for debug
-                                                                                  # why not write config.preview_call = 1 then?
+        ])  # made .train=1 only for preview purposes
+        # actually, FS[a:b] functionality is made only for debug
+        # why not write config.preview_call = 1 then?
+
     def empty_copy(self):
         return FeatureSet(self.fc_before,
                           self.fc_after,
                           target_column=self.target_column,
                           encoders=self.encoders
-                         )
+                          )
 
     def slice(self, idxs):
         return FeatureSlice(self, idxs)
@@ -106,26 +107,48 @@ class FeatureSet:
         else:
             raise AttributeError("Target column is not defined.")
 
+    def __get_src(self, fc):
+        if fc.__name__ == 'empty_like':
+            return 'empty_like'
+        if not isinstance(fc, FeatureConstructor):
+            return source_utils.get_source(fc)
+        if hasattr(fc, 'stl'):
+            return fc.source
+        else:
+            return fc.__name__
+
     @property
     def source(self):
-        raise NotImplementedError
-        used_funcs = (self.features_before + self.features_after)[::-1]
-        for func in used_funcs:
-            for func_stored in feature_list:
-                if func_stored.__name__ in func.source and \
-                func_stored.__name__ not in [i.__name__ for i in used_funcs]:
-                    used_funcs.append(func_stored)
-        src = '\n'.join([i.source for i in used_funcs[::-1]])
+        fl_sources = '\n'.join([feature.source for feature in feature_list])
 
-        src += '\n\n'
-#         src += inspect.getsource(type(self))
-#         src += '\n\n'
-        src += 'featureset = '
-        src += type(self).__name__ + '('
-        src += 'features_before=[' + ', '.join([i.__name__ for i in self.features_before]) + '], '
-        src += 'features_after=[' + ', '.join([i.__name__ for i in self.features_after]) + ']'
-        src += ')'
-        return src
+        fc_before_source = self.__get_src(self.fc_before)
+        fc_after_source = self.__get_src(self.fc_after)
+        fs_source = 'FeatureSet(\n\nfc_before=' + fc_before_source + ',\n\nfc_after=' + fc_after_source + '\n\n' \
+                    + 'targer_column=' + self.target_column + '\n\n)'
+
+        return fl_sources, fs_source
+        # raise NotImplementedError
+        # used_funcs = (self.features_before + self.features_after)[::-1]
+        # for func in used_funcs:
+        #     for func_stored in feature_list:
+        #         if func_stored.__name__ in func.source and \
+        #                 func_stored.__name__ not in [i.__name__ for i in used_funcs]:
+        #             used_funcs.append(func_stored)
+        # src = '\n'.join([i.source for i in used_funcs[::-1]])
+        #
+        # src += '\n\n'
+        # #         src += inspect.getsource(type(self))
+        # #         src += '\n\n'
+        # src += 'featureset = '
+        # src += type(self).__name__ + '('
+        # src += 'features_before=[' + ', '.join([i.__name__ for i in self.features_before]) + '], '
+        # src += 'features_after=[' + ', '.join([i.__name__ for i in self.features_after]) + ']'
+        # src += ')'
+        # return src
+        # src = 'Features before:\n' + self.fc_before.source + '\n' + 'Features after:\n'
+        # if isinstance(self.fc_after, FeatureConstructor):
+        #     src += self.fc_after.source
+        # return src
 
 
 class FeatureSlice:
@@ -140,7 +163,8 @@ class FeatureSlice:
 
     def __call__(self, df=None):
         if isinstance(df, type(None)):
-            fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[self.slice],  # ALERT: may face memory leak here
+            fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[self.slice],
+                                               # ALERT: may face memory leak here
                                                slice_id=self.slice_id,
                                                train=True,
                                                encoders=self.second_level_encoders)
@@ -183,7 +207,7 @@ class FeatureSlice:
     def compress(self):
         self.featureset = self.featureset.empty_copy()
 
-    
+
 from collections import MutableSequence
 
 

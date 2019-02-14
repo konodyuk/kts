@@ -7,7 +7,10 @@ from ..storage.dataframe import DataFrame as KTDF
 def empty_like(df):
     return df[[]].copy()
 
+
 identity = FeatureConstructor(lambda df: df, cache_default=False)
+identity.stl = True
+identity.source = "stl.identity"
 
 
 def merge(dfs):
