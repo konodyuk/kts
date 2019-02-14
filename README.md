@@ -4,7 +4,7 @@
 
 ## Getting started
 
-To get the latest version of the framework, you can either use `pip` or download the source code via `git clone`.
+To get the latest version of the framework, you can either use `pip` or download the source code via `git clone`:
 
 ``` sh
 $ pip3 install kts
@@ -16,14 +16,14 @@ $ git clone github.com/konodyuk/kts.git
 
 The second option is better only if you want to download our example.
 
-After installation you need to initialize you kts project:
+After installation you need to initialize your kts project:
 
 ``` sh
 $ cd project/
 $ kts init
 ```
 
-We highly recommend that you use an empty folder for that, but if you want to use already downloaded data, make sure that it is stored in `project/input` and follow the instructions.
+We highly recommend that you use an empty folder for that, but if you want to use already downloaded data, ensure that it is stored in `project/input` and follow the instructions.
 
 ## Example
 
