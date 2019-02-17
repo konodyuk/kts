@@ -63,15 +63,15 @@ class Cache:
         """
         if self.is_cached_df(name):
             return
-        if cache_utils.get_df_volume(df) > info.memory_limit:
-            raise MemoryError
+        # if cache_utils.get_df_volume(df) > info.memory_limit:
+        #     raise MemoryError
 
         dict_name = name + '_df'
-        self.__release_volume(df)
+        # self.__release_volume(df)
         cache_utils.save_df(df, cache_utils.get_path_df(name))
-        self.memory[dict_name] = df
-        self.current_volume += cache_utils.get_df_volume(df)
-        self.last_used[dict_name] = datetime.datetime.now()
+        # self.memory[dict_name] = df
+        # self.current_volume += cache_utils.get_df_volume(df)
+        # self.last_used[dict_name] = datetime.datetime.now()
 
     def load_df(self, name):
         """
@@ -83,14 +83,14 @@ class Cache:
             raise KeyError("No such df in cache")
 
         dict_name = name + '_df'
-        self.last_used[dict_name] = datetime.datetime.now()
+        # self.last_used[dict_name] = datetime.datetime.now()
         if dict_name in self.memory:
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
-            self.__release_volume(tmp)
-            self.memory[dict_name] = tmp
-            self.current_volume += cache_utils.get_df_volume(tmp)
+            # self.__release_volume(tmp)
+            # self.memory[dict_name] = tmp
+            # self.current_volume += cache_utils.get_df_volume(tmp)
             return tmp
 
     @staticmethod
@@ -122,7 +122,7 @@ class Cache:
             return
 
         dict_name = name + '_obj'
-        self.memory[dict_name] = obj
+        # self.memory[dict_name] = obj
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
@@ -139,7 +139,7 @@ class Cache:
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
-            self.memory[dict_name] = tmp
+            # self.memory[dict_name] = tmp
             return tmp
 
     @staticmethod
