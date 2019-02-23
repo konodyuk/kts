@@ -27,7 +27,7 @@ def preview(df, sizes=(2, 4, 6)):
             #     ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
             # else:
             #     ktdf = dataframe.DataFrame(df.head(sz), True, {})
-            ktdf = dataframe.DataFrame(df.head(sz), True, {})  # not a bug, but a feature: here we use KTDF's property that its methods return pd.DataFrames
+            ktdf = dataframe.DataFrame(df.head(sz), True, {})
             display(function(ktdf))
         config.preview_call = 0
 
@@ -47,14 +47,16 @@ def register(*args, cache_default=True):
     """
 
     def __register(func):
-        if source_utils.source_is_saved(func) and not source_utils.matches_cache(func):
+        # if source_utils.source_is_saved(func) and not source_utils.matches_cache(func):
+        if func.__name__ + '_fc' in cache.cached_objs() and source_utils.get_source(func) != cache.load_obj(func.__name__ + '_fc').source:
             raise NameError("A function with the same name is already registered")
 
-        functor = FeatureConstructor(func, cache_default)
-        if not source_utils.source_is_saved(func):
+        if func.__name__ + '_fc' in cache.cached_objs():
+            return cache.load_obj(func.__name__ + '_fc')
+        else:
+            functor = FeatureConstructor(func, cache_default)
             cache.cache_obj(functor, functor.__name__ + '_fc')
-            source_utils.save_source(func)
-        return functor
+            return functor
 
     if args:
         function = args[0]
@@ -66,28 +68,13 @@ def register(*args, cache_default=True):
 def deregister(name, force=False):
     """
     Deletes sources and cached calls of a certain function.
-    The interface is too rich now:
+    Usage:
 
     ``` python
-    @deregister
-    def make_new_features(df):
-        ...
-
-    @deregister(force=False)
-    def make_new_features(df):
-        ...
-
-    deregister('make_new_features', force=False)
-
-    @deregister(force=True)
-    def make_new_features(df):
-        ...
+    deregister('make_new_features')
 
     deregister('make_new_features', force=True)
     ```
-
-    It's highly recommended to use only `deregister('function_name')` interface.
-    Other ones are deprecated.
     """
     confirmation = ''
     if not force:
@@ -98,12 +85,13 @@ def deregister(name, force=False):
         print("Doesn't match")
         return
 
-    paths = glob(config.storage_path + name + '_fc_obj') + \
-            glob(config.storage_path + name + '__[0-9a-f][0-9a-f][0-9a-f][0-9a-f]__[0-9a-f][0-9a-f][0-9a-f][0-9a-f]_df') + \
-            glob(config.source_path + name + '.py')
-    for path in paths:
-        print(f'removing {path}')
-        os.remove(path)
+    fc_name = name + '_fc'
+    print(f'removing {fc_name}')
+    cache.remove_obj(fc_name)
+    df_names = [df_name for df_name in cache.cached_dfs() if df_name.startswith(name + '__')]
+    for df_name in df_names:
+        print(f'removing {df_name}')
+        cache.remove_df(df_name)
 
 
 def dropper(function):
