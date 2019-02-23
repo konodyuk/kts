@@ -101,6 +101,7 @@ class Cache:
         """
         dict_name = name + '_df'
         if dict_name in self.memory:
+            self.current_volume -= cache_utils.get_df_volume(self.memory[dict_name])
             self.memory.pop(dict_name)
         if dict_name in self.last_used:
             self.last_used.pop(dict_name)
