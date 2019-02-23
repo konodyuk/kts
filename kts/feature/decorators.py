@@ -86,8 +86,9 @@ def deregister(name, force=False):
         return
 
     fc_name = name + '_fc'
-    print(f'removing {fc_name}')
-    cache.remove_obj(fc_name)
+    if fc_name in cache.cached_objs():
+        print(f'removing {fc_name}')
+        cache.remove_obj(fc_name)
     df_names = [df_name for df_name in cache.cached_dfs() if df_name.startswith(name + '__')]
     for df_name in df_names:
         print(f'removing {df_name}')
