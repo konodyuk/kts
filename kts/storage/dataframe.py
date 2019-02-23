@@ -69,7 +69,10 @@ class DataFrame(SubDF):
         if key in ['train', 'encoders', 'df', 'slice_id']:
             super().__setattr__(key, value)
         else:
-            self.df.__setattr__(key, value)
+            try:
+                self.df.__setattr__(key, value)
+            except:
+                pass
 
     def __setitem__(self, key, value):
         self.df.__setitem__(key, value)
