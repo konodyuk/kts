@@ -217,17 +217,18 @@ class FeatureList(MutableSequence):
         self.names = [self.full_name]
         while self.names[-1].count('.'):
             self.names.append(self.names[-1][self.names[-1].find('.') + 1:])
+        self.names.append('kts.features')
+        while self.names[-1].count('.'):
+            self.names.append(self.names[-1][self.names[-1].find('.') + 1:])
         self.functors = []
         self.name_to_idx = dict()
 
     def recalc(self):
         self.functors = []
         self.name_to_idx = dict()
-        files = glob.glob(config.storage_path + '*_fc_obj')
-        files.sort(key=os.path.getmtime)
-        files = [file.split('/')[-1] for file in files]
-        for idx, file in enumerate(files):
-            functor = caching.cache.load_obj(file[:-4])
+        names = [obj for obj in caching.cache.cached_objs() if obj.endswith('_fc')]
+        for idx, name in enumerate(names):
+            functor = caching.cache.load_obj(name)
             self.functors.append(functor)
             self.name_to_idx[functor.__name__] = idx
 
