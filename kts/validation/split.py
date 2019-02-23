@@ -2,7 +2,7 @@ from .. import config
 import numpy as np
 
 class BaseSplitter:
-    def __init__(self, y, n_folds, seed):
+    def __init__(self, y, n_folds=5, seed=config.seed):
         self.y = y
         self.n_folds = n_folds
         self.seed = seed
@@ -83,11 +83,14 @@ class Holdout(BaseSplitter):
         return 1
 
 
-from sklearn.model_selection import LeaveOneOut as LOO
-class LeaveOneOut(BaseSplitter):
+# BUG: when using LOO split, we should score the final OOF-preds, but our current Validator will score
+# each "1-sample-fold" separately using given metric instead of aggregating the predictions and scoring them all at once
+# A possible solution is to set a flag "score_oofs=True" for LOO split and check it inside of Validator
+from sklearn.model_selection import LeaveOneOut
+class LOO(BaseSplitter):
     def __init__(self):
         pass
 
     def _split(self):
-        for idx_train, idx_test in LOO().split(np.zeros(len(self.y)), self.y):
+        for idx_train, idx_test in LeaveOneOut().split(np.zeros(len(self.y)), self.y):
             yield {'train': idx_train, 'test': idx_test}
