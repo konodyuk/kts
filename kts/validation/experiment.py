@@ -30,11 +30,10 @@ class ExperimentList(MutableSequence):
     def recalc(self):
         self.experiments = []
         self.name_to_idx = dict()
-        files = glob.glob(config.storage_path + '*_exp_obj')
-        files = [file.split('/')[-1] for file in files]
-        for idx, file in enumerate(files):
-            # print(idx, file)
-            experiment = cache.load_obj(file[:-4])
+        names = [obj for obj in cache.cached_objs() if obj.endswith('_exp')]
+        for idx, name in enumerate(names):
+            # print(idx, name)
+            experiment = cache.load_obj(name)
             self.experiments.append(experiment)
             self.name_to_idx[experiment.__name__] = idx
         self.experiments.sort(key=lambda e: e.score, reverse=True)
