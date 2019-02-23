@@ -63,35 +63,49 @@ class Cache:
         """
         if self.is_cached_df(name):
             return
-        # if cache_utils.get_df_volume(df) > info.memory_limit:
-        #     raise MemoryError
+        if cache_utils.get_df_volume(df) > info.memory_limit:
+            raise MemoryError
 
         dict_name = name + '_df'
-        # self.__release_volume(df)
+        self.__release_volume(df)
         cache_utils.save_df(df, cache_utils.get_path_df(name))
-        # self.memory[dict_name] = df
-        # self.current_volume += cache_utils.get_df_volume(df)
-        # self.last_used[dict_name] = datetime.datetime.now()
+        self.memory[dict_name] = df
+        self.current_volume += cache_utils.get_df_volume(df)
+        self.last_used[dict_name] = datetime.datetime.now()
 
     def load_df(self, name):
         """
         Loads dataframe from cache
-        :param name: name of object
+        :param name: name of df
         :return: dataframe with given name
         """
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
 
         dict_name = name + '_df'
-        # self.last_used[dict_name] = datetime.datetime.now()
+        self.last_used[dict_name] = datetime.datetime.now()
         if dict_name in self.memory:
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
-            # self.__release_volume(tmp)
-            # self.memory[dict_name] = tmp
-            # self.current_volume += cache_utils.get_df_volume(tmp)
+            self.__release_volume(tmp)
+            self.memory[dict_name] = tmp
+            self.current_volume += cache_utils.get_df_volume(tmp)
             return tmp
+
+    def remove_df(self, name):
+        """
+        Removes dataframe from cache
+        :param name: name of df
+        :return:
+        """
+        dict_name = name + '_df'
+        if dict_name in self.memory:
+            self.memory.pop(dict_name)
+        if dict_name in self.last_used:
+            self.last_used.pop(dict_name)
+        if os.path.exists(cache_utils.get_path_df(name)):
+            os.remove(cache_utils.get_path_df(name))
 
     @staticmethod
     def cached_dfs():
@@ -100,13 +114,14 @@ class Cache:
         :return:
         """
         return [df.split('/')[-1][:-3] for df in
-                glob(config.storage_path + '*' + '_df')]
+                sorted(glob(config.storage_path + '*' + '_df'), key=os.path.getmtime)]
+
 
     def is_cached_obj(self, name):
         """
         Checks whether obj is in cache
         :param name: name of file
-        :return: True or False (chache hit or miss)
+        :return: True or False (cache hit or miss)
         """
         dict_name = name + '_obj'
         return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
@@ -122,7 +137,7 @@ class Cache:
             return
 
         dict_name = name + '_obj'
-        # self.memory[dict_name] = obj
+        self.memory[dict_name] = obj
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
@@ -139,8 +154,22 @@ class Cache:
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
-            # self.memory[dict_name] = tmp
+            self.memory[dict_name] = tmp
             return tmp
+
+    def remove_obj(self, name):
+        """
+        Removes object from cache
+        :param name: name of object
+        :return:
+        """
+        dict_name = name + '_obj'
+        if dict_name in self.memory:
+            self.memory.pop(dict_name)
+        if dict_name in self.last_used:
+            self.last_used.pop(dict_name)
+        if os.path.exists(cache_utils.get_path_obj(name)):
+            os.remove(cache_utils.get_path_obj(name))
 
     @staticmethod
     def cached_objs():
@@ -149,7 +178,7 @@ class Cache:
         :return:
         """
         return [df.split('/')[-1][:-4] for df in
-                glob(config.storage_path + '*' + '_obj')]
+                sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
 
 
 cache = Cache()
