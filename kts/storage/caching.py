@@ -8,7 +8,7 @@ from .info import info
 
 class Cache:
     """
-    Standard interface for lru caching DataFrames and objects
+    LRU cache for DataFrames and objects
     """
 
     def __init__(self):
@@ -23,8 +23,8 @@ class Cache:
     @staticmethod
     def set_memory_limit(volume):
         """
-        Sets new memory limit in bytes
-        :param volume: new memory volume limit
+        Sets a new memory limit in bytes
+        :param volume: new memory limit
         :return:
         """
         info.memory_limit = volume
@@ -47,8 +47,8 @@ class Cache:
 
     def is_cached_df(self, name):
         """
-        Checks whether df is in cache
-        :param name: name of frame
+        Checks whether given df is cached
+        :param name: name of dataframe
         :return: True or False (cache hit or miss)
         """
         dict_name = name + '_df'
@@ -57,8 +57,8 @@ class Cache:
     def cache_df(self, df, name):
         """
         Caches dataframe with given name
-        :param df: object
-        :param name: object name
+        :param df: df
+        :param name: df name
         :return:
         """
         if self.is_cached_df(name):
@@ -77,7 +77,7 @@ class Cache:
         """
         Loads dataframe from cache
         :param name: name of df
-        :return: dataframe with given name
+        :return:
         """
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
@@ -120,8 +120,8 @@ class Cache:
 
     def is_cached_obj(self, name):
         """
-        Checks whether obj is in cache
-        :param name: name of file
+        Checks whether object is in cache
+        :param name: name of object
         :return: True or False (cache hit or miss)
         """
         dict_name = name + '_obj'
@@ -145,7 +145,7 @@ class Cache:
         """
         Loads object from cache
         :param name: name of object
-        :return: object with given name
+        :return:
         """
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
@@ -175,7 +175,7 @@ class Cache:
     @staticmethod
     def cached_objs():
         """
-        Returns list of cached
+        Returns list of cached objects
         :return:
         """
         return [df.split('/')[-1][:-4] for df in
