@@ -1,5 +1,6 @@
 import numpy as np
-
+from hashlib import sha256
+import json
 
 class Model:
     Estimator = None
@@ -14,7 +15,7 @@ class Model:
         self.is_fit = 0
 
     def reset_name(self):
-        self.__name__ = f"{self.short_name}_{hex(hash(frozenset(self.params.items())))[-2:] if self.params else 'default'}"
+        self.__name__ = f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
 
     def fit(self, X, y, **fit_params):
         if self.is_fit:
