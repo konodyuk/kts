@@ -64,7 +64,15 @@ def save_df(df, path):
         index_name = f'{config.index_prefix}{df.index.name}'
         df[index_name] = df.index.values
         df.reset_index(drop=True, inplace=True)
-    feather.write_dataframe(df, path)
+    try:
+        feather.write_dataframe(df, path)
+    except Exception as e:
+        print(e)
+        try:
+            df.to_parquet(path)
+        except Exception as e1:
+            print(e1)
+            df.to_pickle(path)
     if not_trivial_index:
         df.set_index(index_name, inplace=True)
         df.index.name = df.index.name[len(config.index_prefix):]
@@ -75,10 +83,14 @@ def load_df(path):
     Loads a dataframe from feather format and sets as index that additional
     column added with saving by save_df. Restores original name of index column.
     """
-    # print('loading df', path)
-    tmp = feather.read_dataframe(path, use_threads=True)
+    try:
+        tmp = feather.read_dataframe(path, use_threads=True)
+    except:
+        try:
+            tmp = pd.read_parquet(path)
+        except:
+            tmp = pd.read_pickle(path)
     index_col = tmp.columns[tmp.columns.str.contains(config.index_prefix)]
-    # print(index_col)
     if any(index_col):
         tmp.set_index(index_col.values[0], inplace=True)
         tmp.index.name = tmp.index.name[len(config.index_prefix):]
