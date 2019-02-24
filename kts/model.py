@@ -29,9 +29,6 @@ class Model:
 
     def predict(self, X, **predict_params):
         return self.estimator.predict(X, **predict_params)
-
-    def __getattr__(self, key):
-        return getattr(self.estimator, key)
     
     def __mul__(self, x):
         return WeightedModel(self, x)
