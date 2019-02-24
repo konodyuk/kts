@@ -1,82 +1,37 @@
-class Model:
-    search_spaces = {}
-    system_params = {}
-    system_fit_params = {}
-    Estimator = None
-    short_name = 'model'
-    
-    def __init__(self, params=None, n_jobs=-1, verbosity=False):
-        """
-        :param params: model hyperparameters
-        :param n_jobs: number of threads to use
-        :param verbosity: True or False (print logs or not)
-        """
-        self.is_fit = 0
-        self.params = params
-        self.n_jobs = n_jobs
-        self.verbosity = verbosity
-        if self.params:
-            self.estimator = type(self).Estimator(**self.params, **type(self).system_params)
-        else:
-            self.estimator = type(self).Estimator(**type(self).system_params)
-        self.reset_name()
-        
-    def reset_name(self):
-        """
-        Changes name according to current parameters.
-        :return:
-        """
-        self.__name__ = f"{type(self).short_name}_{hex(hash(frozenset(self.params.items())))[-2:] if self.params else 'default'}"
-        
-    def fit(self, X, y, **kwargs):
-        """
-        Fit model. You can call this method only once
-        :param X: data matrix
-        :param y: target
-        :param kwargs: additional params to be used for model fitting
-        :return:
-        """
-        if self.is_fit:
-            raise UserWarning(f"This {type(self).__name__} is already fit.\nUse .warm_fit() to fit it from current state.")
-        fit_params = {}
-        for param in type(self).system_fit_params:
-            if param in kwargs:
-                fit_params[param] = kwargs[param]
-            else:
-                fit_params[param] = type(self).system_fit_params[param]
-        self._fit(X, y, **fit_params)
-        self.is_fit = True
+import numpy as np
 
-    def _fit(self, X, y, **kwargs):
-        """
-        This method is one of which you need to override to define a custom model.
-        :param X: data matrix
-        :param y: target values
-        :param kwargs: additional params
-        :return:
-        """
-        self.estimator.fit(X, y, **kwargs)
-        
-    def __setattr__(self, name, value):
-        if name == 'params':
-            if self.is_fit:
-                raise UserWarning(f"Can't change params of trained model")
-            else:
-                super().__setattr__(name, value)
-                if not self.params:
-                    return
-                self.estimator = type(self).Estimator(**self.params, **type(self).system_params)
-                self.reset_name()
-        else:
-            super().__setattr__(name, value)
-        
-    def predict(self, X):
-        """
-        Standard prediction method.
-        :param X: data matrix
-        :return:
-        """
-        return self.estimator.predict(X)
+
+class Model:
+    Estimator = None
+    tracked_params = []
+    fit_params = dict()
+    short_name = 'model'
+
+    def __init__(self, *args, **kwargs):
+        self.estimator = self.Estimator(*args, **kwargs)
+        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params}
+        self.reset_name()
+        self.is_fit = 0
+
+    def reset_name(self):
+        self.__name__ = f"{self.short_name}_{hex(hash(frozenset(self.params.items())))[-2:] if self.params else 'default'}"
+
+    def fit(self, X, y, **fit_params):
+        if self.is_fit:
+            raise UserWarning(
+                f"This {type(self).__name__} is already fit.\nUse .warm_fit() to fit it from current state.")
+        print((set(fit_params.keys()) | set(type(self).fit_params.keys())))
+        self.estimator.fit(X, y, **{key: fit_params[key]
+                                    if key in fit_params
+                                    else type(self).fit_params[key]
+                                    for key in (set(fit_params.keys()) | set(type(self).fit_params.keys()))})
+        self.is_fit = 1
+
+    def predict(self, X, **predict_params):
+        return self.estimator.predict(X, **predict_params)
+
+    def __getattr__(self, key):
+        return getattr(self.estimator, key)
     
     def __mul__(self, x):
         return WeightedModel(self, x)
@@ -148,12 +103,12 @@ class Ensemble(Model): # AddNode
             return model, 1
         
         self.models = list(set([__get_model_coeff(model)[0] for model in _models]))
-        _coeffs = [0 for i in range(len(self.models))]
+        _coeffs = np.zeros(len(self.models))
         for i in range(len(self.models)):
             for model in _models:
                 if __get_model_coeff(self.models[i])[0] == __get_model_coeff(model)[0]:
                     _coeffs[i] += __get_model_coeff(model)[1]
-        
+        _coeffs /= _coeffs.sum()
         self.models = [WeightedModel(model, coeff) for model, coeff in zip(self.models, _coeffs)]
                     
         self.__name__ = ' + '.join([model.__name__ for model in self.models])
@@ -175,3 +130,26 @@ class Ensemble(Model): # AddNode
     def __truediv__(self, x):
         assert x != 0
         return Ensemble([model / x for model in self.models])
+
+
+class CustomModel(Model):
+    tracked_params = []
+    fit_params = dict()
+    short_name = 'model'
+
+    def __init__(self, model, tracked_params=[], fit_params=dict(), short_name=None):
+        self.estimator = model
+        self.short_name = (short_name if short_name is not None else self.get_short_name(model))
+        self.tracked_params = tracked_params
+        self.fit_params = fit_params
+        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params}
+        self.reset_name()
+        self.is_fit = 0
+
+    @staticmethod
+    def get_short_name(instance):
+        return instance.__class__.__name__.lower().replace('classifier', '_clf').replace('regressor', '_rg')
+
+
+def model(model, tracked_params=[], short_name=None, fit_params={}):
+    return CustomModel(model, tracked_params, fit_params, short_name)
