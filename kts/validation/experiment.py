@@ -1,4 +1,4 @@
-from ..model import Model
+from ..modelling import Model
 from ..storage import cache
 from .. import config
 import glob

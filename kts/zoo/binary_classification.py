@@ -1,4 +1,4 @@
-from ..model import *
+from ..modelling import *
 from .. import config
 
 from xgboost import XGBClassifier as _XGBC

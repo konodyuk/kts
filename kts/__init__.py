@@ -10,4 +10,4 @@ from .feature import stl
 from .feature.storage import feature_list as features
 from .feature.storage import FeatureSet
 from .validation.experiment import experiment_list as experiments
-from .model import model
+from .modelling import model

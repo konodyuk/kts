@@ -1,4 +1,4 @@
-from .model import Model
+from .modelling import Model
 
 class Pipeline(Model):
     def __init__(self, model, featureslice):
