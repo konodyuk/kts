@@ -87,7 +87,7 @@ def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
     def __target_encode_list(df):
         res = empty_like(df)
         for col in cols:
-            if df_train:
+            if df.train:
                 enc = (pd.DataFrame(df[col].tolist(), index=df[target_col])
                        .stack()
                        .reset_index(name=col)
