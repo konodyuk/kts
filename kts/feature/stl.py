@@ -89,16 +89,17 @@ def target_encoding(cols, target_col, aggregation='mean', prefix='me_'):
 def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
     def __target_encode_list(df):
         res = empty_like(df)
+        filler = [np.nan]
         for col in cols:
             if df.train:
-                enc = (pd.DataFrame(df[col].tolist(), index=df[target_col])
+                enc = (pd.DataFrame([i if type(i) == list else [i] for i in df[col].tolist()], index=df[target_col])
                        .stack()
                        .reset_index(name=col)
                        [[col, target_col]]).groupby(col).agg(aggregation)
                 df.encoders['__me_list_' + col] = enc
             else:
                 enc = df.encoders['__me_list_' + col]
-            res[prefix + col] = df[col].apply(lambda x: [i[0] for i in enc.loc[x].values])
+            res[prefix + col] = df[col].apply(lambda x: [i[0] for i in enc.loc[x].values] if type(x) == list else filler)
         return res
 
     return FeatureConstructor(__target_encode_list, cache_default=False)
