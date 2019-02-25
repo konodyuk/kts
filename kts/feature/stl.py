@@ -99,7 +99,7 @@ def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
                 df.encoders['__me_list_' + col] = enc
             else:
                 enc = df.encoders['__me_list_' + col]
-            res[prefix + col] = df[col].apply(lambda x: [i[0] for i in enc.loc[x].values] if type(x) == list else filler)
+            res[prefix + col] = df[col].apply(lambda x: enc.loc[filter(lambda i: i in enc.index, x)].values.flatten() if type(x) == list else filler)
         return res
 
     return FeatureConstructor(__target_encode_list, cache_default=False)
