@@ -61,47 +61,44 @@ def compose(funcs):
 # TODO: reimplement using sklearn.preprocessing.OHE
 def make_ohe(cols, sep='_ohe_'):
     def __make_ohe(df):
-        # encoder_name = '__ohe_' + '-'.join(cols)
-        # if df.train:
-        #     res = pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
-        #     df.encoders[encoder_name] = list(res.columns)
-        # else:
-        #     res = pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
-        #     for col in (set(res.columns) - set(df.encoders[encoder_name])):
-        #         res[col] = 0
-        #     return res[df.encoders[encoder_name]]
-
         return pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
 
     return FeatureConstructor(__make_ohe, cache_default=False)
 
 
-def make_mean_encoding(cols, target_col, prefix='me_'):
-    def __make_mean_encoding(df):
-        # print("ME call: ", type(df))
-        # print(df.train)
+def target_encoding(cols, target_col, aggregation='mean', prefix='me_'):
+    def __target_encoding(df):
         res = empty_like(df)
+        if not cols:
+            cols = get_categorical(df)
         for col in cols:
-            res[prefix + col] = 0
             if df.train:
-                enc = dict()
-                for value in set(df[col]):
-                    idxs = (df[col] == value)
-                    enc[value] = res.loc[idxs, prefix + col] = df[idxs][target_col].mean()
+                enc = df.groupby(col)[target_col].agg(aggregation)
                 df.encoders['__me_' + col] = enc
             else:
                 enc = df.encoders['__me_' + col]
-                for value in set(df[col]):
-                    if value in enc.keys():
-                        encoding_value = enc[value]
-                    else:
-                        encoding_value = np.mean(list(enc.values()))
-                        # print(f'Unknown value: {value}, inplacing with {encoding_value}')
-                    idxs = (df[col] == value)
-                    res.loc[idxs, prefix + col] = encoding_value
+            res[prefix + col] = df[col].map(enc)
         return res
 
-    return FeatureConstructor(__make_mean_encoding, cache_default=False)
+    return FeatureConstructor(__target_encoding, cache_default=False)
+
+
+def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
+    def __target_encode_list(df):
+        res = empty_like(df)
+        for col in cols:
+            if df_train:
+                enc = (pd.DataFrame(df[col].tolist(), index=df[target_col])
+                       .stack()
+                       .reset_index(name=col)
+                       [[col, target_col]]).groupby(col).agg(aggregation)
+                df.encoders['__me_list_' + col] = enc
+            else:
+                enc = df.encoders['__me_list_' + col]
+            res[prefix + col] = df[col].apply(lambda x: [i[0] for i in enc.loc[x].values])
+        return res
+
+    return FeatureConstructor(__target_encode_list, cache_default=False)
 
 
 import multiprocessing
@@ -130,3 +127,21 @@ def apply(dataframe, function, **kwargs):
     pool.close()
     result = sorted(result, key=lambda x: x[0])
     return pd.concat([i[1] for i in result])
+
+
+def get_categorical(df):
+    if df.train:
+        cat_features = [col for col in df.columns if df[col].dtype == object]
+        df.encoders['__cat_features'] = cat_features
+    else:
+        cat_features = df.encoders['__cat_features']
+    return cat_features
+
+
+def get_numeric(df):
+    if df.train:
+        num_features = [col for col in df.columns if df[col].dtype != object]
+        df.encoders['__num_features'] = num_features
+    else:
+        num_features = df.encoders['__num_features']
+    return num_features
