@@ -87,4 +87,4 @@ class DataFrame(SubDF):
 
 def link(df, ktdf):
     assert isinstance(ktdf, DataFrame), 'Second dataframe should be of type KTDF, not pd.DF'
-    df = DataFrame(df, train=ktdf.train, encoders=ktdf.encoders, slice_id=ktdf.slice_id)
+    return DataFrame(df, train=ktdf.train, encoders=ktdf.encoders, slice_id=ktdf.slice_id)
