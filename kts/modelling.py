@@ -18,6 +18,10 @@ class Model:
         self.__name__ = f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
 
     def fit(self, X, y, **fit_params):
+        try:
+            X, y = self.preprocess(X, y)
+        except:
+            pass
         if self.is_fit:
             raise UserWarning(
                 f"This {type(self).__name__} is already fit.\nUse .warm_fit() to fit it from current state.")
@@ -29,30 +33,30 @@ class Model:
 
     def predict(self, X, **predict_params):
         return self.estimator.predict(X, **predict_params)
-    
+
     def __mul__(self, x):
         return WeightedModel(self, x)
-    
+
     def __rmul__(self, x):
         return self * x
-    
+
     def __truediv__(self, x):
         assert x != 0
         return WeightedModel(self, 1. / x)
-    
+
     def __add__(self, other):
         # assert type(self).__base__ == type(other).__base__, \
         # f"Can't add {type(other).__name__} to {type(self).__name__}."
         if other == 0:
             return self
         return Ensemble([self, other])
-    
+
     def __radd__(self, other):
         return self + other
-        
+
     def __repr__(self):
         return self.__name__
-        
+
 
 class WeightedModel(Model): # MulNode
     """
@@ -77,7 +81,7 @@ class WeightedModel(Model): # MulNode
         :return:
         """
         return self.coeff * self.model.predict(X)
-    
+
 
 class Ensemble(Model): # AddNode
     """
@@ -100,7 +104,7 @@ class Ensemble(Model): # AddNode
             if isinstance(model, WeightedModel):
                 return model.model, model.coeff
             return model, 1
-        
+
         self.models = list(set([__get_model_coeff(model)[0] for model in _models]))
         _coeffs = np.zeros(len(self.models))
         for i in range(len(self.models)):
@@ -112,7 +116,7 @@ class Ensemble(Model): # AddNode
         self.norm_coeff = _coeffs.sum()
         _coeffs /= self.norm_coeff
         self.__name__ = ' + '.join([(model / self.norm_coeff).__name__ for model in self.models])
-        
+
     def predict(self, X):
         """
         Standard prediction method.
@@ -123,10 +127,10 @@ class Ensemble(Model): # AddNode
         for model in self.models:
             res += model.predict(X)
         return res / self.norm_coeff
-    
+
     def __mul__(self, x):
         return Ensemble([model * x for model in self.models])
-    
+
     def __truediv__(self, x):
         assert x != 0
         return Ensemble([model / x for model in self.models])
