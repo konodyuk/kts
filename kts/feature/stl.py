@@ -72,8 +72,6 @@ def make_ohe(cols, sep='_ohe_'):
 def target_encoding(cols, target_col, aggregation='mean', prefix='me_'):
     def __target_encoding(df):
         res = empty_like(df)
-        if not cols:
-            cols = get_categorical(df)
         for col in cols:
             if df.train:
                 enc = df.groupby(col)[target_col].agg(aggregation)
@@ -149,3 +147,33 @@ def get_numeric(df):
     else:
         num_features = df.encoders['__num_features']
     return num_features
+
+
+def discretize(cols, bins, prefix='disc_'):
+    def __discretize(df):
+        res = empty_like(df)
+        for col in cols:
+            if df.train:
+                res[prefix + col], enc = pd.cut(df[col], bins, retbins=True)
+                df.encoders[f'__disc_{bins}_{col}'] = enc
+            else:
+                enc = df.encoders[f'__disc_{bins}_{col}']
+                res[prefix + col] = pd.cut(df[col], enc)
+        return res
+
+    return FeatureConstructor(__discretize, cache_default=False)
+
+
+def discretize_quantile(cols, bins, prefix='disc_q_'):
+    def __discretize_quantile(df):
+        res = empty_like(df)
+        for col in cols:
+            if df.train:
+                res[prefix + col], enc = pd.qcut(df[col], bins, retbins=True)
+                df.encoders[f'__disc_q_{bins}_{col}'] = enc
+            else:
+                enc = df.encoders[f'__disc_q_{bins}_{col}']
+                res[prefix + col] = pd.cut(df[col], enc)
+        return res
+
+    return FeatureConstructor(__discretize_quantile, cache_default=False)
