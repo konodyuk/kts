@@ -24,8 +24,12 @@ class Validator:
             idx_train = spl['train']
             idx_test = spl['test']
             c_model = deepcopy(model)
-            pl = Pipeline(c_model, featureset.slice(idx_train))
-            pl.fit(**fit_params)
+            fsl = featureset.slice(idx_train)
+            pl = Pipeline(c_model, fsl)
+            try:
+                pl.fit(eval_set=[(fsl(idx_test).values, featureset.target[idx_train].values)], **fit_params)
+            except:
+                pl.fit(**fit_params)
             pred = pl.predict(idx_test)
             pl.featureslice.compress()
             oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
