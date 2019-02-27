@@ -154,11 +154,11 @@ def discretize(cols, bins, prefix='disc_'):
         res = empty_like(df)
         for col in cols:
             if df.train:
-                res[prefix + col], enc = pd.cut(df[col], bins, retbins=True)
+                res[prefix + str(bins) + '_' + col], enc = pd.cut(df[col], bins, retbins=True)
                 df.encoders[f'__disc_{bins}_{col}'] = enc
             else:
                 enc = df.encoders[f'__disc_{bins}_{col}']
-                res[prefix + col] = pd.cut(df[col], enc)
+                res[prefix + str(bins) + '_' + col] = pd.cut(df[col], enc)
         return res
 
     return FeatureConstructor(__discretize, cache_default=False)
@@ -169,11 +169,11 @@ def discretize_quantile(cols, bins, prefix='disc_q_'):
         res = empty_like(df)
         for col in cols:
             if df.train:
-                res[prefix + col], enc = pd.qcut(df[col], bins, retbins=True)
+                res[prefix + str(bins) + '_' + col], enc = pd.qcut(df[col], bins, retbins=True)
                 df.encoders[f'__disc_q_{bins}_{col}'] = enc
             else:
                 enc = df.encoders[f'__disc_q_{bins}_{col}']
-                res[prefix + col] = pd.cut(df[col], enc)
+                res[prefix + str(bins) + '_' + col] = pd.cut(df[col], enc)
         return res
 
     return FeatureConstructor(__discretize_quantile, cache_default=False)
