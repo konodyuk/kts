@@ -26,8 +26,9 @@ class Validator:
             c_model = deepcopy(model)
             fsl = featureset.slice(idx_train)
             pl = Pipeline(c_model, fsl)
+            fsl()
             try:
-                pl.fit(eval_set=[(fsl(idx_test).values, featureset.target[idx_train].values)], **fit_params)
+                pl.fit(eval_set=[(fsl(idx_test).values, featureset.target[idx_test].values)], **fit_params)
             except:
                 pl.fit(**fit_params)
             pred = pl.predict(idx_test)
