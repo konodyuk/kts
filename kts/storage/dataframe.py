@@ -15,17 +15,31 @@ class DataFrame(SubDF):
     A wrapper over the standard DataFrame class.
     Complements it with .train and .encoders attributes.
 
-    This class is implemented to supply an indicator
+    This class is implemented to provide an indicator
     for functions whether they serve a train or test call and let propagate
     this indicator further to inner functions.
 
-    Returns kts.DataFrame from any attribute that produces pd.DataFrame,
-    but kts.DataFrame.drop([]) will return pd.DataFrame.
-    That's not a bug, as `a(b(df))` will still propagate
-    aforementioned signal, but `a(b(df.drop()))` construction is not to be
-    registered as a cached function.
+    Attention:
+    ----------
+    Any attribute of type pd.DataFrame will be automatically converted to kts.DataFrame type,
+    but an attribute of type 'method' will produce a pd.DataFrame:
+    ```
+    df = pd.DataFrame()
+    ktdf = kts.DataFrame(df)
+    type(ktdf)
+    -> kts.DataFrame
+    type(ktdf.T)
+    -> pd.DataFrame  # because .T is actually a @property
+    type(ktdf[['A', 'B']])
+    -> kts.DataFrame
+    type(ktdf.drop([])
+    -> pd.DataFrame
+    type(ktdf.fillna(ktdf.mean()))
+    -> pd.DataFrame
+    ```
 
     Example:
+    --------
     ```
     def a(df):
         res = stl.empty_like(df)
