@@ -24,11 +24,11 @@ def preview(df, sizes=(2, 4, 6)):
         config.preview_call = 1
         try:
             for sz in sizes:
-                # if isinstance(df, dataframe.DataFrame):
-                #     ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
-                # else:
-                #     ktdf = dataframe.DataFrame(df.head(sz), True, {})
-                ktdf = dataframe.DataFrame(df.head(sz), True, {})
+                if isinstance(df, dataframe.DataFrame):
+                    ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
+                else:
+                    ktdf = dataframe.DataFrame(df.head(sz), True, {})
+                # ktdf = dataframe.DataFrame(df.head(sz), True, {})
                 display(function(ktdf))
         except Exception as e:
             config.preview_call = 0
