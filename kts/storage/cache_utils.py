@@ -27,8 +27,11 @@ def get_hash_df(df):
 
     sorted_cols = df.columns.sort_values()
     col_hash = hashlib.sha256(pd.util.hash_pandas_object(sorted_cols).values).hexdigest()
-
-    hash_first, hash_last = pd.util.hash_pandas_object(df.iloc[[0, -1]][sorted_cols]).values
+    try:
+        hash_first, hash_last = pd.util.hash_pandas_object(df.iloc[[0, -1]][sorted_cols]).values
+    except:
+        hash_first = hashlib.sha256(df.iloc[[0]][sorted_cols].to_csv().encode('utf-8')).hexdigest()
+        hash_last = hashlib.sha256(df.iloc[[-1]][sorted_cols].to_csv().encode('utf-8')).hexdigest()
 
     return hashlib.sha256(np.array([idx_hash, col_hash, hash_first, hash_last])).hexdigest()
 
