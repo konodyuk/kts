@@ -10,7 +10,7 @@ class Model:
 
     def __init__(self, *args, **kwargs):
         self.estimator = self.Estimator(*args, **kwargs)
-        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params}
+        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params if key in self.estimator.get_params()}
         self.reset_name()
         self.is_fit = 0
 
