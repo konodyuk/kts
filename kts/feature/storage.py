@@ -59,7 +59,12 @@ class FeatureSet:
             self.fc_before = stl.compose(fc_before)
         else:
             self.fc_before = fc_before
-        self.fc_after = fc_after
+        if type(fc_after) == list:
+            self.fc_after = stl.concat(fc_after)
+        elif type(fc_after) == tuple:
+            self.fc_after = stl.compose(fc_after)
+        else:
+            self.fc_after = fc_after
         self.target_column = target_column
         self.encoders = encoders
         if type(df_input) != type(None):
