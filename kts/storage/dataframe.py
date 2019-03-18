@@ -10,6 +10,9 @@ class SubDF(pd.DataFrame):
     def __dict__(self):
         return dict()
 
+# MAY WORK BUT NEEDS TESTING
+# SubDF = type('SubDF', (pd.DataFrame), {})
+
 class DataFrame(SubDF):
     """
     A wrapper over the standard DataFrame class.
