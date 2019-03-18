@@ -6,7 +6,7 @@ class RegressorMixin(Model):
 
 
 from xgboost import XGBRegressor as _XGBR
-class XGBRegressor(_XGBR, RegressorMixin):
+class XGBRegressor(RegressorMixin, _XGBR):
     short_name = 'xgb'
     tracked_params = [
         'base_score',
@@ -29,7 +29,7 @@ class XGBRegressor(_XGBR, RegressorMixin):
 
 
 from lightgbm import LGBMRegressor as _LGBMR
-class LGBMRegressor(_LGBMR, RegressorMixin):
+class LGBMRegressor(RegressorMixin, _LGBMR):
     short_name = 'lgb'
     tracked_params = [
         'class_weight',
@@ -60,7 +60,7 @@ class LGBMRegressor(_LGBMR, RegressorMixin):
 
 
 from catboost import CatBoostRegressor as _CBR
-class CatBoostRegressor(_CBR, RegressorMixin):
+class CatBoostRegressor(RegressorMixin, _CBR):
     short_name = 'cb'
     tracked_params = [
         'iterations',
@@ -81,7 +81,7 @@ class CatBoostRegressor(_CBR, RegressorMixin):
 
 
 from sklearn.ensemble import RandomForestRegressor as _RFR
-class RandomForestRegressor(_RFR, RegressorMixin):
+class RandomForestRegressor(RegressorMixin, _RFR):
     short_name = 'rf'
     tracked_params = [
         'bootstrap',
@@ -101,7 +101,7 @@ class RandomForestRegressor(_RFR, RegressorMixin):
 
 
 from sklearn.linear_model import LinearRegression as _LR
-class LinearRegression(_LR, RegressorMixin):
+class LinearRegression(RegressorMixin, _LR):
     short_name = 'lr'
     tracked_params = [
         'C',

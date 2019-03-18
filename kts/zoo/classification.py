@@ -7,7 +7,7 @@ class MultiClassifierMixin(Model):
 
 
 from xgboost import XGBClassifier as _XGBC
-class XGBClassifier(_XGBC, MultiClassifierMixin):
+class XGBClassifier(MultiClassifierMixin, _XGBC):
     short_name = 'xgb'
     tracked_params = [
         'base_score',
@@ -30,7 +30,7 @@ class XGBClassifier(_XGBC, MultiClassifierMixin):
 
 
 from lightgbm import LGBMClassifier as _LGBMC
-class LGBMClassifier(_LGBMC, MultiClassifierMixin):
+class LGBMClassifier(MultiClassifierMixin, _LGBMC):
     short_name = 'lgb'
     tracked_params = [
         'class_weight',
@@ -61,7 +61,7 @@ class LGBMClassifier(_LGBMC, MultiClassifierMixin):
 
 
 from catboost import CatBoostClassifier as _CBC
-class CatBoostClassifier(_CBC, MultiClassifierMixin):
+class CatBoostClassifier(MultiClassifierMixin, _CBC):
     short_name = 'cb'
     tracked_params = [
         'iterations',
@@ -82,7 +82,7 @@ class CatBoostClassifier(_CBC, MultiClassifierMixin):
 
 
 from sklearn.ensemble import RandomForestClassifier as _RFC
-class RandomForestClassifier(_RFC, MultiClassifierMixin):
+class RandomForestClassifier(MultiClassifierMixin, _RFC):
     short_name = 'rf'
     tracked_params = [
         'bootstrap',
@@ -102,7 +102,7 @@ class RandomForestClassifier(_RFC, MultiClassifierMixin):
 
 
 from sklearn.linear_model import LogisticRegression as _LR
-class LogisticRegression(_LR, MultiClassifierMixin):
+class LogisticRegression(MultiClassifierMixin, _LR):
     short_name = 'lr'
     tracked_params = [
         'C',
