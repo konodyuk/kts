@@ -1,11 +1,11 @@
-from ..modelling import Model
+from ..modelling import ArithmeticMixin
 from ..storage import cache
 from .. import config
 import glob
 from collections import MutableSequence
 
 
-class Experiment(Model):
+class Experiment(ArithmeticMixin):
     def __init__(self, pipeline, oofs, score, std):
         self.pipeline = pipeline
         self.model = self.pipeline.models[0].model  # TODO: test out
