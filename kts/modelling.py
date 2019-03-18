@@ -2,38 +2,16 @@ import numpy as np
 from hashlib import sha256
 import json
 
-class Model:
-    Estimator = None
-    tracked_params = []
-    fit_params = dict()
-    short_name = 'model'
 
-    def __init__(self, *args, **kwargs):
-        self.estimator = self.Estimator(*args, **kwargs)
-        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params if key in self.estimator.get_params()}
-        self.reset_name()
-        self.is_fit = 0
+class NamingMixin:
+    @property
+    def __name__(self):
+        self.params = {key: self.get_params()[key] for key in self.tracked_params if
+                       key in self.get_params()}
+        return f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
 
-    def reset_name(self):
-        self.__name__ = f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
 
-    def fit(self, X, y, **fit_params):
-        try:
-            X, y = self.preprocess(X, y)
-        except:
-            pass
-        if self.is_fit:
-            raise UserWarning(
-                f"This {type(self).__name__} is already fit.\nUse .warm_fit() to fit it from current state.")
-        self.estimator.fit(X, y, **{key: fit_params[key]
-                                    if key in fit_params
-                                    else type(self).fit_params[key]
-                                    for key in (set(fit_params.keys()) | set(type(self).fit_params.keys()))})
-        self.is_fit = 1
-
-    def predict(self, X, **predict_params):
-        return self.estimator.predict(X, **predict_params)
-
+class ArithmeticMixin:
     def __mul__(self, x):
         return WeightedModel(self, x)
 
@@ -54,11 +32,15 @@ class Model:
     def __radd__(self, other):
         return self + other
 
+
+class Model(ArithmeticMixin, NamingMixin):
+    tracked_params = []
+    short_name = 'model'
+
     def __repr__(self):
         return self.__name__
 
-
-class WeightedModel(Model): # MulNode
+class WeightedModel(ArithmeticMixin): # MulNode
     """
     Multiplies predictions by a certain coefficient.
     """
@@ -83,7 +65,7 @@ class WeightedModel(Model): # MulNode
         return self.coeff * self.model.predict(X)
 
 
-class Ensemble(Model): # AddNode
+class Ensemble(ArithmeticMixin): # AddNode
     """
     Sums up all predictions of all models.
     """
@@ -137,23 +119,53 @@ class Ensemble(Model): # AddNode
 
 
 class CustomModel(Model):
-    tracked_params = []
-    fit_params = dict()
-    short_name = 'model'
-
-    def __init__(self, model, tracked_params=[], fit_params=dict(), short_name=None):
+    def __init__(self, model, tracked_params=[], short_name=None, task='bc'):
         self.estimator = model
         self.short_name = (short_name if short_name is not None else self.get_short_name(model))
         self.tracked_params = tracked_params
-        self.fit_params = fit_params
-        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params}
-        self.reset_name()
-        self.is_fit = 0
+        self.fit = self.estimator.fit
+        self.task = task
+
+    @property
+    def __name__(self):
+        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params if
+                       key in self.estimator.get_params()}
+        return f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
 
     @staticmethod
     def get_short_name(instance):
         return instance.__class__.__name__.lower().replace('classifier', '_clf').replace('regressor', '_rg')
 
+    def __dir__(self):
+        return set(dir(super())) | set(dir(self.estimator))
 
-def model(model, tracked_params=[], short_name=None, fit_params={}):
-    return CustomModel(model, tracked_params, fit_params, short_name)
+    def __getattr__(self, key):
+        return getattr(self.estimator, key)
+
+    def __setattr__(self, key, value):
+        if 'estimator' in self.__dict__ and key in dir(self.estimator)
+            setattr(self.estimator, key, value)
+        else:
+            super().__setattr__(key, value)
+
+    def predict(self, X, **kw):
+        if self.task == 'bc':
+            return self.estimator.predict_proba(X, **kw)[:, 1]
+        elif self.task == 'c':
+            return self.estimator.predict_proba(X, **kw)
+        elif self.task == 'r':
+            return self.estimator.predict(X, **kw)
+
+
+def model(model, tracked_params=[], short_name=None, task='bc'):
+    """
+    Creates a custom but trackable model.
+    :param model: model object
+    :param tracked_params: parameters to be tracked
+    :param short_name: short name for your model, like 'rf' for RandomForestClassifier
+    :param task: 'bc' for binary classification,
+                 'c'  for classification,
+                 'r'  for regression
+    :return:
+    """
+    return CustomModel(model, tracked_params, short_name, task)
