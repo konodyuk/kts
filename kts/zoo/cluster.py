@@ -1,5 +1,6 @@
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import LabelEncoder
+import numpy as np
+
 
 try:
     from libKMCUDA import kmeans_cuda
