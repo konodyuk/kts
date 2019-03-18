@@ -2,6 +2,8 @@ from .storage import FeatureConstructor
 import pandas as pd
 import numpy as np
 from ..storage.dataframe import DataFrame as KTDF
+from ..zoo.cluster import KMeansFeaturizer
+from ..utils import list_hash
 
 
 def empty_like(df):
@@ -177,3 +179,22 @@ def discretize_quantile(cols, bins, prefix='disc_q_'):
         return res
 
     return FeatureConstructor(__discretize_quantile, cache_default=False)
+
+
+def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, prefix='km_', **kwargs):
+    def __kmeans_encoding(df):
+        res = empty_like(df)
+        res_column_name = f'{prefix}{n_clusters}_{list_hash(cols, 5)}_{round(target_importance, 4)}'
+        if df.train:
+            encoder = KMeansFeaturizer(k=n_clusters, target_scale=target_importance, **kwargs)
+            if target_col:
+                res[res_column_name] = encoder.fit_transform(df[cols].values, df[target_col].values)
+            else:
+                res[res_column_name] = encoder.fit_transform(df[cols].values)
+            df.encoders[f'__kmeans_feat_{n_clusters}_{list_hash(cols, 5)}_{round(target_importance, 4)}'] = encoder
+        else:
+            encoder = df.encoders[f'__kmeans_feat_{n_clusters}_{list_hash(cols, 5)}_{round(target_importance, 4)}']
+            res[res_column_name] = encoder.transform()
+        return res
+
+    return FeatureConstructor(__kmeans_encoding, cache_default=False)
