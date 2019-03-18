@@ -143,7 +143,7 @@ class CustomModel(Model):
         return getattr(self.estimator, key)
 
     def __setattr__(self, key, value):
-        if 'estimator' in self.__dict__ and key in dir(self.estimator)
+        if 'estimator' in self.__dict__ and key in dir(self.estimator):
             setattr(self.estimator, key, value)
         else:
             super().__setattr__(key, value)
