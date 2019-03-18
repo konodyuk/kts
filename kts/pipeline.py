@@ -1,6 +1,6 @@
-from .modelling import Model
+from .modelling import ArithmeticMixin
 
-class Pipeline(Model):
+class Pipeline(ArithmeticMixin):
     def __init__(self, model, featureslice):
         self.model = model
         self.featureslice = featureslice
