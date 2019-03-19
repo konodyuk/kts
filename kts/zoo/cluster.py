@@ -89,7 +89,7 @@ class KMeansFeaturizer:
                                   )
                 km_model.fit(X)
 
-            self.km_model_ = km_model
+            self.km_model = km_model
             self.cluster_centers_ = km_model.cluster_centers_
             return self
 
