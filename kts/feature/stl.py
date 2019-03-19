@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from ..storage.dataframe import DataFrame as KTDF
 from ..zoo.cluster import KMeansFeaturizer
+from sklearn.preprocessing import StandardScaler
 from ..utils import list_hash
 
 
@@ -198,3 +199,19 @@ def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, pr
         return res
 
     return FeatureConstructor(__kmeans_encoding, cache_default=False)
+
+
+def standardize(cols, prefix='std_'):
+    def __standardize(df):
+        res = empty_like(df)
+        for col in cols:
+            if df.train:
+                encoder = StandardScaler()
+                res[prefix + col] = encoder.fit_transform(df[col].values)
+                df.encoders[f'__std_{col}'] = encoder
+            else:
+                encoder = df.encoders[f'__std_{col}']
+                res[prefix + col] = encoder.transform(df[col].values)
+        return res
+
+    return FeatureConstructor(__standardize, cache_default=False)
