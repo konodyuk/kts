@@ -118,7 +118,7 @@ class Ensemble(ArithmeticMixin): # AddNode
         return Ensemble([model / x for model in self.models])
 
 
-class CustomModel(Model):
+class CustomModel(ArithmeticMixin):
     def __init__(self, model, tracked_params=[], short_name=None, task='bc'):
         self.estimator = model
         self.short_name = (short_name if short_name is not None else self.get_short_name(model))
