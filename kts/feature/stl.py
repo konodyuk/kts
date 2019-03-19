@@ -207,11 +207,11 @@ def standardize(cols, prefix='std_'):
         for col in cols:
             if df.train:
                 encoder = StandardScaler()
-                res[prefix + col] = encoder.fit_transform(df[col].values)
+                res[prefix + col] = encoder.fit_transform(df[[col]].values)
                 df.encoders[f'__std_{col}'] = encoder
             else:
                 encoder = df.encoders[f'__std_{col}']
-                res[prefix + col] = encoder.transform(df[col].values)
+                res[prefix + col] = encoder.transform(df[[col]].values)
         return res
 
     return FeatureConstructor(__standardize, cache_default=False)
