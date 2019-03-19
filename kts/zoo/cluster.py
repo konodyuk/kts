@@ -79,6 +79,7 @@ class KMeansFeaturizer:
                                                     seed=self.random_state
                                                     )
                 km_model = KMeans(n_clusters=self.k)
+                clusters[~np.isfinite(clusters)] = -1e9
                 km_model.cluster_centers_ = clusters
             except:
                 km_model = KMeans(n_clusters=self.k,
@@ -103,6 +104,7 @@ class KMeansFeaturizer:
                                                 seed=self.random_state
                                                 )
             km_model_pretrain = KMeans(n_clusters=self.k)
+            clusters[~np.isfinite(clusters)] = -1e9
             km_model_pretrain.cluster_centers_ = clusters
         except:
             km_model_pretrain = KMeans(n_clusters=self.k,
@@ -123,6 +125,7 @@ class KMeansFeaturizer:
                                                 seed=self.random_state
                                                 )
             km_model = KMeans(n_clusters=self.k)
+            clusters[~np.isfinite(clusters)] = -1e9
             km_model.cluster_centers_ = clusters
         except:
             km_model = KMeans(n_clusters=self.k,
