@@ -195,7 +195,7 @@ def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, pr
             df.encoders[f'__kmeans_feat_{n_clusters}_{list_hash(cols, 5)}_{round(target_importance, 4)}'] = encoder
         else:
             encoder = df.encoders[f'__kmeans_feat_{n_clusters}_{list_hash(cols, 5)}_{round(target_importance, 4)}']
-            res[res_column_name] = encoder.transform()
+            res[res_column_name] = encoder.transform(df[cols].values)
         return res
 
     return FeatureConstructor(__kmeans_encoding, cache_default=False)
