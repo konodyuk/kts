@@ -169,6 +169,7 @@ class Cache:
         else:
             tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
             self.memory[dict_name] = tmp
+            self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
             return tmp
 
     def remove_obj(self, name):
