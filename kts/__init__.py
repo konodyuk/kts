@@ -13,3 +13,5 @@ from .validation import Validator
 from .modelling import model
 from .storage.dataframe import link
 from .storage import cache
+from .storage.dataframe import DataFrame as KTDF
+from .storage.caching import save, load, ls, remove, rm

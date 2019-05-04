@@ -4,7 +4,8 @@ import datetime
 from glob import glob
 import os
 from .info import info
-
+import pandas as pd
+from .dataframe import DataFrame as KTDF
 
 class Cache:
     """
@@ -201,3 +202,50 @@ class Cache:
 
 
 cache = Cache()
+
+
+USER_SEP = '__USER__'
+
+
+def save(obj, name):
+    if name in ls():
+        raise KeyError("You've already saved object with this name. If you want to overwrite it, first use kts.rm()")
+    if isinstance(obj, KTDF) or isinstance(obj, pd.DataFrame):
+        cache.cache_df(obj, name + USER_SEP)
+    else:
+        cache.cache_obj(obj, name + USER_SEP)
+
+
+def ls():
+    return [df.split('/')[-1][:-10] for df in
+            sorted(glob(config.storage_path + USER_SEP + '_obj'), key=os.path.getmtime)
+           ] + [df.split('/')[-1][:-9] for df in
+            sorted(glob(config.storage_path + USER_SEP + '_df'), key=os.path.getmtime)]
+
+
+def get_type(name):
+    if cache.is_cached_obj(name + USER_SEP):
+        return 'obj'
+    else:
+        return 'df'
+
+
+def load(name):
+    if name not in ls():
+        raise KeyError("No such object in cache")
+    if get_type(name) == 'df':
+        return cache.load_df(name + USER_SEP)
+    else:
+        return cache.load_obj(name + USER_SEP)
+
+
+def remove(name):
+    if name not in ls():
+        return
+    if get_type(name) == 'df':
+        cache.remove_df(name + USER_SEP)
+    else:
+        cache.remove_obj(name + USER_SEP)
+
+
+rm = remove
