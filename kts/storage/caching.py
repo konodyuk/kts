@@ -53,8 +53,9 @@ class Cache:
         :param name: name of dataframe
         :return: True or False (cache hit or miss)
         """
-        dict_name = name + '_df'
-        return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
+        # dict_name = name + '_df'
+        # return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
+        return os.path.exists(cache_utils.get_path_df(name))
 
     def cache_df(self, df, name):
         """
@@ -133,8 +134,9 @@ class Cache:
         :param name: name of object
         :return: True or False (cache hit or miss)
         """
-        dict_name = name + '_obj'
-        return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
+        # dict_name = name + '_obj'
+        # return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
+        return os.path.exists(cache_utils.get_path_obj(name))
 
     def cache_obj(self, obj, name):
         """
