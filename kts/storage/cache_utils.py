@@ -120,3 +120,7 @@ def load_obj(path):
 
 def get_path_info(name):
     return config.info_path + name + '_info'
+
+
+def get_time(path):
+    return int(os.path.getmtime(path))

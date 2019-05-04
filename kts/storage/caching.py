@@ -14,6 +14,7 @@ class Cache:
     def __init__(self):
         self.memory = dict()
         self.last_used = dict()
+        self.edited_at = dict()
         self.current_volume = 0
         try:
             _ = info.memory_limit  # to check whether it exists
@@ -44,6 +45,7 @@ class Cache:
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
             self.memory.pop(key)
             self.last_used.pop(key)
+            self.edited_at.pop(key)
 
     def is_cached_df(self, name):
         """
@@ -72,6 +74,7 @@ class Cache:
         self.memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
         self.last_used[dict_name] = datetime.datetime.now()
+        self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
 
     def load_df(self, name):
         """
@@ -85,11 +88,15 @@ class Cache:
         dict_name = name + '_df'
         self.last_used[dict_name] = datetime.datetime.now()
         if dict_name in self.memory:
+            if self.edited_at[dict_name] != cache_utils.get_time(cache_utils.get_path_df(name)):
+                self.memory[dict_name] = cache_utils.load_df(cache_utils.get_path_df(name))
+                self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
             self.__release_volume(tmp)
             self.memory[dict_name] = tmp
+            self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
             self.current_volume += cache_utils.get_df_volume(tmp)
             return tmp
 
@@ -105,6 +112,8 @@ class Cache:
             self.memory.pop(dict_name)
         if dict_name in self.last_used:
             self.last_used.pop(dict_name)
+        if dict_name in self.edited_at:
+            self.edited_at.pop(dict_name)
         if os.path.exists(cache_utils.get_path_df(name)):
             os.remove(cache_utils.get_path_df(name))
 
@@ -140,6 +149,7 @@ class Cache:
         dict_name = name + '_obj'
         self.memory[dict_name] = obj
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
+        self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
         """
@@ -152,6 +162,9 @@ class Cache:
 
         dict_name = name + '_obj'
         if dict_name in self.memory:
+            if self.edited_at[dict_name] != cache_utils.get_time(cache_utils.get_path_obj(name)):
+                self.memory[dict_name] = cache_utils.load_obj(cache_utils.get_path_obj(name))
+                self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
@@ -169,6 +182,8 @@ class Cache:
             self.memory.pop(dict_name)
         if dict_name in self.last_used:
             self.last_used.pop(dict_name)
+        if dict_name in self.edited_at:
+            self.edited_at.pop(dict_name)
         if os.path.exists(cache_utils.get_path_obj(name)):
             os.remove(cache_utils.get_path_obj(name))
 
