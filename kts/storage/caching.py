@@ -217,10 +217,10 @@ def save(obj, name):
 
 
 def ls():
-    return [df.split('/')[-1][:-10] for df in
-            sorted(glob(config.storage_path + USER_SEP + '_obj'), key=os.path.getmtime)
-           ] + [df.split('/')[-1][:-9] for df in
-            sorted(glob(config.storage_path + USER_SEP + '_df'), key=os.path.getmtime)]
+    return [df.split('/')[-1][:-4 - len(USER_SEP)] for df in
+            sorted(glob(config.storage_path + '*' + USER_SEP + '_obj'), key=os.path.getmtime)
+           ] + [df.split('/')[-1][:-3 - len(USER_SEP)] for df in
+            sorted(glob(config.storage_path + '*' + USER_SEP + '_df'), key=os.path.getmtime)]
 
 
 def get_type(name):
