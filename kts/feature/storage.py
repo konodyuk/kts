@@ -124,7 +124,7 @@ class FeatureSet:
 
     def __get_src(self, fc):
         if fc.__name__ == 'empty_like':
-            return 'empty_like'
+            return 'stl.empty_like'
         if not isinstance(fc, FeatureConstructor):
             return source_utils.get_source(fc)
         if fc.stl:
@@ -137,8 +137,17 @@ class FeatureSet:
         fc_before_source = self.__get_src(self.fc_before)
         fc_after_source = self.__get_src(self.fc_after)
         fs_source = 'FeatureSet(fc_before=' + fc_before_source + ', fc_after=' + fc_after_source + ', ' \
-                    + 'target_column=' + self.target_column + ')'
+                    + 'target_column=' + repr(self.target_column) + ')'
         return fs_source
+        # fs_source = 'FeatureSet('
+        # if fc_before_source:
+        #     fs_source += 'fc_before=' + fc_before_source
+        # if fc_after_source:
+        #     if fc_before_source:
+        #         fs_source += ', '
+        #     fs_source += 'fc_after=' + fc_after_source + ', '
+        # fs_source += 'target_column=' + repr(self.target_column) + ')'
+        # return fs_source
         # raise NotImplementedError
         # used_funcs = (self.features_before + self.features_after)[::-1]
         # for func in used_funcs:
@@ -162,25 +171,48 @@ class FeatureSet:
         #     src += self.fc_after.source
         # return src
 
-    @property
-    def __name__(self):
+    def recover_name(self):
         if self._first_name:
             return self._first_name
         ans = []
-        frame = inspect.currentframe().f_back
-        tmp = dict(frame.f_globals.items())
-#         tmp = dict(frame.f_locals.items())
+        frame = inspect.currentframe()
+        tmp = {**frame.f_globals,                              # Please don't treat me as completely retarded
+               **frame.f_back.f_globals,                       # At least because it works (almost always)
+               **frame.f_back.f_back.f_globals,                # Actually you don't even have to use this code
+               **frame.f_back.f_back.f_back.f_globals,         # Just write FeatureSet(name="fs_1") and feel safe =|
+               **frame.f_back.f_back.f_back.f_back.f_globals,
+               **frame.f_back.f_back.f_back.f_back.f_back.f_globals,
+               **frame.f_back.f_back.f_back.f_back.f_back.f_back.f_globals}
+        # tmp = {**frame.f_locals, **frame.f_back.f_locals, **frame.f_back.f_back.f_locals, **frame.f_back.f_back.f_back.f_locals}
+        #         tmp = dict(frame.f_locals.items())
+        # print(tmp.keys())
+        #         for i in range(9):
+        #             # print(i, 'fs_1' in frame.f_locals, frame.f_locals)
+        #             print(i, 'fs_1' in frame.f_globals, frame.f_globals)
+        #             print('\n\n\n')
+        #             frame = frame.f_back
         for k, var in tmp.items():
             if isinstance(var, self.__class__):
-                if hash(self) == hash(var):
+                # if hash(self) == hash(var):
+                if var is self:
                     ans.append(k)
         if len(ans) != 1:
             print(f"The name cannot be uniquely defined. Possible options are: {ans}. Choosing {ans[0]}. You can set the name manually via FeatureSet(name=...) or using .set_name(...)")
         self._first_name = ans[0]
         return self._first_name
 
+    @property
+    def __name__(self):
+        return self.recover_name()
+
     def set_name(self, name):
         self._first_name = name
+
+    def __repr__(self):
+        return self.recover_name()
+
+    def describe(self):
+        raise NotImplementedError
 
 
 class FeatureSlice:
