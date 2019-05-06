@@ -6,15 +6,16 @@ from ..storage import dataframe
 import glob
 import os
 import numpy as np
+import inspect
 
 
 class FeatureConstructor:
-    def __init__(self, function, cache_default=True):
+    def __init__(self, function, cache_default=True, stl=False):
         self.function = function
         self.cache_default = cache_default
         self.__name__ = function.__name__
         self.source = source_utils.get_source(function)
-        self.stl = False
+        self.stl = stl
 
     # needs refactoring because of direct storing source
     def __call__(self, df, cache=None, **kwargs):
@@ -42,7 +43,10 @@ class FeatureConstructor:
             return dataframe.DataFrame(result, ktdf.train, ktdf.encoders, ktdf.slice_id)
 
     def __repr__(self):
-        return f'<Feature Constructor "{self.__name__}">'
+        if self.stl:
+            return self.source
+        else:
+            return f'<Feature Constructor "{self.__name__}">'
 
     def __str__(self):
         return self.__name__
@@ -52,7 +56,7 @@ from . import stl
 
 
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, encoders={}):
+    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, name=None, description=None, desc=None, encoders={}):
         if type(fc_before) == list:
             self.fc_before = stl.concat(fc_before)
         elif type(fc_before) == tuple:
@@ -69,7 +73,14 @@ class FeatureSet:
         self.encoders = encoders
         if type(df_input) != type(None):
             self.set_df(df_input)
-        self.__name__ = f"fs({self.fc_before.__name__[:2]}-{self.fc_after.__name__[:2] if self.fc_after else ''})"
+        self._first_name = name
+        self.description = None
+        if desc is not None and description is not None:
+            raise ValueError("desc is an alias of description. You can't use both")
+        if description is not None:
+            self.description = description
+        elif desc is not None:
+            self.description = desc
 
     def set_df(self, df_input):
         self.df_input = dataframe.DataFrame(df_input)
@@ -99,8 +110,7 @@ class FeatureSet:
         return FeatureSet(self.fc_before,
                           self.fc_after,
                           target_column=self.target_column,
-                          encoders=self.encoders
-                          )
+                          encoders=self.encoders)
 
     def slice(self, idxs):
         return FeatureSlice(self, idxs)
@@ -117,21 +127,18 @@ class FeatureSet:
             return 'empty_like'
         if not isinstance(fc, FeatureConstructor):
             return source_utils.get_source(fc)
-        if hasattr(fc, 'stl'):
+        if fc.stl:
             return fc.source
         else:
             return fc.__name__
 
     @property
     def source(self):
-        fl_sources = '\n'.join([feature.source for feature in feature_list])
-
         fc_before_source = self.__get_src(self.fc_before)
         fc_after_source = self.__get_src(self.fc_after)
-        fs_source = 'FeatureSet(\n\nfc_before=' + fc_before_source + ',\n\nfc_after=' + fc_after_source + '\n\n' \
-                    + 'targer_column=' + self.target_column + '\n\n)'
-
-        return fl_sources, fs_source
+        fs_source = 'FeatureSet(fc_before=' + fc_before_source + ', fc_after=' + fc_after_source + ', ' \
+                    + 'target_column=' + self.target_column + ')'
+        return fs_source
         # raise NotImplementedError
         # used_funcs = (self.features_before + self.features_after)[::-1]
         # for func in used_funcs:
@@ -154,6 +161,26 @@ class FeatureSet:
         # if isinstance(self.fc_after, FeatureConstructor):
         #     src += self.fc_after.source
         # return src
+
+    @property
+    def __name__(self):
+        if self._first_name:
+            return self._first_name
+        ans = []
+        frame = inspect.currentframe().f_back
+        tmp = dict(frame.f_globals.items())
+#         tmp = dict(frame.f_locals.items())
+        for k, var in tmp.items():
+            if isinstance(var, self.__class__):
+                if hash(self) == hash(var):
+                    ans.append(k)
+        if len(ans) != 1:
+            print(f"The name cannot be uniquely defined. Possible options are: {ans}. Choosing {ans[0]}. You can set the name manually via FeatureSet(name=...) or using .set_name(...)")
+        self._first_name = ans[0]
+        return self._first_name
+
+    def set_name(self, name):
+        self._first_name = name
 
 
 class FeatureSlice:
