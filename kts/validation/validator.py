@@ -16,21 +16,22 @@ class Validator:
     def score(self, model, featureset, **fit_params):
         pipelines = []
         scores = []
-        oofs = np.zeros_like(featureset.target, dtype=np.float)
-        weights = np.zeros_like(featureset.target, dtype=np.float)
-        pbar = self.bar(self.splitter.split, total=self.splitter.size)
+        y = featureset.target
+        oofs = np.zeros_like(y, dtype=np.float)
+        weights = np.zeros_like(y, dtype=np.float)
+        pbar = self.bar(self.splitter.split(y, y), total=self.splitter.get_n_splits())
         pbar.set_description_str(f"Val of {model.__name__}")
-        for spl in pbar:
-            idx_train = spl['train']
-            idx_test = spl['test']
+        for idx_train, idx_test in pbar:
             c_model = deepcopy(model)
             fsl = featureset.slice(idx_train)
             pl = Pipeline(c_model, fsl)
+
             fsl()
             try:
                 pl.fit(eval_set=[(fsl(idx_test).values, featureset.target[idx_test].values)], **fit_params)
             except:
                 pl.fit(**fit_params)
+
             pred = pl.predict(idx_test)
             pl.featureslice.compress()
             oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
@@ -40,7 +41,7 @@ class Validator:
             pipelines.append(pl)
             scores.append(score)
             pbar.set_postfix_str(f"score: {np.mean(scores)}")
-        model_name = f"ens_{pipelines[0].model.__name__}_x{len(pipelines)}"
+        model_name = f"ens_{pipelines[0].model.__name__}_x{len(pipelines)}:{featureset.__name__}"
         final_ensemble = pipelines[0]
         for pipeline in pipelines[1:]:
             final_ensemble = final_ensemble + pipeline
@@ -57,3 +58,4 @@ class Validator:
             )
         )
         return score
+
