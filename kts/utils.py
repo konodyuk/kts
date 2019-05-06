@@ -1,6 +1,6 @@
 import hashlib
 import inspect
-from .feature import FeatureConstructor
+from .feature.storage import FeatureConstructor
 
 
 def list_hash(lst, length):
