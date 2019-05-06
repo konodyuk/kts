@@ -3,6 +3,7 @@ import numpy as np
 
 class BaseSplitter:
     def __init__(self, y, n_folds=5, seed=config.seed):
+        raise DeprecationWarning('Use splitters from sklearn')
         self.y = y
         self.n_folds = n_folds
         self.seed = seed
@@ -41,6 +42,7 @@ class KF(BaseSplitter):
 
 class NM(BaseSplitter):
     def __init__(self, y, Splitter, n_folds=5, n_splits=3):
+        raise DeprecationWarning('Use splitters from sklearn')
         self.y = y
         self.Splitter = Splitter
         self.n_folds = n_folds
@@ -62,6 +64,7 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import StratifiedShuffleSplit
 class Holdout(BaseSplitter):
     def __init__(self, y, test_size=0.3, stratify=False):
+        raise DeprecationWarning('Use splitters from sklearn')
         self.sz = len(y)
         self.y = y
         self.test_size = test_size
