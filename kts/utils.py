@@ -1,6 +1,7 @@
 import hashlib
 import inspect
 from .feature.storage import FeatureConstructor
+from itertools import zip_longest
 
 
 def list_hash(lst, length):
@@ -8,21 +9,24 @@ def list_hash(lst, length):
 
 
 def extract_signature(func):
-    args = inspect.getargspec(func).args
-    defaults = inspect.getargspec(func).defaults
-    values = inspect.currentframe().f_back.f_locals
-    print(defaults)
+    args = inspect.getfullargspec(func).args
+    defaults = inspect.getfullargspec(func).defaults
+    values = {**inspect.currentframe().f_back.f_locals, **inspect.currentframe().f_back.f_back.f_locals}
+    if defaults is None:
+        defaults = []
+    if args is None:
+        args = []
+    # print(inspect.getfullargspec(func))
+    # print(values)
     sources = []
-    for arg in args[:-len(defaults)]:
-        sources.append(f'{arg}={repr(values[arg])}')
-    for arg, default in zip(args[-len(defaults):], defaults):
+    for arg, default in list(zip_longest(args[::-1], defaults[::-1]))[::-1]:
         if values[arg] != default:
             sources.append(f'{arg}={repr(values[arg])}')
     return ', '.join(sources)
 
 
 def wrap_stl_function(outer_function, inner_function):
-    source = f'{outer_function.__name__}({extract_signature(outer_function)})'
+    source = f'stl.{outer_function.__name__}({extract_signature(outer_function)})'
     fc = FeatureConstructor(inner_function, cache_default=False, stl=True)
     fc.source = source
     return fc
