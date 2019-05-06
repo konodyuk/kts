@@ -139,37 +139,6 @@ class FeatureSet:
         fs_source = 'FeatureSet(fc_before=' + fc_before_source + ', fc_after=' + fc_after_source + ', ' \
                     + 'target_column=' + repr(self.target_column) + ')'
         return fs_source
-        # fs_source = 'FeatureSet('
-        # if fc_before_source:
-        #     fs_source += 'fc_before=' + fc_before_source
-        # if fc_after_source:
-        #     if fc_before_source:
-        #         fs_source += ', '
-        #     fs_source += 'fc_after=' + fc_after_source + ', '
-        # fs_source += 'target_column=' + repr(self.target_column) + ')'
-        # return fs_source
-        # raise NotImplementedError
-        # used_funcs = (self.features_before + self.features_after)[::-1]
-        # for func in used_funcs:
-        #     for func_stored in feature_list:
-        #         if func_stored.__name__ in func.source and \
-        #                 func_stored.__name__ not in [i.__name__ for i in used_funcs]:
-        #             used_funcs.append(func_stored)
-        # src = '\n'.join([i.source for i in used_funcs[::-1]])
-        #
-        # src += '\n\n'
-        # #         src += inspect.getsource(type(self))
-        # #         src += '\n\n'
-        # src += 'featureset = '
-        # src += type(self).__name__ + '('
-        # src += 'features_before=[' + ', '.join([i.__name__ for i in self.features_before]) + '], '
-        # src += 'features_after=[' + ', '.join([i.__name__ for i in self.features_after]) + ']'
-        # src += ')'
-        # return src
-        # src = 'Features before:\n' + self.fc_before.source + '\n' + 'Features after:\n'
-        # if isinstance(self.fc_after, FeatureConstructor):
-        #     src += self.fc_after.source
-        # return src
 
     def recover_name(self):
         if self._first_name:
@@ -178,23 +147,15 @@ class FeatureSet:
         frame = inspect.currentframe()
         tmp = {**frame.f_globals,                              # Please don't treat me as completely retarded
                **frame.f_back.f_globals,                       # At least because it works (almost always)
-               **frame.f_back.f_back.f_globals,                # Actually you don't even have to use this code
+               **frame.f_back.f_back.f_globals,                # Actually, you don't even have to use this code
                **frame.f_back.f_back.f_back.f_globals,         # Just write FeatureSet(name="fs_1") and feel safe =|
                **frame.f_back.f_back.f_back.f_back.f_globals,
                **frame.f_back.f_back.f_back.f_back.f_back.f_globals,
                **frame.f_back.f_back.f_back.f_back.f_back.f_back.f_globals}
-        # tmp = {**frame.f_locals, **frame.f_back.f_locals, **frame.f_back.f_back.f_locals, **frame.f_back.f_back.f_back.f_locals}
-        #         tmp = dict(frame.f_locals.items())
-        # print(tmp.keys())
-        #         for i in range(9):
-        #             # print(i, 'fs_1' in frame.f_locals, frame.f_locals)
-        #             print(i, 'fs_1' in frame.f_globals, frame.f_globals)
-        #             print('\n\n\n')
-        #             frame = frame.f_back
+
         for k, var in tmp.items():
             if isinstance(var, self.__class__):
-                # if hash(self) == hash(var):
-                if var is self:
+                if hash(self) == hash(var) and k[0] != '_':
                     ans.append(k)
         if len(ans) != 1:
             print(f"The name cannot be uniquely defined. Possible options are: {ans}. Choosing {ans[0]}. You can set the name manually via FeatureSet(name=...) or using .set_name(...)")
@@ -207,9 +168,6 @@ class FeatureSet:
 
     def set_name(self, name):
         self._first_name = name
-
-    def __repr__(self):
-        return self.recover_name()
 
     def describe(self):
         raise NotImplementedError
