@@ -4,7 +4,7 @@ import numpy as np
 from ..storage.dataframe import DataFrame as KTDF
 from ..zoo.cluster import KMeansFeaturizer
 from sklearn.preprocessing import StandardScaler
-from ..utils import list_hash
+from ..utils import list_hash, wrap_stl_function
 
 
 def empty_like(df):
@@ -29,14 +29,16 @@ def column_selector(columns):
     def __col_selector(df):
         return df[columns]
 
-    return FeatureConstructor(__col_selector, cache_default=False)
+    # return FeatureConstructor(__col_selector, cache_default=False)
+    return wrap_stl_function(column_selector, __col_selector)
 
 
 def column_dropper(columns):
     def __col_dropper(df):
         return df.drop(columns, axis=1)
 
-    return FeatureConstructor(__col_dropper, cache_default=False)
+    # return FeatureConstructor(__col_dropper, cache_default=False)
+    return wrap_stl_function(column_dropper, __col_dropper)
 
 
 def concat(funcs):
@@ -69,7 +71,8 @@ def make_ohe(cols, sep='_ohe_'):
     def __make_ohe(df):
         return pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
 
-    return FeatureConstructor(__make_ohe, cache_default=False)
+    # return FeatureConstructor(__make_ohe, cache_default=False)
+    return wrap_stl_function(make_ohe, __make_ohe)
 
 
 def target_encoding(cols, target_col, aggregation='mean', prefix='me_'):
@@ -84,7 +87,8 @@ def target_encoding(cols, target_col, aggregation='mean', prefix='me_'):
             res[prefix + col] = df[col].map(enc)
         return res
 
-    return FeatureConstructor(__target_encoding, cache_default=False)
+    # return FeatureConstructor(__target_encoding, cache_default=False)
+    return wrap_stl_function(target_encoding, __target_encoding)
 
 
 def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
@@ -103,7 +107,8 @@ def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
             res[prefix + col] = df[col].apply(lambda x: enc.loc[filter(lambda i: i in enc.index, x)].values.flatten() if type(x) == list else filler)
         return res
 
-    return FeatureConstructor(__target_encode_list, cache_default=False)
+    # return FeatureConstructor(__target_encode_list, cache_default=False)
+    return wrap_stl_function(target_encode_list, __target_encode_list)
 
 
 import multiprocessing
@@ -164,7 +169,8 @@ def discretize(cols, bins, prefix='disc_'):
                 res[prefix + str(bins) + '_' + col] = pd.cut(df[col], enc)
         return res
 
-    return FeatureConstructor(__discretize, cache_default=False)
+    # return FeatureConstructor(__discretize, cache_default=False)
+    return wrap_stl_function(discretize, __discretize)
 
 
 def discretize_quantile(cols, bins, prefix='disc_q_'):
@@ -179,7 +185,8 @@ def discretize_quantile(cols, bins, prefix='disc_q_'):
                 res[prefix + str(bins) + '_' + col] = pd.cut(df[col], enc)
         return res
 
-    return FeatureConstructor(__discretize_quantile, cache_default=False)
+    # return FeatureConstructor(__discretize_quantile, cache_default=False)
+    return wrap_stl_function(discretize_quantile, __discretize_quantile)
 
 
 def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, prefix='km_', **kwargs):
@@ -198,7 +205,8 @@ def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, pr
             res[res_column_name] = encoder.transform(df[cols].values)
         return res
 
-    return FeatureConstructor(__kmeans_encoding, cache_default=False)
+    # return FeatureConstructor(__kmeans_encoding, cache_default=False)
+    return wrap_stl_function(kmeans_encoding, __kmeans_encoding)
 
 
 def standardize(cols, prefix='std_'):
@@ -214,4 +222,12 @@ def standardize(cols, prefix='std_'):
                 res[prefix + col] = encoder.transform(df[[col]].values)
         return res
 
-    return FeatureConstructor(__standardize, cache_default=False)
+    # return FeatureConstructor(__standardize, cache_default=False)
+    return wrap_stl_function(standardize, __standardize)
+
+
+# TODO: implement
+def cv_apply(feature_constructor, split):
+    raise NotImplementedError
+    def __cv_apply(df):
+        res = empty_like(df)
