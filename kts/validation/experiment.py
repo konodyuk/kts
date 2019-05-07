@@ -2,17 +2,27 @@ from ..modelling import ArithmeticMixin
 from ..storage import cache
 from .. import config
 import glob
+import re
 from collections import MutableSequence
+from ..utils import hash_str
+import pandas as pd
+import texttable as tt
 
 
 class Experiment(ArithmeticMixin):
-    def __init__(self, pipeline, oofs, score, std):
+    def __init__(self, pipeline, oofs, score, std, description):
         self.pipeline = pipeline
-        self.model = self.pipeline.models[0].model  # TODO: test out
+        self.model = self.pipeline.models[0].model.model  # TODO: test out
+        self.model_name = self.model.__class__.__name__
+        self.parameters = self.model.get_params()
+        self.models = [model.model.model for model in self.pipeline.models]
+        self.featureset = self.pipeline.models[0].model.featureslice.featureset
         self.oofs = oofs
         self.score = score
         self.std = std
-        self.__name__ = f"{round(score, 3)}:exp({pipeline.__name__})"
+        self.__doc__ = description
+        self.__name__ = f"{round(score, 4)}:exp({pipeline.__name__})"
+        self.identifier = hash_str(self.__name__)[:6].upper()
 
     def __str__(self):
         string = f"({round(self.score, 5)}, std:{round(self.std, 3)}: \n\tModel: {self.pipeline.__name__})"
@@ -20,6 +30,23 @@ class Experiment(ArithmeticMixin):
 
     def predict(self, df):
         return self.pipeline.predict(df)
+
+    def __repr__(self):
+        fields = {
+            'Score': f"{round(self.score, 7)}, std: {round(self.std, 7)}",
+            'Identifier': self.identifier,
+            'Description': self.__doc__,
+            'Model': self.model_name + f'\tx{len(self.models)}',
+            'Model parameters': self.parameters,
+            'FeatureSet': self.featureset.__name__,
+            'FeatureSet description': self.featureset.__doc__,
+            'FeatureSet source': self.featureset.source
+        }
+
+        table = tt.Texttable(max_width=80)
+        for field in fields:
+            table.add_row([field, fields[field]])
+        return table.draw()
 
 
 class ExperimentList(MutableSequence):
@@ -46,7 +73,13 @@ class ExperimentList(MutableSequence):
         """
         self.recalc()
         if isinstance(item, str):
-            ans = [experiment for experiment in self.experiments if experiment.__name__.count(item) > 0]
+            if bool(re.match('[0-9A-F]{6}', item)):
+                ans = [experiment
+                       for experiment in self.experiments
+                       if 'identifier' in dir(experiment)
+                       and experiment.identifier == item]
+            else:
+                ans = [experiment for experiment in self.experiments if experiment.__name__.count(item) > 0]
         elif isinstance(item, float):
             mul = 10 ** len(str(item).split('.')[1])
             ans = [experiment for experiment in self.experiments if int(experiment.score * mul) == int(item * mul)]
