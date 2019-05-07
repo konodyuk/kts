@@ -39,6 +39,7 @@ setuptools.setup(
         "lightgbm",
         "catboost",
         "swifter",
-        "kts-cli"
+        "kts-cli",
+        "texttable"
     ]
 )
