@@ -19,7 +19,8 @@ class FeatureConstructor:
 
     # needs refactoring because of direct storing source
     def __call__(self, df, cache=None, **kwargs):
-        self = caching.cache.load_obj(self.__name__ + '_fc')
+        if not self.stl:
+            self = caching.cache.load_obj(self.__name__ + '_fc')
         # print("before constr", df.train)
         ktdf = dataframe.DataFrame(df)  # TODO: uncomment this line after tests with @preview
         # print("after constr:", ktdf.train)
