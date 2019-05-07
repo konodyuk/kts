@@ -8,6 +8,10 @@ def list_hash(lst, length):
     return hashlib.sha256(repr(tuple(lst)).encode()).hexdigest()[:length]
 
 
+def hash_str(a):
+    return hashlib.sha256(a.encode()).hexdigest()
+
+
 def extract_signature(func):
     args = inspect.getfullargspec(func).args
     defaults = inspect.getfullargspec(func).defaults
