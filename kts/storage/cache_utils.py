@@ -108,7 +108,12 @@ def save_obj(obj, path):
     """
     Saves object
     """
-    dill.dump(obj, open(path, 'wb'))
+    try:
+        dill.dump(obj, open(path, 'wb'))
+    except dill.PicklingError:
+        if os.path.exists(path):
+            os.remove(path)
+            raise Warning(f'PicklingError occured, removing {path}')
 
 
 def load_obj(path):
