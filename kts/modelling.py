@@ -8,7 +8,7 @@ class NamingMixin:
     def __name__(self):
         self.params = {key: self.get_params()[key] for key in self.tracked_params if
                        key in self.get_params()}
-        return f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
+        return f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-3:] if self.params else 'default'}"
 
 
 class ArithmeticMixin:
@@ -33,7 +33,17 @@ class ArithmeticMixin:
         return self + other
 
 
-class Model(ArithmeticMixin, NamingMixin):
+class SourceMixin:
+    @property
+    def source(self):
+        args = []
+        for key, value in self.get_params().items():
+            args.append(f"{key}={repr(value)}")
+        res = ', '.join(args)
+        return f"{self.__class__.__name__}({res})"
+
+
+class Model(ArithmeticMixin, NamingMixin, SourceMixin):
     tracked_params = []
     short_name = 'model'
 
