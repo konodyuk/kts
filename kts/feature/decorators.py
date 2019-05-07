@@ -81,19 +81,24 @@ def deregister(name, force=False):
     ```
     """
     confirmation = ''
+    fc_name = name + '_fc'
+    df_names = [df_name for df_name in cache.cached_dfs() if df_name.startswith(name + '__')]
+
     if not force:
-        print("Are you sure you want to delete all the cached files?")
+        print("Are you sure you want to delete all these cached files?")
+        if fc_name in cache.cached_objs():
+            print(fc_name)
+        for df_name in df_names:
+            print(df_name)
         print("To confirm please print full name of the function:")
         confirmation = input()
     if not force and confirmation != name:
         print("Doesn't match")
         return
 
-    fc_name = name + '_fc'
     if fc_name in cache.cached_objs():
         print(f'removing {fc_name}')
         cache.remove_obj(fc_name)
-    df_names = [df_name for df_name in cache.cached_dfs() if df_name.startswith(name + '__')]
     for df_name in df_names:
         print(f'removing {df_name}')
         cache.remove_df(df_name)
