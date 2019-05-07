@@ -10,7 +10,7 @@ import texttable as tt
 
 
 class Experiment(ArithmeticMixin):
-    def __init__(self, pipeline, oofs, score, std, description):
+    def __init__(self, pipeline, oofs, score, std, description, splitter):
         self.pipeline = pipeline
         self.model = self.pipeline.models[0].model.model  # TODO: test out
         self.model_name = self.model.__class__.__name__
@@ -20,9 +20,10 @@ class Experiment(ArithmeticMixin):
         self.oofs = oofs
         self.score = score
         self.std = std
-        self.__doc__ = description
-        self.__name__ = f"{round(score, 4)}:exp({pipeline.__name__})"
         self.identifier = hash_str(self.__name__)[:6].upper()
+        self.__doc__ = description if description is not None else 'no description'
+        self.__name__ = f"{self.identifier}:{round(score, 4)}:exp({pipeline.__name__})"
+        self.splitter = splitter
 
     def __str__(self):
         string = f"({round(self.score, 5)}, std:{round(self.std, 3)}: \n\tModel: {self.pipeline.__name__})"
@@ -36,11 +37,14 @@ class Experiment(ArithmeticMixin):
             'Score': f"{round(self.score, 7)}, std: {round(self.std, 7)}",
             'Identifier': self.identifier,
             'Description': self.__doc__,
-            'Model': self.model_name + f'\tx{len(self.models)}',
-            'Model parameters': self.parameters,
-            'FeatureSet': self.featureset.__name__,
-            'FeatureSet description': self.featureset.__doc__,
-            'FeatureSet source': self.featureset.source
+            # 'Model': self.model_name + f'\tx{len(self.models)}',
+            # 'Model parameters': self.parameters,
+            'Model': f"{self.model.__name__}\t x{len(self.models)}",
+            '|- source ': self.model.source,              # be careful with refactoring: if you remove this space,
+            'FeatureSet': self.featureset.__name__,       #
+            '|- description': self.featureset.__doc__,    #
+            '|- source': self.featureset.source,          # both "source" rows will be considered identical
+            'Splitter': self.splitter,
         }
 
         table = tt.Texttable(max_width=80)

@@ -69,7 +69,8 @@ class Validator:
                 oofs=oofs,
                 score=score,
                 std=std,
-                description=description
+                description=description,
+                splitter=self.splitter
             )
         )
         return score
