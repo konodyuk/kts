@@ -75,16 +75,22 @@ def make_ohe(cols, sep='_ohe_'):
     return wrap_stl_function(make_ohe, __make_ohe)
 
 
-def target_encoding(cols, target_col, aggregation='mean', prefix='me_'):
+def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
+    if type(cols) != list:
+        cols = [cols]
+    if type(target_cols) != list:
+        target_cols = [target_cols]
+
     def __target_encoding(df):
         res = empty_like(df)
-        for col in cols:
-            if df.train:
-                enc = df.groupby(col)[target_col].agg(aggregation)
-                df.encoders['__me_' + col] = enc
-            else:
-                enc = df.encoders['__me_' + col]
-            res[prefix + col] = df[col].map(enc)
+        for target_col in target_cols:
+            for col in cols:
+                if df.train:
+                    enc = df.groupby(col)[target_col].agg(aggregation)
+                    df.encoders[f"__te_{col}_{target_col}_{aggregation}"] = enc
+                else:
+                    enc = df.encoders[f"__te_{col}_{target_col}_{aggregation}"]
+                res[f"{col}{sep}{target_col}_{aggregation}"] = df[col].map(enc)
         return res
 
     # return FeatureConstructor(__target_encoding, cache_default=False)
