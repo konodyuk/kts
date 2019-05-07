@@ -76,13 +76,13 @@ class FeatureSet:
         if type(df_input) != type(None):
             self.set_df(df_input)
         self._first_name = name
-        self.description = None
+        self.__doc__ = None
         if desc is not None and description is not None:
             raise ValueError("desc is an alias of description. You can't use both")
         if description is not None:
-            self.description = description
+            self.__doc__ = description
         elif desc is not None:
-            self.description = desc
+            self.__doc__ = desc
 
     def set_df(self, df_input):
         self.df_input = dataframe.DataFrame(df_input)
@@ -112,7 +112,9 @@ class FeatureSet:
         return FeatureSet(self.fc_before,
                           self.fc_after,
                           target_column=self.target_column,
-                          encoders=self.encoders)
+                          encoders=self.encoders,
+                          name=self._first_name,
+                          description=self.__doc__)
 
     def slice(self, idxs):
         return FeatureSlice(self, idxs)
@@ -138,8 +140,10 @@ class FeatureSet:
     def source(self):
         fc_before_source = self.__get_src(self.fc_before)
         fc_after_source = self.__get_src(self.fc_after)
-        fs_source = 'FeatureSet(fc_before=' + fc_before_source + ', fc_after=' + fc_after_source + ', ' \
-                    + 'target_column=' + repr(self.target_column) + ')'
+        prefix = 'FeatureSet('
+        fs_source = prefix + 'fc_before=' + fc_before_source + ',\n' \
+                    + ' ' * len(prefix) + 'fc_after=' + fc_after_source + ',\n' \
+                    + ' ' * len(prefix) +  'target_column=' + repr(self.target_column) + ')'
         return fs_source
 
     def recover_name(self):
