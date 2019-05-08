@@ -1,6 +1,5 @@
 import pandas as pd
 from ..storage import cache
-import re
 from . import utils
 from ..utils import captcha
 from tqdm import tqdm
@@ -29,10 +28,6 @@ class Leaderboard:
         self._df = self._df.sort_values('Score', ascending=False)
         cache.remove_df(LB_DF_NAME)
         cache.cache_df(self._df, LB_DF_NAME)
-
-    def pprint(self):
-        self.reload()
-        return self._df
 
     def __getattr__(self, item):
         return getattr(self._df, item)
