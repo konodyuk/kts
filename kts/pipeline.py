@@ -4,6 +4,7 @@ class Pipeline(ArithmeticMixin):
     def __init__(self, model, featureslice):
         self.model = model
         self.featureslice = featureslice
+        self.__name__ = self.model.__name__ + '-' + self.featureslice.featureset.__name__
 
     def fit(self, **kwargs):
         tmp = self.featureslice()
