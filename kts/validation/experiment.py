@@ -1,7 +1,5 @@
 from ..modelling import ArithmeticMixin
 from ..storage import cache
-from .. import config
-import glob
 import re
 from collections import MutableSequence
 from ..utils import hash_str
@@ -10,7 +8,7 @@ import texttable as tt
 
 
 class Experiment(ArithmeticMixin):
-    def __init__(self, pipeline, oofs, score, std, description, splitter):
+    def __init__(self, pipeline, oofs, score, std, description, splitter, metric):
         self.pipeline = pipeline
         self.model = self.pipeline.models[0].model.model  # TODO: test out
         self.model_name = self.model.__class__.__name__
@@ -20,10 +18,11 @@ class Experiment(ArithmeticMixin):
         self.oofs = oofs
         self.score = score
         self.std = std
-        self.identifier = hash_str(self.__name__)[:6].upper()
+        self.identifier = hash_str(f'{round(score, 4)}-{pipeline.__name__}')[:6].upper()
         self.__doc__ = description if description is not None else 'no description'
-        self.__name__ = f"{self.identifier}:{round(score, 4)}:exp({pipeline.__name__})"
+        self.__name__ = f"{self.identifier}-{round(score, 4)}-{pipeline.__name__}"
         self.splitter = splitter
+        self.metric = metric
 
     def __str__(self):
         string = f"({round(self.score, 5)}, std:{round(self.std, 3)}: \n\tModel: {self.pipeline.__name__})"
@@ -34,7 +33,7 @@ class Experiment(ArithmeticMixin):
 
     def __repr__(self):
         fields = {
-            'Score': f"{round(self.score, 7)}, std: {round(self.std, 7)}",
+            'Score': f"{round(self.score, 7)}, std: {round(self.std, 7)} ({self.metric.__name__})",
             'Identifier': self.identifier,
             'Description': self.__doc__,
             # 'Model': self.model_name + f'\tx{len(self.models)}',
@@ -51,6 +50,26 @@ class Experiment(ArithmeticMixin):
         for field in fields:
             table.add_row([field, fields[field]])
         return table.draw()
+
+    def as_dict(self):
+        fields = {
+            'Score': self.score,
+            'std': self.std,
+            'ID': self.identifier,
+            'Model': self.model.__name__,
+            'FS': self.featureset.__name__,
+            'Description': self.__doc__,
+            'FS description': self.featureset.__doc__,
+            'Model source': self.model.source,
+            'FS source': self.featureset.source,
+            'Splitter': repr(self.splitter)
+        }
+        for field in fields:
+            fields[field] = [fields[field]]
+        return fields
+
+    def as_df(self):
+        return pd.DataFrame(self.as_dict()).set_index('ID')
 
 
 class ExperimentList(MutableSequence):
@@ -75,6 +94,7 @@ class ExperimentList(MutableSequence):
         :param item: str(name) or float(score), slice(score range or index range)
         :return: experiment or list of experiments
         """
+        raise DeprecationWarning('Use kts.lb, kts.experiments is deprecated')
         self.recalc()
         if isinstance(item, str):
             if bool(re.match('[0-9A-F]{6}', item)):
@@ -106,6 +126,7 @@ class ExperimentList(MutableSequence):
             return
 
     def __repr__(self):
+        raise DeprecationWarning('Use kts.lb, kts.experiments is deprecated')
         self.recalc()
         string = "Experiments: [\n" + '\n'.join([experiment.__str__() for experiment in self.experiments]) + '\n]'
         return string
@@ -123,6 +144,7 @@ class ExperimentList(MutableSequence):
         cache.cache_obj(experiment, experiment.__name__ + '_exp')
 
     def __len__(self):
+        raise DeprecationWarning('Use kts.lb, kts.experiments is deprecated')
         self.recalc()
         return len(self.experiments)
 
