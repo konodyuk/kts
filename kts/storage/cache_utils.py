@@ -6,15 +6,13 @@ import dill
 from glob import glob
 import os
 import numpy as np
+from ..utils import captcha
 
 
 def clear_storage():
     from .caching import cache
     cache.memory.clear()
-    np.random.seed(int(__import__("time").time()))
-    a, b = np.random.randint(5, 30, size=2)
-    c = int(input(f"{a} + {b} = "))
-    if a + b != c:
+    if not captcha():
         print("You aren't smart enough to take such decisions")
         return
     for path in glob(config.storage_path + '*_*') + glob(config.source_path + '*'):

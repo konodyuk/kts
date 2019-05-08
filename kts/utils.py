@@ -1,7 +1,17 @@
 import hashlib
 import inspect
-from .feature.storage import FeatureConstructor
 from itertools import zip_longest
+import numpy as np
+import time
+
+
+def captcha():
+    np.random.seed(int(time.time()))
+    a, b = np.random.randint(5, 30, size=2)
+    c = int(input(f"{a} + {b} = "))
+    if a + b != c:
+        return False
+    return True
 
 
 def list_hash(lst, length):
@@ -29,8 +39,3 @@ def extract_signature(func):
     return ', '.join(sources)
 
 
-def wrap_stl_function(outer_function, inner_function):
-    source = f'stl.{outer_function.__name__}({extract_signature(outer_function)})'
-    fc = FeatureConstructor(inner_function, cache_default=False, stl=True)
-    fc.source = source
-    return fc

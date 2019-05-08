@@ -4,7 +4,14 @@ import numpy as np
 from ..storage.dataframe import DataFrame as KTDF
 from ..zoo.cluster import KMeansFeaturizer
 from sklearn.preprocessing import StandardScaler
-from ..utils import list_hash, wrap_stl_function
+from ..utils import list_hash, extract_signature
+
+
+def wrap_stl_function(outer_function, inner_function):
+    source = f'stl.{outer_function.__name__}({extract_signature(outer_function)})'
+    fc = FeatureConstructor(inner_function, cache_default=False, stl=True)
+    fc.source = source
+    return fc
 
 
 def empty_like(df):
