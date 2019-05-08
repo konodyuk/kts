@@ -19,11 +19,11 @@ from .storage.caching import save, load, ls, remove, rm
 from .validation.leaderboard import leaderboard
 lb = leaderboard
 
-import mprop
-
-@property
-def __version__(kts):
-    ans = os.popen(f'{sys.executable} -m pip show kts').read().split()
-    return [ans[i + 1] for i in range(len(ans)) if 'version' in ans[i].lower()][0]
-
-mprop.init()
+# import mprop
+#
+# @property
+# def __version__(kts):
+#     ans = os.popen(f'{sys.executable} -m pip show kts').read().split()
+#     return [ans[i + 1] for i in range(len(ans)) if 'version' in ans[i].lower()][0]
+#
+# mprop.init()
