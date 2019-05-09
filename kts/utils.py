@@ -35,7 +35,18 @@ def extract_signature(func):
     sources = []
     for arg, default in list(zip_longest(args[::-1], defaults[::-1]))[::-1]:
         if values[arg] != default:
-            sources.append(f'{arg}={repr(values[arg])}')
+            if is_helper(values[arg]):
+                arg_repr = values[arg].__name__
+            else:
+                arg_repr = repr(values[arg])
+            sources.append(f'{arg}={arg_repr)}')
     return ', '.join(sources)
 
+
+def is_helper(func):
+    return callable(func) \
+           and '__name__' in dir(func) \
+           and 'source' in dir(func) \
+           and isinstance(func.source, str) \
+           and 'def' in func.source  # genius
 
