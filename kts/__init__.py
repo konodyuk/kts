@@ -5,9 +5,10 @@ sys.path.insert(0, '.')
 
 from .cli import check_file_system
 check_file_system()
-from .feature.decorators import preview, register, deregister, dropper, selector
+from .feature.decorators import preview, register, deregister, dropper, selector, helper
 from .feature import stl
 from .feature.storage import feature_list as features
+from .feature import helper_list as helpers
 from .feature.storage import FeatureSet
 from .validation.experiment import experiment_list as experiments
 from .validation import Validator
