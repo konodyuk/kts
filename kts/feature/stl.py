@@ -4,7 +4,7 @@ import numpy as np
 from ..storage.dataframe import DataFrame as KTDF
 from ..zoo.cluster import KMeansFeaturizer
 from sklearn.preprocessing import StandardScaler
-from ..utils import list_hash, extract_signature
+from ..utils import list_hash, extract_signature, is_helper
 
 
 def wrap_stl_function(outer_function, inner_function):
@@ -82,11 +82,30 @@ def make_ohe(cols, sep='_ohe_'):
     return wrap_stl_function(make_ohe, __make_ohe)
 
 
+# TODO: get helper-objects as args, not only functions, with fit() and transform() methods,
+#       then call tfm.fit(df) and ..groupby().agg(tfm.transform)
+#       will be useful for weighted target encoding,
+#       like (df.sum() + C * global_mean) / (df.count() + C)
+#       where global_mean is to be extracted inside of fit() call
 def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
+    """ Template for creating target encoding FeatureConstructors
+
+    :param cols: columns to encode
+    :param target_cols: columns which values are aggregated
+    :param aggregation: name of built-in pandas aggregation or @helper-function
+    :param sep: string separator used for column naming
+    :return: FeatureConstructor: df -> features
+    """
     if type(cols) != list:
         cols = [cols]
     if type(target_cols) != list:
         target_cols = [target_cols]
+    if isinstance(aggregation, str):
+        aggregation_name = aggregation
+    elif is_helper(aggregation):
+        aggregation_name = aggregation.__name__
+    else:
+        raise TypeError('aggregation parameter should be either string or helper')
 
     def __target_encoding(df):
         res = empty_like(df)
@@ -94,10 +113,10 @@ def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
             for col in cols:
                 if df.train:
                     enc = df.groupby(col)[target_col].agg(aggregation)
-                    df.encoders[f"__te_{col}_{target_col}_{aggregation}"] = enc
+                    df.encoders[f"__te_{col}_{target_col}_{aggregation_name}"] = enc
                 else:
-                    enc = df.encoders[f"__te_{col}_{target_col}_{aggregation}"]
-                res[f"{col}{sep}{target_col}_{aggregation}"] = df[col].map(enc)
+                    enc = df.encoders[f"__te_{col}_{target_col}_{aggregation_name}"]
+                res[f"{col}{sep}{target_col}_{aggregation_name}"] = df[col].map(enc)
         return res
 
     # return FeatureConstructor(__target_encoding, cache_default=False)
