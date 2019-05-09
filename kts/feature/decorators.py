@@ -141,5 +141,17 @@ def selector(function):
     return register(function, cache_default=False)
 
 
-# def trainable(function):
-#     def __trainable(df, )
+def helper(func):
+    """
+    Save function as helper to store its source
+    and be able to define it in any notebook with kts.helpers.define_in_scope()
+
+    :param func: function
+    :return: function with .source method
+    """
+    assert '__name__' in dir(func), 'Helper should have a name'
+    func.source = source_utils.get_source(func)
+    if func.__name__ + '_helper' in cache.cached_objs():
+        cache.remove_obj(func.__name__ + '_helper')
+    cache.cache_obj(func, func.__name__ + '_helper')
+    return func
