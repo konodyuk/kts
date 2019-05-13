@@ -39,7 +39,7 @@ def extract_signature(func):
                 arg_repr = values[arg].__name__
             else:
                 arg_repr = repr(values[arg])
-            sources.append(f'{arg}={arg_repr)}')
+            sources.append(f'{arg}={arg_repr}')
     return ', '.join(sources)
 
 
