@@ -58,7 +58,7 @@ from . import stl
 
 
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, name=None, description=None, desc=None, encoders={}):
+    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, name=None, description=None, desc=None, encoders=None):
         if type(fc_before) == list:
             self.fc_before = stl.concat(fc_before)
         elif type(fc_before) == tuple:
@@ -72,8 +72,8 @@ class FeatureSet:
         else:
             self.fc_after = fc_after
         self.target_column = target_column
-        self.encoders = encoders
-        if type(df_input) != type(None):
+        self.encoders = (encoders if encoders is not None else dict())
+        if df_input is not None:
             self.set_df(df_input)
         self._first_name = name
         self.__doc__ = None
