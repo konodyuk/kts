@@ -8,18 +8,18 @@ import texttable as tt
 
 
 class Experiment(ArithmeticMixin):
-    def __init__(self, pipeline, oofs, score, std, description, splitter, metric):
+    def __init__(self, pipeline, oof, score, std, description, splitter, metric):
         self.pipeline = pipeline
         self.model = self.pipeline.models[0].model.model  # TODO: test out
         self.model_name = self.model.__class__.__name__
         self.parameters = self.model.get_params()
         self.models = [model.model.model for model in self.pipeline.models]
         self.featureset = self.pipeline.models[0].model.featureslice.featureset
-        self.oofs = oofs
+        self.oof = oof
         self.score = score
         self.std = std
         self.identifier = hash_str(f'{round(score, 4)}-{pipeline.__name__}')[:6].upper()
-        self.oofs.columns = [self.identifier]
+        self.oof.columns = [self.identifier]
         self.__doc__ = description if description is not None else 'no description'
         self.__name__ = f"{self.identifier}-{round(score, 4)}-{pipeline.__name__}"
         self.splitter = splitter

@@ -34,7 +34,7 @@ class Validator:
         pipelines = []
         scores = []
         y = featureset.target
-        oofs = np.zeros_like(y, dtype=np.float)
+        oof = np.zeros_like(y, dtype=np.float)
         weights = np.zeros_like(y, dtype=np.float)
         model_name = f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
         mb = master_bar(self.splitter.split(y, y),
@@ -59,7 +59,7 @@ class Validator:
             mb.child.comment = 'validating...'
             pred = pl.predict(idx_test)
             pl.featureslice.compress()
-            oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
+            oof[idx_test] = (weights[idx_test] * oof[idx_test] + pred) / (weights[idx_test] + 1)
             weights[idx_test] += 1
             # print(featureset.target[idx_test].values[:10], pred[:10])
             score = self.metric(featureset.target.values[idx_test], pred)
@@ -72,11 +72,11 @@ class Validator:
         final_ensemble.__name__ = model_name
         score = np.mean(scores)
         std = np.std(scores)
-        oofs = pd.DataFrame({'prediction': oofs})
-        oofs.set_index(featureset.target.index, inplace=True)
+        oof = pd.DataFrame({'prediction': oof})
+        oof.set_index(featureset.target.index, inplace=True)
         exp = Experiment(
                 pipeline=final_ensemble,
-                oofs=oofs,
+                oof=oof,
                 score=score,
                 std=std,
                 description=description,

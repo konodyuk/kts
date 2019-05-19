@@ -266,7 +266,7 @@ def standardize(cols, prefix='std_'):
 
 def stack(ids):
     def __stack(df):
-        oof_preds = merge([lb[id_exp].oofs for id_exp in ids])
+        oof_preds = merge([lb[id_exp].oof for id_exp in ids])
         try:
             res = oof_preds[df.index]
             if res.isna().sum().sum() > 0:
