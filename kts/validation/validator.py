@@ -42,7 +42,7 @@ class Validator:
 
             fsl()
             try:
-                pl.fit(eval_set=[(fsl(idx_test).values, featureset.target[idx_test].values)], **fit_params)
+                pl.fit(eval_set=[(fsl(idx_test).values, featureset.target.values[idx_test])], **fit_params)
             except:
                 pl.fit(**fit_params)
 
