@@ -3,8 +3,8 @@ import sys
 sys.path.insert(0, '.')
 
 
-from .cli import check_file_system
-check_file_system()
+from .environment import get_mode
+get_mode()
 from .feature.decorators import preview, register, deregister, dropper, selector, helper
 from .feature import stl
 from .feature.storage import feature_list as features
