@@ -35,11 +35,9 @@ setuptools.setup(
         "matplotlib",
         "dill",
         "feather-format",
-        "xgboost",
-        "lightgbm",
-        "catboost",
         "swifter",
         "kts-cli",
-        "texttable"
+        "texttable",
+        "fastprogress"
     ]
 )
