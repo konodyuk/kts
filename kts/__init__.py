@@ -19,6 +19,7 @@ from .storage.dataframe import DataFrame as KTDF
 from .storage.caching import save, load, ls, remove, rm
 from .validation.leaderboard import leaderboard
 lb = leaderboard
+from . import zoo
 
 # import mprop
 #

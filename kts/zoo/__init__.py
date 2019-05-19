@@ -1,6 +1,10 @@
 from . import classification
 from . import binary_classification
 from . import regression
+c = classification
+bc = binary_classification
+r = regression
+
 from .. import modelling
 # import forge
 #
