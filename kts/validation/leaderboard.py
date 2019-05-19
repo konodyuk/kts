@@ -16,6 +16,8 @@ class Leaderboard:
             cache.cache_df(self._df, LB_DF_NAME)
 
     def register(self, experiment):
+        if experiment.__name__ + '_exp' in cache.cached_objs():
+            return
         cache.cache_obj(experiment, experiment.__name__ + '_exp')
         self.add_row(experiment.as_df())
 
