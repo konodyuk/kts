@@ -5,14 +5,17 @@ from .leaderboard import leaderboard
 from ..pipeline import Pipeline
 from ..modelling import Ensemble
 from copy import deepcopy
-import tqdm
+from fastprogress import master_bar, progress_bar
+from fastprogress.fastprogress import IN_NOTEBOOK
+
+if IN_NOTEBOOK:
+    from IPython.display import HTML
 
 
 class Validator:
-    def __init__(self, splitter, metric, enable_widget=False):
+    def __init__(self, splitter, metric):
         self.splitter = splitter
         self.metric = metric
-        self.bar = (tqdm.tqdm_notebook if enable_widget else tqdm.tqdm)
         
     def score(self, model, featureset, description=None, desc=None, **fit_params):
         try:
@@ -33,19 +36,26 @@ class Validator:
         oofs = np.zeros_like(y, dtype=np.float)
         weights = np.zeros_like(y, dtype=np.float)
         model_name = f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
-        pbar = self.bar(self.splitter.split(y, y), total=self.splitter.get_n_splits())
-        pbar.set_description_str(f"Val of {model_name}")
-        for idx_train, idx_test in pbar:
+        mb = master_bar(self.splitter.split(y, y),
+                        total=self.splitter.get_n_splits(),
+                        total_time=True)
+        mb.write(f"Validation of {model_name}:")
+        for idx_train, idx_test in mb:
             c_model = deepcopy(model)
             fsl = featureset.slice(idx_train)
             pl = Pipeline(c_model, fsl)
-
+            pb = progress_bar(range(2), parent=mb)
+            mb.child.comment = f'training...'
+            pb.on_iter_begin()
+            pb.update(0)
             fsl()
             try:
                 pl.fit(eval_set=[(fsl(idx_test).values, featureset.target.values[idx_test])], **fit_params)
             except:
+                mb.child.comment = 'failed to train with eval_set, training without it...'
                 pl.fit(**fit_params)
-
+            pb.update(1)
+            mb.child.comment = 'validating...'
             pred = pl.predict(idx_test)
             pl.featureslice.compress()
             oofs[idx_test] = (weights[idx_test] * oofs[idx_test] + pred) / (weights[idx_test] + 1)
@@ -54,7 +64,8 @@ class Validator:
             score = self.metric(featureset.target.values[idx_test], pred)
             pipelines.append(pl)
             scores.append(score)
-            pbar.set_postfix_str(f"score: {np.mean(scores)}")
+            pb.update(2)
+            mb.first_bar.comment = f"{round(np.mean(scores), 7)}"
         final_ensemble = Ensemble(pipelines)
         final_ensemble = final_ensemble / len(pipelines)
         final_ensemble.__name__ = model_name
@@ -68,7 +79,9 @@ class Validator:
                 description=description,
                 splitter=self.splitter,
                 metric=self.metric)
-        # experiment_list.register(exp)
+        if IN_NOTEBOOK:
+            mb.text = f"ID: {exp.identifier}<p>" + mb.text
+            mb.out.update(HTML(mb.text))
         leaderboard.register(exp)
         return score
 
