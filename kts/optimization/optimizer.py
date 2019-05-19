@@ -4,10 +4,11 @@ from skopt.plots import plot_convergence, plot_evaluations, plot_objective
 from IPython.display import clear_output
 import matplotlib.pyplot as plt
 
-plt.style.use('dark_background')
+plt.style.use('dark_background') # such a bad thing, it should rather be specified in kts_config.py file in a kts-project
 
 class Optimizer:
     def __init__(self, model, featureset, target, validator, goal='maximize', search_spaces=None):
+        raise NotImplementedError
         if isinstance(search_spaces, type(None)):
             self.search_spaces = type(model).search_spaces
         else:
