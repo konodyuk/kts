@@ -3,7 +3,6 @@ from .. import config
 import datetime
 from glob import glob
 import os
-from .info import info
 import pandas as pd
 from .dataframe import DataFrame as KTDF
 
@@ -17,10 +16,6 @@ class Cache:
         self.last_used = dict()
         self.edited_at = dict()
         self.current_volume = 0
-        try:
-            _ = info.memory_limit  # to check whether it exists
-        except Exception:
-            info.memory_limit = 4 * (1024 ** 3)  # 4 Gb
 
     @staticmethod
     def set_memory_limit(volume):
@@ -29,7 +24,7 @@ class Cache:
         :param volume: new memory limit
         :return:
         """
-        info.memory_limit = volume
+        config.memory_limit = volume
 
     def __release_volume(self, df):
         """
@@ -40,7 +35,7 @@ class Cache:
 
         items = sorted([(time, key) for (key, time) in self.last_used.items()])
         cur = 0
-        while self.current_volume + cache_utils.get_df_volume(df) > info.memory_limit:
+        while self.current_volume + cache_utils.get_df_volume(df) > config.memory_limit:
             key = items[cur][1]
             cur += 1
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
@@ -67,7 +62,7 @@ class Cache:
         """
         if self.is_cached_df(name):
             return
-        if cache_utils.get_df_volume(df) > info.memory_limit:
+        if cache_utils.get_df_volume(df) > config.memory_limit:
             raise MemoryError
 
         dict_name = name + '_df'
@@ -201,7 +196,200 @@ class Cache:
                 sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
 
 
-cache = Cache()
+class RAMCache:
+    """
+    LRU RAM cache for DataFrames and objects
+    """
+
+    def __init__(self):
+        self.memory = dict()
+        self.last_used = dict()
+        self.current_volume = 0
+
+    @staticmethod
+    def set_memory_limit(volume):
+        """
+        Sets a new memory limit in bytes
+        :param volume: new memory limit
+        :return:
+        """
+        config.memory_limit = volume
+
+    def __release_volume(self, df):
+        """
+        Removes most unpopular dataframes until it is possible to cache given one
+        :param df: dataframe
+        :return:
+        """
+
+        items = sorted([(time, key) for (key, time) in self.last_used.items()])
+        cur = 0
+        while self.current_volume + cache_utils.get_df_volume(df) > config.memory_limit:
+            key = items[cur][1]
+            cur += 1
+            self.current_volume -= cache_utils.get_df_volume(self.memory[key])
+            self.memory.pop(key)
+            self.last_used.pop(key)
+
+    def is_cached_df(self, name):
+        """
+        Checks whether given df is cached
+        :param name: name of dataframe
+        :return: True or False (cache hit or miss)
+        """
+        dict_name = name + '_df'
+        return dict_name in self.memory
+
+    def cache_df(self, df, name):
+        """
+        Caches dataframe with given name
+        :param df: df
+        :param name: df name
+        :return:
+        """
+        if self.is_cached_df(name):
+            return
+        if cache_utils.get_df_volume(df) > config.memory_limit:
+            raise MemoryError
+
+        dict_name = name + '_df'
+        self.__release_volume(df)
+        self.memory[dict_name] = df
+        self.current_volume += cache_utils.get_df_volume(df)
+        self.last_used[dict_name] = datetime.datetime.now()
+
+    def load_df(self, name):
+        """
+        Loads dataframe from cache
+        :param name: name of df
+        :return:
+        """
+        if not self.is_cached_df(name):
+            raise KeyError("No such df in cache")
+
+        dict_name = name + '_df'
+        self.last_used[dict_name] = datetime.datetime.now()
+        return self.memory[dict_name]
+
+    def remove_df(self, name):
+        """
+        Removes dataframe from cache
+        :param name: name of df
+        :return:
+        """
+        dict_name = name + '_df'
+        if dict_name in self.memory:
+            self.current_volume -= cache_utils.get_df_volume(self.memory[dict_name])
+            self.memory.pop(dict_name)
+        if dict_name in self.last_used:
+            self.last_used.pop(dict_name)
+
+    def cached_dfs(self):
+        """
+        Returns list of cached dataframes
+        :return:
+        """
+        return [i[:-3] for i in list(self.memory.keys()) if i.endswith('_df')]
+
+    def is_cached_obj(self, name):
+        """
+        Checks whether object is in cache
+        :param name: name of object
+        :return: True or False (cache hit or miss)
+        """
+        dict_name = name + '_obj'
+        return dict_name in self.memory
+
+    def cache_obj(self, obj, name):
+        """
+        Caches object with given name
+        :param obj: object
+        :param name: object name
+        :return:
+        """
+        if self.is_cached_obj(name):
+            return
+
+        dict_name = name + '_obj'
+        self.memory[dict_name] = obj
+
+    def load_obj(self, name):
+        """
+        Loads object from cache
+        :param name: name of object
+        :return:
+        """
+        if not self.is_cached_obj(name):
+            raise KeyError("No such object in cache")
+
+        dict_name = name + '_obj'
+        return self.memory[dict_name]
+
+    def remove_obj(self, name):
+        """
+        Removes object from cache
+        :param name: name of object
+        :return:
+        """
+        dict_name = name + '_obj'
+        if dict_name in self.memory:
+            self.memory.pop(dict_name)
+
+    def cached_objs(self):
+        """
+        Returns list of cached objects
+        :return:
+        """
+        return [i[:-4] for i in list(self.memory.keys()) if i.endswith('_obj')]
+
+
+class EmptyCache:
+    """
+    Fake interface, doesn't cache anything
+    """
+
+    def __init__(self):
+        pass
+
+    def is_cached_df(self, name):
+        return False
+
+    def cache_df(self, df, name):
+        pass
+
+    def load_df(self, name):
+        raise KeyError
+
+    def remove_df(self, name):
+        pass
+
+    @staticmethod
+    def cached_dfs():
+        return []
+
+    def is_cached_obj(self, name):
+        return False
+
+    def cache_obj(self, obj, name):
+        pass
+
+    def load_obj(self, name):
+        raise KeyError
+
+    def remove_obj(self, name):
+        pass
+
+    @staticmethod
+    def cached_objs():
+        return []
+
+
+if config.mode == 'local':
+    cache = Cache()
+elif config.mode == 'toolset':
+    cache = EmptyCache()
+elif config.mode == 'kaggle':
+    cache = RAMCache()
 
 
 USER_SEP = '__USER__'
