@@ -5,6 +5,7 @@ from ..storage.dataframe import DataFrame as KTDF
 from ..zoo.cluster import KMeansFeaturizer
 from sklearn.preprocessing import StandardScaler
 from ..utils import list_hash, extract_signature, is_helper
+from ..validation.leaderboard import leaderboard as lb
 
 
 def wrap_stl_function(outer_function, inner_function):
@@ -87,6 +88,7 @@ def make_ohe(cols, sep='_ohe_'):
 #       will be useful for weighted target encoding,
 #       like (df.sum() + C * global_mean) / (df.count() + C)
 #       where global_mean is to be extracted inside of fit() call
+# TODO: set global_answer var and .fillna(global_answer) for each pair of columns (for new classes)
 def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
     """ Template for creating target encoding FeatureConstructors
 
@@ -113,10 +115,14 @@ def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
             for col in cols:
                 if df.train:
                     enc = df.groupby(col)[target_col].agg(aggregation)
+                    global_answer = df[target_col].agg(aggregation)
                     df.encoders[f"__te_{col}_{target_col}_{aggregation_name}"] = enc
+                    df.encoders[f"__te_{col}_{target_col}_{aggregation_name}_global_answer"] = global_answer
                 else:
                     enc = df.encoders[f"__te_{col}_{target_col}_{aggregation_name}"]
+                    global_answer = df.encoders[f"__te_{col}_{target_col}_{aggregation_name}_global_answer"]
                 res[f"{col}{sep}{target_col}_{aggregation_name}"] = df[col].map(enc)
+                res[f"{col}{sep}{target_col}_{aggregation_name}"].fillna(global_answer, inplace=True)
         return res
 
     # return FeatureConstructor(__target_encoding, cache_default=False)
@@ -256,6 +262,22 @@ def standardize(cols, prefix='std_'):
 
     # return FeatureConstructor(__standardize, cache_default=False)
     return wrap_stl_function(standardize, __standardize)
+
+
+def stack(ids):
+    def __stack(df):
+        oof_preds = merge([lb[id_exp].oofs for id_exp in ids])
+        try:
+            res = oof_preds[df.index]
+            if res.isna().sum().sum() > 0:
+                bad_indices = res.isna().sum(axis=1) > 0
+                res[bad_indices] = merge([pd.DataFrame({id_exp: lb[id_exp].predict(df[bad_indices])}) for id_exp in ids])
+        except:
+            res = merge([pd.DataFrame({id_exp: lb[id_exp].predict(df)}) for id_exp in ids])
+            res.set_index(df.index, inplace=True)
+        return res
+
+    return wrap_stl_function(stack, __stack)
 
 
 # TODO: implement
