@@ -6,6 +6,7 @@ from ..zoo.cluster import KMeansFeaturizer
 from sklearn.preprocessing import StandardScaler
 from ..utils import list_hash, extract_signature, is_helper
 from ..validation.leaderboard import leaderboard as lb
+# from joblib import Parallel, delayed
 
 
 def wrap_stl_function(outer_function, inner_function):
@@ -271,9 +272,19 @@ def stack(ids):
             res = oof_preds[df.index]
             if res.isna().sum().sum() > 0:
                 bad_indices = res.isna().sum(axis=1) > 0
-                res[bad_indices] = merge([pd.DataFrame({id_exp: lb[id_exp].predict(df[bad_indices])}) for id_exp in ids])
+                # try:
+                #     preds = Parallel(n_jobs=-1)([delayed(lb[id_exp].predict)(df[bad_indices]) for id_exp in ids])
+                # except Exception as e:
+                #     raise e
+                preds = [lb[id_exp].predict(df[bad_indices]) for id_exp in ids]
+                res[bad_indices] = merge([pd.DataFrame({id_exp: pred}) for id_exp, pred in zip(ids, preds)])
         except:
-            res = merge([pd.DataFrame({id_exp: lb[id_exp].predict(df)}) for id_exp in ids])
+            # try:
+            #     preds = Parallel(n_jobs=-1)([delayed(lb[id_exp].predict)(df) for id_exp in ids])
+            # except Exception as e:
+            #     raise e
+            preds = [lb[id_exp].predict(df) for id_exp in ids]
+            res = merge([pd.DataFrame({id_exp: pred}) for id_exp, pred in zip(ids, preds)])
             res.set_index(df.index, inplace=True)
         return res
 
