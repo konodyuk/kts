@@ -83,8 +83,10 @@ class Validator:
                 splitter=self.splitter,
                 metric=self.metric)
         if IN_NOTEBOOK:
-            mb.text = f"ID: {exp.identifier}<p>" + mb.text
+            mb.text = f"ID: {exp.identifier}<p> Score: {score}<p>" + mb.text
             mb.out.update(HTML(mb.text))
         leaderboard.register(exp)
         return score
 
+    def __repr__(self):
+        return f'Validator({self.splitter}, {self.metric.__name__})'
