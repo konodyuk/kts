@@ -6,6 +6,7 @@ import os
 
 class Info:
     def __init__(self):
+        raise DeprecationWarning('Info is deprecated, edit kts_config.py instead')
         super().__setattr__('__attributes', dict())
         self.recalc()
 
@@ -36,4 +37,4 @@ class Info:
             cache_utils.save_obj(value, cache_utils.get_path_info(key))
 
 
-info = Info()
+# info = Info()
