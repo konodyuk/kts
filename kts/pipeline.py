@@ -7,8 +7,9 @@ class Pipeline(ArithmeticMixin):
         self.__name__ = self.model.__name__ + '-' + self.featureslice.featureset.__name__
 
     def fit(self, **kwargs):
-        tmp = self.featureslice()
-        self.model.fit(tmp.values, self.featureslice.target.values, **kwargs)
+        X = self.featureslice().values
+        y = self.featureslice.target.values
+        self.model.fit(X, y, **kwargs)
 
     def predict(self, df, **kwargs):
         return self.model.predict(self.featureslice(df).values, **kwargs)
