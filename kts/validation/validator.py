@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from .experiment import experiment_list, Experiment
 from .leaderboard import leaderboard
@@ -71,6 +72,8 @@ class Validator:
         final_ensemble.__name__ = model_name
         score = np.mean(scores)
         std = np.std(scores)
+        oofs = pd.DataFrame({'prediction': oofs})
+        oofs.set_index(featureset.target.index, inplace=True)
         exp = Experiment(
                 pipeline=final_ensemble,
                 oofs=oofs,

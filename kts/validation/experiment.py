@@ -19,6 +19,7 @@ class Experiment(ArithmeticMixin):
         self.score = score
         self.std = std
         self.identifier = hash_str(f'{round(score, 4)}-{pipeline.__name__}')[:6].upper()
+        self.oofs.columns = [self.identifier]
         self.__doc__ = description if description is not None else 'no description'
         self.__name__ = f"{self.identifier}-{round(score, 4)}-{pipeline.__name__}"
         self.splitter = splitter
