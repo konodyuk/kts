@@ -3,8 +3,9 @@ import sys
 sys.path.insert(0, '.')
 
 
-from .environment import get_mode
-get_mode()
+# from .environment import get_mode
+# get_mode()
+from . import config
 from .feature.decorators import preview, register, deregister, dropper, selector, helper
 from .feature import stl
 from .feature.storage import feature_list as features
@@ -21,6 +22,7 @@ from .validation.leaderboard import leaderboard
 lb = leaderboard
 from . import zoo
 from .ensembling import stack
+# from .submission import submit
 
 # import mprop
 #
