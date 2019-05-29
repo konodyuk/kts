@@ -450,7 +450,7 @@ class DiskCache:
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
 
-        cache_utils.load_obj(cache_utils.get_path_obj(name))
+        return cache_utils.load_obj(cache_utils.get_path_obj(name))
 
     def remove_obj(self, name):
         """
