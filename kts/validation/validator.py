@@ -39,7 +39,7 @@ class Validator:
         model_name = f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
         mb = master_bar(self.splitter.split(y, y),
                         total=self.splitter.get_n_splits(),
-                        total_time=True)
+                        total_time=IN_NOTEBOOK)
         mb.write(f"Validation of {model_name}:")
         for idx_train, idx_test in mb:
             c_model = deepcopy(model)
@@ -74,14 +74,19 @@ class Validator:
         std = np.std(scores)
         oof = pd.DataFrame({'prediction': oof})
         oof.set_index(featureset.target.index, inplace=True)
+        from ..feature.storage import feature_list
+        from ..feature.helper import helper_list
         exp = Experiment(
-                pipeline=final_ensemble,
-                oof=oof,
-                score=score,
-                std=std,
-                description=description,
-                splitter=self.splitter,
-                metric=self.metric)
+            pipeline=final_ensemble,
+            oof=oof,
+            score=score,
+            std=std,
+            description=description,
+            splitter=self.splitter,
+            metric=self.metric,
+            feature_list=list(feature_list),
+            helper_list=list(helper_list),
+        )
         if IN_NOTEBOOK:
             mb.text = f"ID: {exp.identifier}<p> Score: {score}<p>" + mb.text
             mb.out.update(HTML(mb.text))

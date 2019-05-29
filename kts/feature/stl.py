@@ -5,7 +5,6 @@ from ..storage.dataframe import DataFrame as KTDF
 from ..zoo.cluster import KMeansFeaturizer
 from sklearn.preprocessing import StandardScaler
 from ..utils import list_hash, extract_signature, is_helper
-from ..validation.leaderboard import leaderboard as lb
 # from joblib import Parallel, delayed
 
 
@@ -265,6 +264,7 @@ def standardize(cols, prefix='std_'):
     return wrap_stl_function(standardize, __standardize)
 
 
+from ..validation.leaderboard import leaderboard as lb
 def stack(ids):
     def __stack(df):
         oof_preds = merge([lb[id_exp].oof for id_exp in ids])
