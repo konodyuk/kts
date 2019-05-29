@@ -3,17 +3,15 @@ from ..storage import cache
 from . import utils
 from ..utils import captcha
 from tqdm import tqdm
-
-LB_DF_NAME = '__leaderboard'
-
+from .. import config
 
 class Leaderboard:
     def __init__(self):
-        if LB_DF_NAME in cache.cached_dfs():
-            self._df = cache.load_df(LB_DF_NAME)
+        if config.LB_DF_NAME in cache.cached_dfs():
+            self._df = cache.load_df(config.LB_DF_NAME)
         else:
             self._df = pd.DataFrame()
-            cache.cache_df(self._df, LB_DF_NAME)
+            cache.cache_df(self._df, config.LB_DF_NAME)
 
     def register(self, experiment):
         if experiment.__name__ + '_exp' in cache.cached_objs():
@@ -22,14 +20,14 @@ class Leaderboard:
         self.add_row(experiment.as_df())
 
     def reload(self):
-        self._df = cache.load_df(LB_DF_NAME)
+        self._df = cache.load_df(config.LB_DF_NAME)
 
     def add_row(self, row):
         self.reload()
         self._df = self._df.append(row)
         self._df = self._df.sort_values('Score', ascending=False)
-        cache.remove_df(LB_DF_NAME)
-        cache.cache_df(self._df, LB_DF_NAME)
+        cache.remove_df(config.LB_DF_NAME)
+        cache.cache_df(self._df, config.LB_DF_NAME)
 
     def __getattr__(self, item):
         return getattr(self._df, item)
@@ -61,8 +59,8 @@ class Leaderboard:
         if not captcha():
             return
         self._df = pd.DataFrame()
-        cache.remove_df(LB_DF_NAME)
-        cache.cache_df(self._df, LB_DF_NAME)
+        cache.remove_df(config.LB_DF_NAME)
+        cache.cache_df(self._df, config.LB_DF_NAME)
         for name in tqdm(names):
             self.add_row(cache.load_obj(name).as_df())
         print('Done')
