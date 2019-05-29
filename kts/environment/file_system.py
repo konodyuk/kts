@@ -1,6 +1,6 @@
 import os
 import json
-from .. import config
+# from .. import config
 from warnings import warn
 
 
@@ -24,14 +24,15 @@ def parse(file):
 def get_mode():
     if find_root_dir():
         # config.storage_path = parse(find_root_dir() + '.kts')['storage_path']
-        config.cache_mode = 'disk_and_ram'
-        config.cache_policy = 'everything'
-        config.root_dir = find_root_dir()
+        cache_mode = 'disk_and_ram'
+        cache_policy = 'everything'
+        root_dir = find_root_dir()
     else:
         # warn("Couldn't find existing kts project. Setting kaggle-mode")
-        config.cache_mode = 'ram'
-        config.cache_policy = 'service'
-        config.root_dir = '.'
+        cache_mode = 'ram'
+        cache_policy = 'service'
+        root_dir = '.'
+    return cache_mode, cache_policy, root_dir
 
 
 def check_structure(paths):
