@@ -7,7 +7,7 @@ from warnings import warn
 def find_root_dir():
     i = 0
     while os.path.realpath('../' * i) != '/':
-        if os.path.exists('../' * i + '.kts'):
+        if os.path.exists('../' * i + 'kts_config.py'):
             if i != 0:
                 return '../' * i
             else:
@@ -23,12 +23,14 @@ def parse(file):
 
 def get_mode():
     if find_root_dir():
-        config.storage_path = parse(find_root_dir() + '.kts')['storage_path']
-        config.mode = 'local'
+        # config.storage_path = parse(find_root_dir() + '.kts')['storage_path']
+        config.cache_mode = 'disk_and_ram'
+        config.cache_policy = 'everything'
         config.root_dir = find_root_dir()
     else:
-        warn("Couldn't find existing kts project. Setting kaggle-mode")
-        config.mode = 'kaggle'
+        # warn("Couldn't find existing kts project. Setting kaggle-mode")
+        config.cache_mode = 'ram'
+        config.cache_policy = 'service'
         config.root_dir = '.'
 
 
