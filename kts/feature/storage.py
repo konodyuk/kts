@@ -151,13 +151,16 @@ class FeatureSet:
             return self._first_name
         ans = []
         frame = inspect.currentframe()
-        tmp = {**frame.f_globals,                              # Please don't treat me as completely retarded
-               **frame.f_back.f_globals,                       # At least because it works (almost always)
-               **frame.f_back.f_back.f_globals,                # Actually, you don't even have to use this code
-               **frame.f_back.f_back.f_back.f_globals,         # Just write FeatureSet(name="fs_1") and feel safe =|
-               **frame.f_back.f_back.f_back.f_back.f_globals,
-               **frame.f_back.f_back.f_back.f_back.f_back.f_globals,
-               **frame.f_back.f_back.f_back.f_back.f_back.f_back.f_globals}
+        tmp = {}
+        for i in range(7):
+            try:
+                tmp = {**tmp, **frame.f_globals}
+            except:
+                pass
+            try:
+                frame = frame.f_back
+            except:
+                pass
 
         for k, var in tmp.items():
             if isinstance(var, self.__class__):
