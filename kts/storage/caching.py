@@ -6,9 +6,26 @@ import os
 import pandas as pd
 from .dataframe import DataFrame as KTDF
 
+
+def allow_service(name):
+    return name in config.service_names
+
+
+def allow_all(name):
+    return True
+
+if config.cache_policy == 'service':
+    gate = allow_service
+elif config.cache_policy == 'everything':
+    gate = allow_all
+else:
+    raise UserWarning(f'config.cache_policy should be either "service" or "everything". '
+                      f'Now it is "{config.cache_policy}"')
+
+
 class Cache:
     """
-    LRU cache for DataFrames and objects
+    Default LRU cache for DataFrames and objects. Uses both RAM and disk space.
     """
 
     def __init__(self):
@@ -60,6 +77,8 @@ class Cache:
         :param name: df name
         :return:
         """
+        if not gate(name):
+            return
         if self.is_cached_df(name):
             return
         if cache_utils.get_df_volume(df) > config.memory_limit:
@@ -198,7 +217,7 @@ class Cache:
 
 class RAMCache:
     """
-    LRU RAM cache for DataFrames and objects
+    LRU cache for DataFrames and objects. Uses only RAM, no disk space is consumed.
     """
 
     def __init__(self):
@@ -247,6 +266,8 @@ class RAMCache:
         :param name: df name
         :return:
         """
+        if not gate(name):
+            return
         if self.is_cached_df(name):
             return
         if cache_utils.get_df_volume(df) > config.memory_limit:
@@ -343,53 +364,122 @@ class RAMCache:
         return [i[:-4] for i in list(self.memory.keys()) if i.endswith('_obj')]
 
 
-class EmptyCache:
+class DiskCache:
     """
-    Fake interface, doesn't cache anything
+    Saves and loads directly from disk, no RAM boosting.
     """
 
     def __init__(self):
         pass
 
     def is_cached_df(self, name):
-        return False
+        """
+        Checks whether given df is cached
+        :param name: name of dataframe
+        :return: True or False (cache hit or miss)
+        """
+        return os.path.exists(cache_utils.get_path_df(name))
 
     def cache_df(self, df, name):
-        pass
+        """
+        Caches dataframe with given name
+        :param df: df
+        :param name: df name
+        :return:
+        """
+        if not gate(name):
+            return
+        cache_utils.save_df(df, cache_utils.get_path_df(name))
 
     def load_df(self, name):
-        raise KeyError
+        """
+        Loads dataframe from cache
+        :param name: name of df
+        :return:
+        """
+        if not self.is_cached_df(name):
+            raise KeyError("No such df in cache")
+
+        return cache_utils.load_df(cache_utils.get_path_df(name))
 
     def remove_df(self, name):
-        pass
+        """
+        Removes dataframe from cache
+        :param name: name of df
+        :return:
+        """
+        if os.path.exists(cache_utils.get_path_df(name)):
+            os.remove(cache_utils.get_path_df(name))
 
     @staticmethod
     def cached_dfs():
-        return []
+        """
+        Returns list of cached dataframes
+        :return:
+        """
+        return [df.split('/')[-1][:-3] for df in
+                sorted(glob(config.storage_path + '*' + '_df'), key=os.path.getmtime)]
+
 
     def is_cached_obj(self, name):
-        return False
+        """
+        Checks whether object is in cache
+        :param name: name of object
+        :return: True or False (cache hit or miss)
+        """
+        return os.path.exists(cache_utils.get_path_obj(name))
 
     def cache_obj(self, obj, name):
-        pass
+        """
+        Caches object with given name
+        :param obj: object
+        :param name: object name
+        :return:
+        """
+        if self.is_cached_obj(name):
+            return
+
+        cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
-        raise KeyError
+        """
+        Loads object from cache
+        :param name: name of object
+        :return:
+        """
+        if not self.is_cached_obj(name):
+            raise KeyError("No such object in cache")
+
+        cache_utils.load_obj(cache_utils.get_path_obj(name))
 
     def remove_obj(self, name):
-        pass
+        """
+        Removes object from cache
+        :param name: name of object
+        :return:
+        """
+        if os.path.exists(cache_utils.get_path_obj(name)):
+            os.remove(cache_utils.get_path_obj(name))
 
     @staticmethod
     def cached_objs():
-        return []
+        """
+        Returns list of cached objects
+        :return:
+        """
+        return [df.split('/')[-1][:-4] for df in
+                sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
 
 
-if config.mode == 'local':
+if config.cache_mode == 'disk_and_ram':
     cache = Cache()
-elif config.mode == 'toolset':
-    cache = EmptyCache()
-elif config.mode == 'kaggle':
+elif config.cache_mode == 'ram':
     cache = RAMCache()
+elif config.cache_mode == 'disk':
+    cache = DiskCache()
+else:
+    raise UserWarning(f'config.cache_mode should be one of "disk", "disk_and_ram", "ram". '
+                      f'Now it is "{config.cache_mode}"')
 
 
 USER_SEP = '__USER__'
