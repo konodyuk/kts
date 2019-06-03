@@ -153,6 +153,11 @@ import multiprocessing
 import swifter
 
 
+def _apply_df(args):
+    df, func, num, kw = args
+    return num, df.swifter.apply(func, **kw)
+
+
 def apply(dataframe, function, **kwargs):
     """
     Applies function to dataframe faster.
@@ -165,10 +170,6 @@ def apply(dataframe, function, **kwargs):
         n_threads = 1
     if n_threads == 1:
         return dataframe.swifter.apply(function, **kwargs)
-
-    def _apply_df(args):
-        df, func, num, kw = args
-        return num, df.swifter.apply(func, **kw)
 
     pool = multiprocessing.Pool(processes=n_threads)
     result = pool.map(_apply_df, [(d, function, i, kwargs) for i, d in enumerate(np.array_split(dataframe, n_threads))])
