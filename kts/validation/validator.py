@@ -62,7 +62,10 @@ class Validator:
             oof[idx_test] = (weights[idx_test] * oof[idx_test] + pred) / (weights[idx_test] + 1)
             weights[idx_test] += 1
             # print(featureset.target[idx_test].values[:10], pred[:10])
-            score = self.metric(featureset.target.values[idx_test], pred)
+            try:
+                score = self.metric(featureset.target.values[idx_test], pred, groups=featureset.groups.values[idx_test])
+            except AttributeError:
+                score = self.metric(featureset.target.values[idx_test], pred)
             pipelines.append(pl)
             scores.append(score)
             pb.update(2)

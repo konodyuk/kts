@@ -58,7 +58,7 @@ from . import stl
 
 
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, name=None, description=None, desc=None, encoders=None):
+    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, group_column=None, name=None, description=None, desc=None, encoders=None):
         if type(fc_before) == list:
             self.fc_before = stl.concat(fc_before)
         elif type(fc_before) == tuple:
@@ -72,6 +72,7 @@ class FeatureSet:
         else:
             self.fc_after = fc_after
         self.target_column = target_column
+        self.group_column = group_column
         self.encoders = (encoders if encoders is not None else dict())
         if df_input is not None:
             self.set_df(df_input)
@@ -109,9 +110,10 @@ class FeatureSet:
         # why not write config.preview_call = 1 then?
 
     def empty_copy(self):
-        return FeatureSet(self.fc_before,
-                          self.fc_after,
+        return FeatureSet(fc_before=self.fc_before,
+                          fc_after=self.fc_after,
                           target_column=self.target_column,
+                          group_column=self.group_column,
                           encoders=self.encoders,
                           name=self._first_name,
                           description=self.__doc__)
@@ -123,6 +125,13 @@ class FeatureSet:
     def target(self):
         if self.target_column:
             return self.df_input[self.target_column]
+        else:
+            raise AttributeError("Target column is not defined.")
+
+    @property
+    def groups(self):
+        if self.group_column:
+            return self.df_input[self.group_column]
         else:
             raise AttributeError("Target column is not defined.")
 
