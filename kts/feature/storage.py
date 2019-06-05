@@ -69,6 +69,20 @@ class FeatureConstructor:
     def __str__(self):
         return self.__name__
 
+    def __sub__(self, other):
+        assert isinstance(other, list)
+        from . import stl
+        return stl.compose([self, stl.column_dropper(other)])
+
+    def __add__(self, other):
+        assert isinstance(other, list)
+        from . import stl
+        return stl.compose([self, stl.column_selector(other)])
+
+    def __mul__(self, other):
+        assert isinstance(other, FeatureConstructor)
+        from . import stl
+        return stl.compose([self, other])
 
 from . import stl
 
