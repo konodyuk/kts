@@ -62,9 +62,9 @@ def concat(funcs):
 
 def compose(funcs):
     def __compose(df):
-        res = empty_like(df)
+        res = identity(df)
         for func in funcs:
-            res = merge([res, func(res)])
+            res = func(res)
         return res
 
     fc = FeatureConstructor(__compose, cache_default=False)
