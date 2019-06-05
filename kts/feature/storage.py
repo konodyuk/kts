@@ -3,6 +3,7 @@ from ..storage import source_utils
 from ..storage import cache_utils
 from ..storage import caching
 from ..storage import dataframe
+from ..utils import captcha
 import glob
 import os
 import numpy as np
@@ -21,12 +22,10 @@ class FeatureConstructor:
     def __call__(self, df, cache=None, **kwargs):
         if not self.stl:
             self = caching.cache.load_obj(self.__name__ + '_fc')
-        # print("before constr", df.train)
-        ktdf = dataframe.DataFrame(df)  # TODO: uncomment this line after tests with @preview
-        # print("after constr:", ktdf.train)
+        ktdf = dataframe.DataFrame(df)
         if type(cache) == type(None):
             cache = self.cache_default
-        if not cache or config.preview_call:  # dirty hack to avoid  caching when @test function uses @registered function inside
+        if not cache or config.preview_call:  # written to avoid caching when @preview function uses @registered function inside
             return self.function(ktdf, **kwargs)
 
         name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
@@ -39,7 +38,24 @@ class FeatureConstructor:
             return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders, ktdf.slice_id)
         else:
             result = self.function(ktdf)
-            caching.cache.cache_df(result, name)
+            try:
+                caching.cache.cache_df(result, name)
+            except MemoryError:
+                print(f'The dataframe is too large to be cached. '
+                      f'It is {cache_utils.get_df_volume(result)}, '
+                      f'but current memory limit is {config.memory_limit}.')
+                print(f'Setting memory limit to {cache_utils.get_df_volume(result) * 2}')
+                ans = input('Please confirm memory limit change. Enter "No" to cancel it.')
+                do_change = True
+                if ans.lower() == 'no':
+                    if captcha():
+                        do_change = False
+                if do_change:
+                    caching.cache.set_memory_limit(cache_utils.get_df_volume(result) * 2)
+                    caching.cache.cache_df(result, name)
+                    print("Done. Please don't forget to update your kts_config.py file.")
+                else:
+                    print('Cancelled')
             if ktdf.encoders:
                 caching.cache.cache_obj(ktdf.encoders, name_metadata)
             return dataframe.DataFrame(result, ktdf.train, ktdf.encoders, ktdf.slice_id)
