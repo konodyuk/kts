@@ -25,7 +25,7 @@ class Leaderboard:
     def add_row(self, row):
         self.reload()
         self._df = self._df.append(row)
-        self._df = self._df.sort_values('Score', ascending=False)
+        self._df = self._df.sort_values('Score', ascending=(config.GOAL == 'MINIMIZE'))
         cache.remove_df(config.LB_DF_NAME)
         cache.cache_df(self._df, config.LB_DF_NAME)
 
