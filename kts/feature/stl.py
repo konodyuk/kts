@@ -35,7 +35,7 @@ def merge(dfs):
 
 def column_selector(columns):
     def __col_selector(df):
-        return df[columns]
+        return df[[col for col in columns if col in df.columns]]
 
     # return FeatureConstructor(__col_selector, cache_default=False)
     return wrap_stl_function(column_selector, __col_selector)
@@ -43,7 +43,7 @@ def column_selector(columns):
 
 def column_dropper(columns):
     def __col_dropper(df):
-        return df.drop(columns, axis=1)
+        return df.drop([col for col in columns if col in df.columns], axis=1)
 
     # return FeatureConstructor(__col_dropper, cache_default=False)
     return wrap_stl_function(column_dropper, __col_dropper)
