@@ -15,11 +15,16 @@ def wrap_stl_function(outer_function, inner_function):
     return fc
 
 
-def empty_like(df):
+def __empty_like(df):
     if isinstance(df, KTDF):
         return KTDF(df[[]].copy(), df.train, df.encoders, df.slice_id)
     else:
         return KTDF(df[[]].copy())
+
+
+empty_like = FeatureConstructor(__empty_like, cache_default=False)
+empty_like.stl = True
+empty_like.source = "stl.empty_like"
 
 
 identity = FeatureConstructor(lambda df: df, cache_default=False)
