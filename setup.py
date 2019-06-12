@@ -33,6 +33,7 @@ setuptools.setup(
         "scikit-learn",
         "scikit-optimize",
         "matplotlib",
+        "seaborn",
         "dill",
         "feather-format",
         "swifter",
