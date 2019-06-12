@@ -23,6 +23,8 @@ lb = leaderboard
 from . import zoo
 from .ensembling import stack
 # from .submission import submit
+from . import eda
+from .feature import selection
 
 # import mprop
 #
