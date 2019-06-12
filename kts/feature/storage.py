@@ -4,6 +4,7 @@ from ..storage import cache_utils
 from ..storage import caching
 from ..storage import dataframe
 from ..utils import captcha
+from .selection.selector import BuiltinImportance
 import glob
 import os
 import numpy as np
@@ -114,6 +115,7 @@ class FeatureSet:
             self.__doc__ = description
         elif desc is not None:
             self.__doc__ = desc
+        self.altsource = None
 
     def set_df(self, df_input):
         self.df_input = dataframe.DataFrame(df_input)
@@ -140,16 +142,18 @@ class FeatureSet:
         # why not write config.preview_call = 1 then?
 
     def empty_copy(self):
-        return FeatureSet(fc_before=self.fc_before,
-                          fc_after=self.fc_after,
-                          target_column=self.target_column,
-                          group_column=self.group_column,
-                          encoders=self.encoders,
-                          name=self._first_name,
-                          description=self.__doc__)
+        res = FeatureSet(fc_before=self.fc_before,
+                        fc_after=self.fc_after,
+                        target_column=self.target_column,
+                        group_column=self.group_column,
+                        encoders=self.encoders,
+                        name=self.__name__,
+                        description=self.__doc__)
+        res.altsource = self.altsource
+        return res
 
-    def slice(self, idxs):
-        return FeatureSlice(self, idxs)
+    def slice(self, idx_train, idx_test):
+        return FeatureSlice(self, idx_train, idx_test)
 
     @property
     def target(self):
@@ -163,7 +167,7 @@ class FeatureSet:
         if self.group_column:
             return self.df_input[self.group_column]
         else:
-            raise AttributeError("Target column is not defined.")
+            raise AttributeError("Group column is not defined.")
 
     def __get_src(self, fc):
         if fc.__name__ == 'empty_like':
@@ -182,7 +186,7 @@ class FeatureSet:
         prefix = 'FeatureSet('
         fs_source = prefix + 'fc_before=' + fc_before_source + ',\n' \
                     + ' ' * len(prefix) + 'fc_after=' + fc_after_source + ',\n' \
-                    + ' ' * len(prefix) +  'target_column=' + repr(self.target_column) + ')'
+                    + ' ' * len(prefix) + 'target_column=' + repr(self.target_column) + ', group_column=' + repr(self.group_column if 'group_column' in dir(self) else None) + ')'
         return fs_source
 
     def recover_name(self):
@@ -217,14 +221,31 @@ class FeatureSet:
     def set_name(self, name):
         self._first_name = name
 
-    def describe(self):
-        raise NotImplementedError
+    def __repr__(self):
+        if 'altsource' in self.__dict__ and self.altsource is not None:
+            return self.altsource
+        else:
+            return self.source
+
+    def select(self, n_best, experiment, calculator=BuiltinImportance(), mode='max'):
+        good_features = list(experiment.feature_importances(importance_calculator=calculator).agg(mode).sort_values(ascending=False).head(n_best).index)
+        res = FeatureSet(fc_before=self.fc_before + good_features,
+                         fc_after=self.fc_after + good_features,
+                         df_input=self.df_input,
+                         target_column=self.target_column,
+                         group_column=self.group_column,
+                         encoders=self.encoders,
+                         name=f"{self.__name__}_{calculator.short_name}_{n_best}",
+                         description=f"Select {n_best} best features from {self._first_name} using {calculator.__class__.__name__}")
+        res.altsource = self.__repr__() + f".select({n_best}, lb['{experiment.identifier}'], {calculator.__repr__()})"
+        return res
 
 
 class FeatureSlice:
-    def __init__(self, featureset, slice):
+    def __init__(self, featureset, slice, idx_test):
         self.featureset = featureset
         self.slice = slice
+        self.idx_test = idx_test
         self.slice_id = cache_utils.get_hash_slice(slice)
         self.first_level_encoders = self.featureset.encoders
         self.second_level_encoders = {}
