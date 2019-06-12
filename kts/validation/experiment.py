@@ -3,8 +3,11 @@ from ..storage import cache
 import re
 from collections import MutableSequence
 from ..utils import hash_str
+from ..feature.selection.selector import BuiltinImportance
 import pandas as pd
 import texttable as tt
+from ..eda.importance import plot_importances
+from fastprogress import progress_bar as pb
 
 
 class Experiment(ArithmeticMixin):
@@ -15,6 +18,7 @@ class Experiment(ArithmeticMixin):
         self.parameters = self.model.get_params()
         self.models = [model.model.model for model in self.pipeline.models]
         self.featureset = self.pipeline.models[0].model.featureslice.featureset
+        self.tie_featuresets()
         self.oof = oof
         self.score = score
         self.std = std
@@ -45,7 +49,7 @@ class Experiment(ArithmeticMixin):
             '|- source ': self.model.source,              # be careful with refactoring: if you remove this space,
             'FeatureSet': self.featureset.__name__,       #
             '|- description': self.featureset.__doc__,    #
-            '|- source': self.featureset.source,          # both "source" rows will be considered identical
+            '|- source': self.featureset.__repr__(),      # both "source" rows will be considered identical
             'Splitter': self.splitter,
         }
 
@@ -64,7 +68,7 @@ class Experiment(ArithmeticMixin):
             'Description': self.__doc__,
             'FS description': self.featureset.__doc__,
             'Model source': self.model.source,
-            'FS source': self.featureset.source,
+            'FS source': self.featureset.__repr__(),
             'Splitter': repr(self.splitter)
         }
         for field in fields:
@@ -73,6 +77,26 @@ class Experiment(ArithmeticMixin):
 
     def as_df(self):
         return pd.DataFrame(self.as_dict()).set_index('ID')
+
+    def feature_importances(self, plot=False, importance_calculator=BuiltinImportance(), **kw):
+        if plot:
+            return plot_importances(self, calculator=importance_calculator, **kw)
+        res = pd.DataFrame()
+        for w_model in pb(self.pipeline.models):
+            fsl = w_model.model.featureslice
+            model = w_model.model.model
+            importances = importance_calculator.calc(model, fsl, self)
+            importances = {k: [v] for k, v in importances.items()}
+            res = res.append(pd.DataFrame(importances), ignore_index=True)
+        return res
+
+    def set_df(self, df_input):
+        self.tie_featuresets()
+        self.featureset.set_df(df_input)
+
+    def tie_featuresets(self):
+        for i in range(len(self.pipeline.models)):
+            self.pipeline.models[i].model.featureslice.featureset = self.featureset
 
 
 class ExperimentList(MutableSequence):
