@@ -15,6 +15,7 @@ preview_call = 0
 memory_limit = 4 * (1024 ** 3)  # 4 Gb
 mode = 'local'
 GOAL = 'MAXIMIZE'
+MAX_LEN_SOURCE = 100
 
 # cache_mode = 'disk_and_ram'  # "disk", "disk_and_ram", "ram"
 # cache_policy = 'everything'  # "everything", "service"
