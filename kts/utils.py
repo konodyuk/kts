@@ -22,7 +22,7 @@ def hash_str(a):
     return hashlib.sha256(a.encode()).hexdigest()
 
 
-def extract_signature(func):
+def extract_signature(func, return_dict=False):
     args = inspect.getfullargspec(func).args
     defaults = inspect.getfullargspec(func).defaults
     values = {**inspect.currentframe().f_back.f_locals, **inspect.currentframe().f_back.f_back.f_locals}
@@ -32,6 +32,8 @@ def extract_signature(func):
         args = []
     # print(inspect.getfullargspec(func))
     # print(values)
+    if return_dict:
+        return {arg: values[arg] for arg in args}
     sources = []
     for arg, default in list(zip_longest(args[::-1], defaults[::-1]))[::-1]:
         if values[arg] != default:
