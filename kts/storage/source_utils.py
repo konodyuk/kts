@@ -15,6 +15,17 @@ def get_source(function):
     return src
 
 
+def shorten(source):
+    if len(source) <= config.MAX_LEN_SOURCE:
+        return source
+    # source = source.replace('columns=', '')
+    left = source[:config.MAX_LEN_SOURCE // 2]
+    left = left[:left.rfind(' ')]
+    right = source[-config.MAX_LEN_SOURCE // 2:]
+    right = right[right.find(' '):]
+    return left + ' ...' + right
+
+
 def source_path(function):
     return config.source_path + f"{function.__name__}.py"
 
