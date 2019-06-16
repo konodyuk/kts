@@ -12,6 +12,7 @@ def wrap_stl_function(outer_function, inner_function):
     source = f'stl.{outer_function.__name__}({extract_signature(outer_function)})'
     fc = FeatureConstructor(inner_function, cache_default=False, stl=True)
     fc.source = source
+    fc.args = extract_signature(outer_function, return_dict=True)
     return fc
 
 
@@ -58,10 +59,12 @@ def concat(funcs):
     def __concat(df):
         return merge([func(df) for func in funcs])
 
-    fc = FeatureConstructor(__concat, cache_default=False)
+    # fc = FeatureConstructor(__concat, cache_default=False)
+    # fc.source = f"stl.concat([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
+    # fc.__name__ = f"concat_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
+    # fc.stl = True
+    fc = wrap_stl_function(concat, __concat)
     fc.source = f"stl.concat([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
-    fc.__name__ = f"concat_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
-    fc.stl = True
     return fc
 
 
@@ -72,10 +75,12 @@ def compose(funcs):
             res = func(res)
         return res
 
-    fc = FeatureConstructor(__compose, cache_default=False)
+    # fc = FeatureConstructor(__compose, cache_default=False)
+    # fc.source = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
+    # fc.__name__ = f"compose_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
+    # fc.stl = True
+    fc = wrap_stl_function(compose, __compose)
     fc.source = f"stl.compose([{', '.join([func.__name__ if not func.stl else func.source for func in funcs])}])"
-    fc.__name__ = f"compose_{''.join([func.__name__[:2] if not func.stl else func.__name__ for func in funcs])}"
-    fc.stl = True
     return fc
 
 
