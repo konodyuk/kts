@@ -56,6 +56,8 @@ def column_dropper(columns):
 
 
 def concat(funcs):
+    funcs = sum([i.args['funcs'] if i.source.startswith('stl.concat') else [i] for i in funcs], [])
+
     def __concat(df):
         return merge([func(df) for func in funcs])
 
