@@ -71,6 +71,10 @@ def concat(funcs):
 
 
 def compose(funcs):
+    if len(funcs) == 2 and funcs[0].source.startswith('stl.concat') and funcs[1].source.startswith('stl.column_selector'):
+        selection_list = funcs[1].args['columns']
+        return concat([func + selection_list for func in funcs[0].args['funcs']])
+
     def __compose(df):
         res = identity(df)
         for func in funcs:
