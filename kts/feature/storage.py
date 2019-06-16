@@ -18,6 +18,7 @@ class FeatureConstructor:
         self.__name__ = function.__name__
         self.source = source_utils.get_source(function)
         self.stl = stl
+        self.args = dict()
 
     # needs refactoring because of direct storing source
     def __call__(self, df, cache=None, **kwargs):
@@ -179,15 +180,21 @@ class FeatureSet:
         else:
             return fc.__name__
 
-    @property
-    def source(self):
+    def _source(self, short=True):
         fc_before_source = self.__get_src(self.fc_before)
         fc_after_source = self.__get_src(self.fc_after)
+        if short:
+            fc_before_source = source_utils.shorten(fc_before_source)
+            fc_after_source = source_utils.shorten(fc_after_source)
         prefix = 'FeatureSet('
         fs_source = prefix + 'fc_before=' + fc_before_source + ',\n' \
                     + ' ' * len(prefix) + 'fc_after=' + fc_after_source + ',\n' \
                     + ' ' * len(prefix) + 'target_column=' + repr(self.target_column) + ', group_column=' + repr(self.group_column if 'group_column' in dir(self) else None) + ')'
         return fs_source
+
+    @property
+    def source(self):
+        return self._source(short=False)
 
     def recover_name(self):
         if self._first_name:
@@ -225,7 +232,7 @@ class FeatureSet:
         if 'altsource' in self.__dict__ and self.altsource is not None:
             return self.altsource
         else:
-            return self.source
+            return self._source(short=True)
 
     def select(self, n_best, experiment, calculator=BuiltinImportance(), mode='max'):
         good_features = list(experiment.feature_importances(importance_calculator=calculator).agg(mode).sort_values(ascending=False).head(n_best).index)
