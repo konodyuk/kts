@@ -11,7 +11,6 @@ class Refiner(BaseCrossValidator):
 
     def split(self, X, y=None, groups=None):
         X, y, groups = indexable(X, y, groups)
-        print(groups)
         for _, idx_test_outer in self.outer_splitter.split(X, y, groups):
             for idx_train, idx_test in self.inner_splitter.split(X[idx_test_outer],
                                                                  y[idx_test_outer] if y is not None else None,
