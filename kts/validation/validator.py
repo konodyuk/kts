@@ -33,7 +33,7 @@ class Validator:
             description = desc
         pipelines = []
         scores = []
-        y = featureset.target
+        y = featureset.target.values
         oof = np.zeros_like(y, dtype=np.float)
         weights = np.zeros_like(y, dtype=np.float)
         model_name = f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
