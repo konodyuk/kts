@@ -308,6 +308,15 @@ def stack(ids):
     return wrap_stl_function(stack, __stack)
 
 
+from ..storage.caching import load
+def from_df(name):
+    def __from_df(df):
+        tmp = load(name)
+        return tmp.loc[df.index]
+
+    return wrap_stl_function(from_df, __from_df)
+
+
 # TODO: implement
 def cv_apply(feature_constructor, split):
     raise NotImplementedError
