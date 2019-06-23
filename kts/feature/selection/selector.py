@@ -2,6 +2,7 @@ from abc import ABC
 import abc
 from sklearn.model_selection._split import _build_repr
 from sklearn.metrics import make_scorer
+import numpy as np
 
 # class BaseSelector(ABC):
 #     @property
@@ -55,7 +56,7 @@ class BuiltinImportance(ImportanceCalculator):
 
 try:
     import eli5.sklearn
-    class PermutationImportance(ImportanceCalculator):
+    class SklearnPermutationImportance(ImportanceCalculator):
         short_name = 'perm'
 
         def __init__(self, n_rows=1000, n_iter=5, random_state=42):
@@ -76,6 +77,34 @@ try:
             perm.fit(featureslice(featureslice.idx_test[:self.n_rows]),
                      featureslice.featureset.target.values[featureslice.idx_test][:self.n_rows])
             return {name: imp for name, imp in zip(featureslice.columns, perm.feature_importances_)}
+
+except ImportError:
+    pass
+
+
+try:
+    from eli5.permutation_importance import get_score_importances
+    class PermutationImportance(ImportanceCalculator):
+        short_name = 'perm'
+
+        def __init__(self, n_rows=1000, n_iter=5, random_state=42):
+            super().__init__()
+            self.n_rows = n_rows
+            self.n_iter = n_iter
+            self.random_state = random_state
+
+        def calc(self, model, featureslice, experiment):
+            if 'df_input' not in dir(featureslice.featureset) or featureslice.featureset.df_input is None:
+                raise AttributeError(f"No input dataframe for featureset of the experiment found. "
+                                     f"Set it with lb['{experiment.identifier}'].set_df(df)")
+
+            def score_func(X, y):
+                return experiment.metric(y, model.predict(X))
+            X = featureslice(featureslice.idx_test[:self.n_rows]).values
+            y = featureslice.featureset.target.values[featureslice.idx_test][:self.n_rows]
+            base_score, score_decreases = get_score_importances(score_func, X, y, n_iter=self.n_iter, random_state=self.random_state)
+            feature_importances = np.mean(score_decreases, axis=0)
+            return {name: imp for name, imp in zip(featureslice.columns, feature_importances)}
 
 except ImportError:
     pass
