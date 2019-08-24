@@ -159,7 +159,12 @@ class FeatureSet:
     @property
     def target(self):
         if self.target_column:
-            return self.df_input[self.target_column]
+            if self.target_column in self.df_input.columns:
+                return self.df_input[self.target_column]
+            elif self.target_column in self.df.columns:
+                return self.df[self.target_column]
+            else:
+                raise AttributeError("Target column is neither given as input nor computed")
         else:
             raise AttributeError("Target column is not defined.")
 
