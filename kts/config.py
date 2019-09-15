@@ -17,6 +17,8 @@ mode = 'local'
 GOAL = 'MAXIMIZE'
 MAX_LEN_SOURCE = 100
 
+SCOPE = globals()
+
 # cache_mode = 'disk_and_ram'  # "disk", "disk_and_ram", "ram"
 # cache_policy = 'everything'  # "everything", "service"
 
