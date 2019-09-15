@@ -6,6 +6,7 @@ sys.path.insert(0, '.')
 # from .environment import get_mode
 # get_mode()
 from . import config
+from . import init
 from .feature.decorators import preview, register, deregister, dropper, selector, helper
 from .feature import stl
 from .feature.storage import feature_list as features
