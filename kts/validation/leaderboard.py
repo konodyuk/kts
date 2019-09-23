@@ -5,6 +5,7 @@ from ..utils import captcha
 from tqdm import tqdm
 from .. import config
 
+
 class Leaderboard:
     def __init__(self):
         if config.LB_DF_NAME in cache.cached_dfs():
