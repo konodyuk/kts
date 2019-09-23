@@ -37,9 +37,10 @@ class Validator:
         y = featureset.target.values
         if isinstance(model, MultiClassifierMixin):
             oof = np.zeros((y.shape[0], len(set(y))), dtype=np.float)
+            weights = np.zeros((y.shape[0], len(set(y))), dtype=np.float)
         else:
             oof = np.zeros_like(y, dtype=np.float)
-        weights = np.zeros_like(y, dtype=np.float)
+            weights = np.zeros_like(y, dtype=np.float)
         model_name = f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
         mb = master_bar(self.splitter.split(y, y),
                         total=self.splitter.get_n_splits(),
