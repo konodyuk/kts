@@ -5,6 +5,7 @@ from .experiment import experiment_list, Experiment
 from .leaderboard import leaderboard
 from ..pipeline import Pipeline
 from ..modelling import Ensemble
+from ..zoo.classification import MultiClassifierMixin
 from copy import deepcopy
 from fastprogress import master_bar, progress_bar
 from fastprogress.fastprogress import IN_NOTEBOOK
@@ -34,7 +35,10 @@ class Validator:
         pipelines = []
         scores = []
         y = featureset.target.values
-        oof = np.zeros_like(y, dtype=np.float)
+        if isinstance(model, MultiClassifierMixin):
+            oof = np.zeros((y.shape[0], len(set(y))), dtype=np.float)
+        else:
+            oof = np.zeros_like(y, dtype=np.float)
         weights = np.zeros_like(y, dtype=np.float)
         model_name = f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
         mb = master_bar(self.splitter.split(y, y),
