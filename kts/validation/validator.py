@@ -83,7 +83,7 @@ class Validator:
         final_ensemble.__name__ = model_name
         score = np.mean(scores)
         std = np.std(scores)
-        oof = pd.DataFrame({'prediction': oof})
+        oof = pd.DataFrame({'prediction': list(oof)}) # hotfix for multiclass classification
         oof.set_index(featureset.target.index, inplace=True)
         from ..feature.storage import feature_list
         from ..feature.helper import helper_list
