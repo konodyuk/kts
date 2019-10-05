@@ -195,20 +195,12 @@ def apply(dataframe, function, **kwargs):
 
 
 def get_categorical(df):
-    if df.train:
-        cat_features = [col for col in df.columns if df[col].dtype == object]
-        df.encoders['__cat_features'] = cat_features
-    else:
-        cat_features = df.encoders['__cat_features']
+    cat_features = [col for col in df.columns if df[col].dtype == object]
     return cat_features
 
 
 def get_numeric(df):
-    if df.train:
-        num_features = [col for col in df.columns if df[col].dtype != object]
-        df.encoders['__num_features'] = num_features
-    else:
-        num_features = df.encoders['__num_features']
+    num_features = [col for col in df.columns if df[col].dtype != object]
     return num_features
 
 
