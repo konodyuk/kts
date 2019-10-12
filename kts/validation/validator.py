@@ -1,18 +1,16 @@
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
-
-from copy import deepcopy
 from fastprogress import master_bar
 from fastprogress.fastprogress import IN_NOTEBOOK
 
-from .experiment import experiment_list, Experiment
+from .experiment import Experiment
 from .leaderboard import leaderboard
-from ..pipeline import Pipeline
-from ..modelling import Ensemble, Model
-from ..zoo.classification import MultiClassifierMixin
-from ..utils import SourceMetaClass
 from ..feature.storage import FeatureSet
-
+from ..modelling import Ensemble, Model
+from ..pipeline import Pipeline
+from ..utils import SourceMetaClass
 
 if IN_NOTEBOOK:
     from IPython.display import HTML
@@ -52,8 +50,11 @@ class Validator(metaclass=SourceMetaClass):
 
         """
         if oof is None or weights is None:
-            oof = weights = np.zeros(shape=(full_target.shape[0],) + y_pred.shape[1:], dtype=np.float)
-        oof[idx_test] = (weights[idx_test] * oof[idx_test] + y_pred) / (weights[idx_test] + 1)
+            oof = weights = np.zeros(shape=(full_target.shape[0], ) +
+                                     y_pred.shape[1:],
+                                     dtype=np.float)
+        oof[idx_test] = (weights[idx_test] * oof[idx_test] +
+                         y_pred) / (weights[idx_test] + 1)
         weights[idx_test] += 1
         return oof, weights
 
@@ -68,9 +69,11 @@ class Validator(metaclass=SourceMetaClass):
 
         """
         if len(oof.shape) == 1 or oof.shape[1] == 1:
-            res = pd.DataFrame({'prediction': oof})
+            res = pd.DataFrame({"prediction": oof})
         else:
-            res = pd.DataFrame({f'prediction_{i}': oof[:, i] for i in range(oof.shape[1])})
+            res = pd.DataFrame(
+                {f"prediction_{i}": oof[:, i]
+                 for i in range(oof.shape[1])})
         res.set_index(featureset.target.index, inplace=True)
         return res
 
@@ -99,9 +102,16 @@ class Validator(metaclass=SourceMetaClass):
         return f"{model.__name__}_x{self.splitter.get_n_splits()}-{featureset.__name__}"
 
     def __repr__(self):
-        return f'Validator({self.splitter}, {self.metric.__name__})'
+        return f"Validator({self.splitter}, {self.metric.__name__})"
 
-    def score(self, model: Model, featureset: FeatureSet, description: str = None, desc: str = None, **fit_params):
+    def score(
+            self,
+            model: Model,
+            featureset: FeatureSet,
+            description: str = None,
+            desc: str = None,
+            **fit_params,
+    ):
         """
 
         Args:
@@ -115,35 +125,41 @@ class Validator(metaclass=SourceMetaClass):
 
         """
         if desc is not None and description is not None:
-            raise ValueError("desc is an alias of description. You can't use both")
+            raise ValueError(
+                "desc is an alias of description. You can't use both")
         if desc is not None:
             description = desc
         pipelines = []
         scores = []
         oof = weights = None
         ensemble_name = self.get_ensemble_name(model, featureset)
-        mb = master_bar(self.split(self.splitter, featureset),
-                        total=self.splitter.get_n_splits(),
-                        total_time=IN_NOTEBOOK)
+        mb = master_bar(
+            self.split(self.splitter, featureset),
+            total=self.splitter.get_n_splits(),
+            total_time=IN_NOTEBOOK,
+        )
         mb.write(f"Validation of {ensemble_name}:")
         for idx_train, idx_test in mb:
             c_model = deepcopy(model)
             fsl = featureset.slice(idx_train, idx_test)
             pl = Pipeline(c_model, fsl)
-            pl.fit(masterbar=mb)
+            pl.fit(masterbar=mb, **fit_params)
             y_pred = pl.predict(idx_test, masterbar=mb)
             y_true = featureset.target.values[idx_test]
             pipelines.append(pl)
             scores.append(self.evaluate(y_true, y_pred))
-            oof, weights = self.update_oof(oof, weights, y_pred, idx_test, featureset.target.values)
+            oof, weights = self.update_oof(oof, weights, y_pred, idx_test,
+                                           featureset.target.values)
         final_ensemble = Ensemble(pipelines)
         final_ensemble = final_ensemble / len(pipelines)
         final_ensemble.__name__ = ensemble_name
         score = np.mean(scores)
         std = np.std(scores)
         oof = self.oof_to_df(oof, featureset)
+
         from ..feature.storage import feature_list
         from ..feature.helper import helper_list
+
         exp = Experiment(
             pipeline=final_ensemble,
             oof=oof,
@@ -158,5 +174,4 @@ class Validator(metaclass=SourceMetaClass):
             mb.text = f"ID: {exp.identifier}<p> Score: {score}<p>" + mb.text
             mb.out.update(HTML(mb.text))
         leaderboard.register(exp)
-        return {'score': score, 'id': exp.identifier}
-
+        return {"score": score, "id": exp.identifier}

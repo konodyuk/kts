@@ -1,22 +1,25 @@
-from .. import config
 import hashlib
-import pandas as pd
-import feather
-import dill
-from glob import glob
 import os
+from glob import glob
+
+import dill
+import feather
 import numpy as np
+import pandas as pd
+
+from .. import config
 from ..utils import captcha
 
 
 def clear_storage():
     """ """
     from .caching import cache
+
     cache.memory.clear()
     if not captcha():
         print("You aren't smart enough to take such decisions")
         return
-    for path in glob(config.storage_path + '*_*') + glob(config.source_path + '*'):
+    for path in glob(config.storage_path + "*_*") + glob(config.source_path + "*"):
         print(f"deleting {path}")
         os.remove(path)
 
@@ -30,17 +33,23 @@ def get_hash_df(df):
     Returns:
 
     """
-    idx_hash = hashlib.sha256(pd.util.hash_pandas_object(df.index).values).hexdigest()
+    idx_hash = hashlib.sha256(pd.util.hash_pandas_object(
+        df.index).values).hexdigest()
 
     sorted_cols = df.columns.sort_values()
-    col_hash = hashlib.sha256(pd.util.hash_pandas_object(sorted_cols).values).hexdigest()
+    col_hash = hashlib.sha256(
+        pd.util.hash_pandas_object(sorted_cols).values).hexdigest()
     try:
-        hash_first, hash_last = pd.util.hash_pandas_object(df.iloc[[0, -1]][sorted_cols]).values
+        hash_first, hash_last = pd.util.hash_pandas_object(
+            df.iloc[[0, -1]][sorted_cols]).values
     except:
-        hash_first = hashlib.sha256(df.iloc[[0]][sorted_cols].to_csv().encode('utf-8')).hexdigest()
-        hash_last = hashlib.sha256(df.iloc[[-1]][sorted_cols].to_csv().encode('utf-8')).hexdigest()
+        hash_first = hashlib.sha256(
+            df.iloc[[0]][sorted_cols].to_csv().encode("utf-8")).hexdigest()
+        hash_last = hashlib.sha256(
+            df.iloc[[-1]][sorted_cols].to_csv().encode("utf-8")).hexdigest()
 
-    return hashlib.sha256(np.array([idx_hash, col_hash, hash_first, hash_last])).hexdigest()
+    return hashlib.sha256(np.array([idx_hash, col_hash, hash_first,
+                                    hash_last])).hexdigest()
 
     # return hashlib.sha256(pd.util.hash_pandas_object(df, index=True).values).hexdigest()
 
@@ -80,7 +89,7 @@ def get_path_df(name):
     Returns:
 
     """
-    return config.storage_path + name + '_df'
+    return config.storage_path + name + "_df"
 
 
 def save_df(df, path):
@@ -101,7 +110,7 @@ def save_df(df, path):
     #     print('enc: no attr')
     not_trivial_index = type(df.index) != pd.RangeIndex
     if not_trivial_index:
-        index_name = f'{config.index_prefix}{df.index.name}'
+        index_name = f"{config.index_prefix}{df.index.name}"
         df[index_name] = df.index.values
         df.reset_index(drop=True, inplace=True)
     try:
@@ -151,7 +160,7 @@ def get_path_obj(name):
     Returns:
 
     """
-    return config.storage_path + name + '_obj'
+    return config.storage_path + name + "_obj"
 
 
 def save_obj(obj, path):
@@ -165,11 +174,11 @@ def save_obj(obj, path):
 
     """
     try:
-        dill.dump(obj, open(path, 'wb'))
+        dill.dump(obj, open(path, "wb"))
     except dill.PicklingError:
         if os.path.exists(path):
             os.remove(path)
-            raise Warning(f'PicklingError occured, removing {path}')
+            raise Warning(f"PicklingError occured, removing {path}")
 
 
 def load_obj(path):
@@ -181,7 +190,7 @@ def load_obj(path):
     Returns:
 
     """
-    return dill.load(open(path, 'rb'))
+    return dill.load(open(path, "rb"))
 
 
 def get_path_info(name):
@@ -193,7 +202,7 @@ def get_path_info(name):
     Returns:
 
     """
-    return config.info_path + name + '_info'
+    return config.info_path + name + "_info"
 
 
 def get_time(path):

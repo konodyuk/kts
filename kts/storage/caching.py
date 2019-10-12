@@ -1,10 +1,12 @@
-from . import cache_utils
-from .. import config
 import datetime
-from glob import glob
 import os
+from glob import glob
+
 import pandas as pd
+
+from . import cache_utils
 from .dataframe import DataFrame as KTDF
+from .. import config
 
 
 def allow_service(name):
@@ -30,18 +32,19 @@ def allow_all(name):
     """
     return True
 
-if config.cache_policy == 'service':
+
+if config.cache_policy == "service":
     gate = allow_service
-elif config.cache_policy == 'everything':
+elif config.cache_policy == "everything":
     gate = allow_all
 else:
-    raise UserWarning(f'config.cache_policy should be either "service" or "everything". '
-                      f'Now it is "{config.cache_policy}"')
+    raise UserWarning(
+        f'config.cache_policy should be either "service" or "everything". '
+        f'Now it is "{config.cache_policy}"')
 
 
 class Cache:
     """Default LRU cache for DataFrames and objects. Uses both RAM and disk space."""
-
     def __init__(self):
         self.memory = dict()
         self.last_used = dict()
@@ -69,7 +72,8 @@ class Cache:
 
         items = sorted([(time, key) for (key, time) in self.last_used.items()])
         cur = 0
-        while self.current_volume + cache_utils.get_df_volume(df) > config.memory_limit:
+        while self.current_volume + cache_utils.get_df_volume(
+                df) > config.memory_limit:
             key = items[cur][1]
             cur += 1
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
@@ -108,13 +112,14 @@ class Cache:
         if cache_utils.get_df_volume(df) > config.memory_limit:
             raise MemoryError
 
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         self.__release_volume(df)
         cache_utils.save_df(df, cache_utils.get_path_df(name))
         self.memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
         self.last_used[dict_name] = datetime.datetime.now()
-        self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
+        self.edited_at[dict_name] = cache_utils.get_time(
+            cache_utils.get_path_df(name))
 
     def load_df(self, name):
         """Loads dataframe from cache
@@ -128,18 +133,22 @@ class Cache:
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
 
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         self.last_used[dict_name] = datetime.datetime.now()
         if dict_name in self.memory:
-            if self.edited_at[dict_name] != cache_utils.get_time(cache_utils.get_path_df(name)):
-                self.memory[dict_name] = cache_utils.load_df(cache_utils.get_path_df(name))
-                self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
+            if self.edited_at[dict_name] != cache_utils.get_time(
+                    cache_utils.get_path_df(name)):
+                self.memory[dict_name] = cache_utils.load_df(
+                    cache_utils.get_path_df(name))
+                self.edited_at[dict_name] = cache_utils.get_time(
+                    cache_utils.get_path_df(name))
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_df(cache_utils.get_path_df(name))
             self.__release_volume(tmp)
             self.memory[dict_name] = tmp
-            self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
+            self.edited_at[dict_name] = cache_utils.get_time(
+                cache_utils.get_path_df(name))
             self.current_volume += cache_utils.get_df_volume(tmp)
             return tmp
 
@@ -152,9 +161,10 @@ class Cache:
         Returns:
 
         """
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         if dict_name in self.memory:
-            self.current_volume -= cache_utils.get_df_volume(self.memory[dict_name])
+            self.current_volume -= cache_utils.get_df_volume(
+                self.memory[dict_name])
             self.memory.pop(dict_name)
         if dict_name in self.last_used:
             self.last_used.pop(dict_name)
@@ -173,9 +183,11 @@ class Cache:
         Returns:
 
         """
-        return [df.split('/')[-1][:-3] for df in
-                sorted(glob(config.storage_path + '*' + '_df'), key=os.path.getmtime)]
-
+        return [
+            df.split("/")[-1][:-3]
+            for df in sorted(glob(config.storage_path + "*" + "_df"),
+                             key=os.path.getmtime)
+        ]
 
     def is_cached_obj(self, name):
         """Checks whether object is in cache
@@ -204,10 +216,11 @@ class Cache:
         if self.is_cached_obj(name):
             return
 
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         self.memory[dict_name] = obj
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
-        self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
+        self.edited_at[dict_name] = cache_utils.get_time(
+            cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
         """Loads object from cache
@@ -221,16 +234,20 @@ class Cache:
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
 
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         if dict_name in self.memory:
-            if self.edited_at[dict_name] != cache_utils.get_time(cache_utils.get_path_obj(name)):
-                self.memory[dict_name] = cache_utils.load_obj(cache_utils.get_path_obj(name))
-                self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
+            if self.edited_at[dict_name] != cache_utils.get_time(
+                    cache_utils.get_path_obj(name)):
+                self.memory[dict_name] = cache_utils.load_obj(
+                    cache_utils.get_path_obj(name))
+                self.edited_at[dict_name] = cache_utils.get_time(
+                    cache_utils.get_path_obj(name))
             return self.memory[dict_name]
         else:
             tmp = cache_utils.load_obj(cache_utils.get_path_obj(name))
             self.memory[dict_name] = tmp
-            self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
+            self.edited_at[dict_name] = cache_utils.get_time(
+                cache_utils.get_path_obj(name))
             return tmp
 
     def remove_obj(self, name):
@@ -242,7 +259,7 @@ class Cache:
         Returns:
 
         """
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         if dict_name in self.memory:
             self.memory.pop(dict_name)
         if dict_name in self.last_used:
@@ -262,13 +279,15 @@ class Cache:
         Returns:
 
         """
-        return [df.split('/')[-1][:-4] for df in
-                sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
+        return [
+            df.split("/")[-1][:-4]
+            for df in sorted(glob(config.storage_path + "*" + "_obj"),
+                             key=os.path.getmtime)
+        ]
 
 
 class RAMCache:
     """LRU cache for DataFrames and objects. Uses only RAM, no disk space is consumed."""
-
     def __init__(self):
         self.memory = dict()
         self.last_used = dict()
@@ -312,7 +331,7 @@ class RAMCache:
           True or False (cache hit or miss)
 
         """
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         return dict_name in self.memory
 
     def cache_df(self, df, name):
@@ -332,7 +351,7 @@ class RAMCache:
         if cache_utils.get_df_volume(df) > config.memory_limit:
             raise MemoryError
 
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         self.__release_volume(df)
         self.memory[dict_name] = df
         self.current_volume += cache_utils.get_df_volume(df)
@@ -350,7 +369,7 @@ class RAMCache:
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
 
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         self.last_used[dict_name] = datetime.datetime.now()
         return self.memory[dict_name]
 
@@ -363,9 +382,10 @@ class RAMCache:
         Returns:
 
         """
-        dict_name = name + '_df'
+        dict_name = name + "_df"
         if dict_name in self.memory:
-            self.current_volume -= cache_utils.get_df_volume(self.memory[dict_name])
+            self.current_volume -= cache_utils.get_df_volume(
+                self.memory[dict_name])
             self.memory.pop(dict_name)
         if dict_name in self.last_used:
             self.last_used.pop(dict_name)
@@ -379,7 +399,7 @@ class RAMCache:
         Returns:
 
         """
-        return [i[:-3] for i in list(self.memory.keys()) if i.endswith('_df')]
+        return [i[:-3] for i in list(self.memory.keys()) if i.endswith("_df")]
 
     def is_cached_obj(self, name):
         """Checks whether object is in cache
@@ -391,7 +411,7 @@ class RAMCache:
           True or False (cache hit or miss)
 
         """
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         return dict_name in self.memory
 
     def cache_obj(self, obj, name):
@@ -407,7 +427,7 @@ class RAMCache:
         if self.is_cached_obj(name):
             return
 
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         self.memory[dict_name] = obj
 
     def load_obj(self, name):
@@ -422,7 +442,7 @@ class RAMCache:
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
 
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         return self.memory[dict_name]
 
     def remove_obj(self, name):
@@ -434,7 +454,7 @@ class RAMCache:
         Returns:
 
         """
-        dict_name = name + '_obj'
+        dict_name = name + "_obj"
         if dict_name in self.memory:
             self.memory.pop(dict_name)
 
@@ -447,12 +467,11 @@ class RAMCache:
         Returns:
 
         """
-        return [i[:-4] for i in list(self.memory.keys()) if i.endswith('_obj')]
+        return [i[:-4] for i in list(self.memory.keys()) if i.endswith("_obj")]
 
 
 class DiskCache:
     """Saves and loads directly from disk, no RAM boosting."""
-
     def __init__(self):
         pass
 
@@ -518,9 +537,11 @@ class DiskCache:
         Returns:
 
         """
-        return [df.split('/')[-1][:-3] for df in
-                sorted(glob(config.storage_path + '*' + '_df'), key=os.path.getmtime)]
-
+        return [
+            df.split("/")[-1][:-3]
+            for df in sorted(glob(config.storage_path + "*" + "_df"),
+                             key=os.path.getmtime)
+        ]
 
     def is_cached_obj(self, name):
         """Checks whether object is in cache
@@ -585,22 +606,25 @@ class DiskCache:
         Returns:
 
         """
-        return [df.split('/')[-1][:-4] for df in
-                sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
+        return [
+            df.split("/")[-1][:-4]
+            for df in sorted(glob(config.storage_path + "*" + "_obj"),
+                             key=os.path.getmtime)
+        ]
 
 
-if config.cache_mode == 'disk_and_ram':
+if config.cache_mode == "disk_and_ram":
     cache = Cache()
-elif config.cache_mode == 'ram':
+elif config.cache_mode == "ram":
     cache = RAMCache()
-elif config.cache_mode == 'disk':
+elif config.cache_mode == "disk":
     cache = DiskCache()
 else:
-    raise UserWarning(f'config.cache_mode should be one of "disk", "disk_and_ram", "ram". '
-                      f'Now it is "{config.cache_mode}"')
+    raise UserWarning(
+        f'config.cache_mode should be one of "disk", "disk_and_ram", "ram". '
+        f'Now it is "{config.cache_mode}"')
 
-
-USER_SEP = '__USER__'
+USER_SEP = "__USER__"
 
 
 def save(obj, name):
@@ -614,7 +638,9 @@ def save(obj, name):
 
     """
     if name in ls():
-        raise KeyError("You've already saved object with this name. If you want to overwrite it, first use kts.rm()")
+        raise KeyError(
+            "You've already saved object with this name. If you want to overwrite it, first use kts.rm()"
+        )
     if isinstance(obj, KTDF) or isinstance(obj, pd.DataFrame):
         cache.cache_df(obj, name + USER_SEP)
     else:
@@ -623,10 +649,15 @@ def save(obj, name):
 
 def ls():
     """ """
-    return [df.split('/')[-1][:-4 - len(USER_SEP)] for df in
-            sorted(glob(config.storage_path + '*' + USER_SEP + '_obj'), key=os.path.getmtime)
-           ] + [df.split('/')[-1][:-3 - len(USER_SEP)] for df in
-            sorted(glob(config.storage_path + '*' + USER_SEP + '_df'), key=os.path.getmtime)]
+    return [
+        df.split("/")[-1][:-4 - len(USER_SEP)]
+        for df in sorted(glob(config.storage_path + "*" + USER_SEP + "_obj"),
+                         key=os.path.getmtime)
+    ] + [
+        df.split("/")[-1][:-3 - len(USER_SEP)]
+        for df in sorted(glob(config.storage_path + "*" + USER_SEP + "_df"),
+                         key=os.path.getmtime)
+    ]
 
 
 def get_type(name):
@@ -639,9 +670,9 @@ def get_type(name):
 
     """
     if cache.is_cached_obj(name + USER_SEP):
-        return 'obj'
+        return "obj"
     else:
-        return 'df'
+        return "df"
 
 
 def load(name):
@@ -655,7 +686,7 @@ def load(name):
     """
     if name not in ls():
         raise KeyError("No such object in cache")
-    if get_type(name) == 'df':
+    if get_type(name) == "df":
         return cache.load_df(name + USER_SEP)
     else:
         return cache.load_obj(name + USER_SEP)
@@ -672,7 +703,7 @@ def remove(name):
     """
     if name not in ls():
         return
-    if get_type(name) == 'df':
+    if get_type(name) == "df":
         cache.remove_df(name + USER_SEP)
     else:
         cache.remove_obj(name + USER_SEP)

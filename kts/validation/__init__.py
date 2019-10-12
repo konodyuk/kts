@@ -1,2 +1,2 @@
-from .split import *
 from .experiment import experiment_list
+from .split import *

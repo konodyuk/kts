@@ -1,7 +1,6 @@
-import os
 import sys
-sys.path.insert(0, '.')
 
+sys.path.insert(0, ".")
 
 # from .environment import get_mode
 # get_mode()
@@ -19,9 +18,11 @@ from .storage import cache
 from .storage.dataframe import DataFrame as KTDF
 from .storage.caching import save, load, ls, remove, rm
 from .validation.leaderboard import leaderboard
+
 lb = leaderboard
 from . import zoo
 from .ensembling import stack
+
 # from .submission import submit
 from . import eda
 from .feature import selection

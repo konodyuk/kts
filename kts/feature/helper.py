@@ -1,5 +1,6 @@
-from ..storage import caching
+from collections import MutableSequence
 
+from ..storage import caching
 
 # class Helper:
 #     def __init__(self, function):
@@ -24,19 +25,17 @@ from ..storage import caching
 #
 #
 
-from collections import MutableSequence
-
 
 class HelperList(MutableSequence):
     """ """
     def __init__(self):
         self.full_name = "kts.feature.helper.helper_list"  # such a hardcode
         self.names = [self.full_name]
-        while self.names[-1].count('.'):
-            self.names.append(self.names[-1][self.names[-1].find('.') + 1:])
-        self.names.append('kts.helpers')
-        while self.names[-1].count('.'):
-            self.names.append(self.names[-1][self.names[-1].find('.') + 1:])
+        while self.names[-1].count("."):
+            self.names.append(self.names[-1][self.names[-1].find(".") + 1:])
+        self.names.append("kts.helpers")
+        while self.names[-1].count("."):
+            self.names.append(self.names[-1][self.names[-1].find(".") + 1:])
         self.objects = []
         self.name_to_idx = dict()
 
@@ -44,7 +43,10 @@ class HelperList(MutableSequence):
         """ """
         self.objects = []
         self.name_to_idx = dict()
-        names = [obj for obj in caching.cache.cached_objs() if obj.endswith('_helper')]
+        names = [
+            obj for obj in caching.cache.cached_objs()
+            if obj.endswith("_helper")
+        ]
         for idx, name in enumerate(names):
             functor = caching.cache.load_obj(name)
             self.objects.append(functor)
@@ -62,13 +64,13 @@ class HelperList(MutableSequence):
         elif type(key) == str:
             return self.objects[self.name_to_idx[key]]
         else:
-            raise TypeError('Index should be int, slice or str')
+            raise TypeError("Index should be int, slice or str")
 
     def __delitem__(self, key):
-        raise AttributeError('This object is read-only')
+        raise AttributeError("This object is read-only")
 
     def __setitem__(self, key, value):
-        raise AttributeError('This object is read-only')
+        raise AttributeError("This object is read-only")
 
     def insert(self, key, value):
         """
@@ -80,7 +82,7 @@ class HelperList(MutableSequence):
         Returns:
 
         """
-        raise AttributeError('This object is read-only')
+        raise AttributeError("This object is read-only")
 
     def define_in_scope(self, global_scope):
         """

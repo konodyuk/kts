@@ -1,11 +1,11 @@
-from . import classification
 from . import binary_classification
+from . import classification
 from . import regression
+
 c = classification
 bc = binary_classification
 r = regression
 
-from .. import modelling
 # import forge
 #
 # exclude_types = [model_class for model_class in modelling.__dict__.values()
@@ -22,4 +22,3 @@ from .. import modelling
 # for model_class in model_classes:
 #     model_class.__init__ = forge.copy(model_class.Estimator.__init__)(modelling.Model.__init__)
 #     model_class.__doc__ = model_class.Estimator.__doc__
-

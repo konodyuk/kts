@@ -1,8 +1,9 @@
-from .validation.leaderboard import leaderboard as lb
-from .validation.validator import Validator
-from .validation.split import Refiner
-from .feature import stl
 from warnings import warn
+
+from .feature import stl
+from .validation.leaderboard import leaderboard as lb
+from .validation.split import Refiner
+from .validation.validator import Validator
 
 
 def assert_splitters(exps):
@@ -18,7 +19,9 @@ def assert_splitters(exps):
     for exp in exps:
         all_splitters.add(repr(exp.splitter))
         if len(all_splitters) > 1:
-            raise Exception(f'Experiment {repr(exp.identifier)} has {exp.splitter} instead of {all_splitters.pop()}')
+            raise Exception(
+                f"Experiment {repr(exp.identifier)} has {exp.splitter} instead of {all_splitters.pop()}"
+            )
 
 
 def assert_metrics(exps):
@@ -32,16 +35,21 @@ def assert_metrics(exps):
     """
     all_metrics = set()
     for exp in exps:
-        if 'source' in dir(exp.validator.metric):
+        if "source" in dir(exp.validator.metric):
             all_metrics.add(exp.validator.metric.source)
         else:
             all_metrics.add(exp.validator.metric.__name__)
     if len(all_metrics) > 1:
-        warn(f"Different metrics were used for scoring provided experiments: {all_metrics}."
-             f" The first one will be used unless you specify it explicitly.")
+        warn(
+            f"Different metrics were used for scoring provided experiments: {all_metrics}."
+            f" The first one will be used unless you specify it explicitly.")
 
 
-def stack(ids, safe=True, inner_splitter=None, metric=None, validator_class=Validator):
+def stack(ids,
+          safe=True,
+          inner_splitter=None,
+          metric=None,
+          validator_class=Validator):
     """
 
     Args:

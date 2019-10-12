@@ -1,9 +1,10 @@
 import hashlib
 import inspect
-from itertools import zip_longest
-import numpy as np
 import time
 from abc import ABCMeta
+from itertools import zip_longest
+
+import numpy as np
 
 
 def captcha():
@@ -53,7 +54,10 @@ def extract_signature(func, return_dict=False):
     """
     args = inspect.getfullargspec(func).args
     defaults = inspect.getfullargspec(func).defaults
-    values = {**inspect.currentframe().f_back.f_locals, **inspect.currentframe().f_back.f_back.f_locals}
+    values = {
+        **inspect.currentframe().f_back.f_locals,
+        **inspect.currentframe().f_back.f_back.f_locals,
+    }
     if defaults is None:
         defaults = []
     if args is None:
@@ -69,8 +73,8 @@ def extract_signature(func, return_dict=False):
                 arg_repr = values[arg].__name__
             else:
                 arg_repr = repr(values[arg])
-            sources.append(f'{arg}={arg_repr}')
-    return ', '.join(sources)
+            sources.append(f"{arg}={arg_repr}")
+    return ", ".join(sources)
 
 
 def is_helper(func):
@@ -82,15 +86,14 @@ def is_helper(func):
     Returns:
 
     """
-    return callable(func) \
-           and '__name__' in dir(func) \
-           and 'source' in dir(func) \
-           and isinstance(func.source, str) \
-           and 'def' in func.source  # genius
+    return (callable(func) and "__name__" in dir(func)
+            and "source" in dir(func) and isinstance(func.source, str)
+            and "def" in func.source)  # genius
 
 
 class BadSignatureException(Exception):
     """ """
+
     pass
 
 
@@ -105,15 +108,16 @@ def _create_source(class_name, base_classes, methods):
     Returns:
 
     """
-    base_class_names = ', '.join([bc.__name__ for bc in base_classes])
+    base_class_names = ", ".join([bc.__name__ for bc in base_classes])
     res = f"""class {class_name}({base_class_names}):\n"""
     for name, meth in methods.items():
-        if name not in ['__module__', '__qualname__']:
+        if name not in ["__module__", "__qualname__"]:
             try:
-                res += inspect.getsource(meth) + '\n'
+                res += inspect.getsource(meth) + "\n"
             except TypeError:
                 raise UserWarning(
-                    f'Unexpected static variable in class definition: {name}. Use instance variables instead.')
+                    f"Unexpected static variable in class definition: {name}. Use instance variables instead."
+                )
     return res.strip()
 
 
@@ -130,7 +134,10 @@ def _check_signatures(class_name, base_classes, methods):
     """
     for name, meth in methods.items():
         for base_class in base_classes:
-            if name in base_class.__dict__ and name not in ['__module__', '__qualname__']:
+            if name in base_class.__dict__ and name not in [
+                    "__module__",
+                    "__qualname__",
+            ]:
                 base_meth = getattr(base_class, name)
                 sign = inspect.signature(meth)
                 base_sign = inspect.signature(base_meth)
@@ -145,7 +152,8 @@ class SourceMetaClass(ABCMeta):
     def __new__(cls, class_name, base_classes, dict_of_methods):
         cls.check_methods(dict_of_methods)
         _check_signatures(class_name, base_classes, dict_of_methods)
-        dict_of_methods['class_source'] = _create_source(class_name, base_classes, dict_of_methods)
+        dict_of_methods["class_source"] = _create_source(
+            class_name, base_classes, dict_of_methods)
         return type.__new__(cls, class_name, base_classes, dict_of_methods)
 
     def check_methods(methods):

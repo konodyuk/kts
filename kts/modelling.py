@@ -1,8 +1,10 @@
-import numpy as np
-from hashlib import sha256
 import json
+from hashlib import sha256
+
+import numpy as np
 
 from .utils import SourceMetaClass
+
 
 class NamingMixin:
     """ """
@@ -16,8 +18,10 @@ class NamingMixin:
             ctx_tracked_params = self.tracked_params
         except:
             ctx_tracked_params = self.get_tracked_params()
-        self.params = {key: self.get_params()[key] for key in ctx_tracked_params if
-                       key in self.get_params()}
+        self.params = {
+            key: self.get_params()[key]
+            for key in ctx_tracked_params if key in self.get_params()
+        }
         return f"{ctx_short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-3:] if self.params else 'default'}"
 
 
@@ -31,7 +35,7 @@ class ArithmeticMixin:
 
     def __truediv__(self, x):
         assert x != 0
-        return WeightedModel(self, 1. / x)
+        return WeightedModel(self, 1.0 / x)
 
     def __add__(self, other):
         # assert type(self).__base__ == type(other).__base__, \
@@ -52,7 +56,7 @@ class SourceMixin:
         args = []
         for key, value in self.get_params().items():
             args.append(f"{key}={repr(value)}")
-        res = ', '.join(args)
+        res = ", ".join(args)
         return f"{self.__class__.__name__}({res})"
 
 
@@ -116,7 +120,7 @@ class WeightedModel(ArithmeticMixin, PreprocessingMixin):  # MulNode
             self.coeff *= self.model.coeff
             self.model = self.model.model
         self.__name__ = f"{round(self.coeff, 2)} * "
-        if '+' in self.model.__name__:
+        if "+" in self.model.__name__:
             self.__name__ += f"({self.model.__name__})"
         else:
             self.__name__ += f"{self.model.__name__}"
@@ -153,17 +157,23 @@ class Ensemble(ArithmeticMixin, PreprocessingMixin):  # AddNode
                 return model.model, model.coeff
             return model, 1
 
-        self.models = list(set([__get_model_coeff(model)[0] for model in _models]))
+        self.models = list(
+            set([__get_model_coeff(model)[0] for model in _models]))
         _coeffs = np.zeros(len(self.models))
         for i in range(len(self.models)):
             for model in _models:
-                if __get_model_coeff(self.models[i])[0] == __get_model_coeff(model)[0]:
+                if __get_model_coeff(
+                        self.models[i])[0] == __get_model_coeff(model)[0]:
                     _coeffs[i] += __get_model_coeff(model)[1]
 
-        self.models = [WeightedModel(model, coeff) for model, coeff in zip(self.models, _coeffs)]
+        self.models = [
+            WeightedModel(model, coeff)
+            for model, coeff in zip(self.models, _coeffs)
+        ]
         self.norm_coeff = _coeffs.sum()
         _coeffs /= self.norm_coeff
-        self.__name__ = ' + '.join([(model / self.norm_coeff).__name__ for model in self.models])
+        self.__name__ = " + ".join([(model / self.norm_coeff).__name__
+                                    for model in self.models])
 
     def predict(self, X):
         """Standard prediction method.
@@ -198,16 +208,16 @@ class CustomModelSourceMetaClass(SourceMetaClass):
         Returns:
 
         """
-        required_methods = ['get_short_name', 'get_tracked_params']
+        required_methods = ["get_short_name", "get_tracked_params"]
         for meth in required_methods:
-            assert meth in methods, f"Method .{meth}() is required to define a custom model"
+            assert (meth in methods), f"Method .{meth}() is required to define a custom model"
 
 
 class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
     """ """
     def get_short_name(self):
         """ """
-        return 'custom_model'
+        return "custom_model"
 
     def get_tracked_params(self):
         """ """

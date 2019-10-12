@@ -1,9 +1,10 @@
 import pandas as pd
-from ..storage import cache
-from . import utils
-from ..utils import captcha
 from tqdm import tqdm
+
+from . import utils
 from .. import config
+from ..storage import cache
+from ..utils import captcha
 
 
 class Leaderboard:
@@ -24,9 +25,9 @@ class Leaderboard:
         Returns:
 
         """
-        if experiment.__name__ + '_exp' in cache.cached_objs():
+        if experiment.__name__ + "_exp" in cache.cached_objs():
             return
-        cache.cache_obj(experiment, experiment.__name__ + '_exp')
+        cache.cache_obj(experiment, experiment.__name__ + "_exp")
         self.add_row(experiment.as_df())
 
     def reload(self):
@@ -44,7 +45,8 @@ class Leaderboard:
         """
         self.reload()
         self._df = self._df.append(row)
-        self._df = self._df.sort_values('Score', ascending=(config.GOAL == 'MINIMIZE'))
+        self._df = self._df.sort_values("Score",
+                                        ascending=(config.GOAL == "MINIMIZE"))
         cache.remove_df(config.LB_DF_NAME)
         cache.cache_df(self._df, config.LB_DF_NAME)
 
@@ -58,7 +60,7 @@ class Leaderboard:
             return [utils.get_experiment(i) for i in key]
         else:
             res = self._df[key]
-        if 'style' in dir(res):
+        if "style" in dir(res):
             return res.style
         return res
 
@@ -74,10 +76,11 @@ class Leaderboard:
 
     def refresh(self):
         """ """
-        names = [name for name in cache.cached_objs() if name.endswith('_exp')]
-        print(f'You want to refresh existing leaderboard.'
-              f' It will require loading ALL ({len(names)}) existing experiments '
-              f'and may take time. Do you want to continue?')
+        names = [name for name in cache.cached_objs() if name.endswith("_exp")]
+        print(
+            f"You want to refresh existing leaderboard."
+            f" It will require loading ALL ({len(names)}) existing experiments "
+            f"and may take time. Do you want to continue?")
         if not captcha():
             return
         self._df = pd.DataFrame()
@@ -85,7 +88,7 @@ class Leaderboard:
         cache.cache_df(self._df, config.LB_DF_NAME)
         for name in tqdm(names):
             self.add_row(cache.load_obj(name).as_df())
-        print('Done')
+        print("Done")
 
 
 leaderboard = Leaderboard()

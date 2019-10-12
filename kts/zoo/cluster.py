@@ -1,6 +1,5 @@
-from sklearn.cluster import KMeans
 import numpy as np
-
+from sklearn.cluster import KMeans
 
 try:
     from libKMCUDA import kmeans_cuda
@@ -37,8 +36,8 @@ class KMeansFeaturizer:
         "Feature Engineering for Machine Learning by Alice Zheng and Amanda Casari (O’Reilly).
          Copyright 2018 Alice Zheng and Amanda Casari, 978-1-491-95324-2."
     """
-
-    def __init__(self, k=100, target_scale=5.0, random_state=1337, n_jobs=None):
+    def __init__(self, k=100, target_scale=5.0, random_state=1337,
+                 n_jobs=None):
         self.k = k
         self.target_scale = target_scale
         self.random_state = random_state
@@ -71,17 +70,17 @@ class KMeansFeaturizer:
             try:
                 clusters, assignments = kmeans_cuda(X.astype(np.float32),
                                                     clusters=self.k,
-                                                    seed=self.random_state
-                                                    )
+                                                    seed=self.random_state)
                 km_model = KMeans(n_clusters=self.k)
                 clusters[~np.isfinite(clusters)] = -1e9
                 km_model.cluster_centers_ = clusters
             except:
-                km_model = KMeans(n_clusters=self.k,
-                                  n_init=20,
-                                  random_state=self.random_state,
-                                  n_jobs=self.n_jobs
-                                  )
+                km_model = KMeans(
+                    n_clusters=self.k,
+                    n_init=20,
+                    random_state=self.random_state,
+                    n_jobs=self.n_jobs,
+                )
                 km_model.fit(X)
 
             self.km_model = km_model
@@ -94,19 +93,21 @@ class KMeansFeaturizer:
 
         # Build a pre-training k-means model on data and target
         try:
-            clusters, assignments = kmeans_cuda(data_with_target.astype(np.float32),
-                                                clusters=self.k,
-                                                seed=self.random_state
-                                                )
+            clusters, assignments = kmeans_cuda(
+                data_with_target.astype(np.float32),
+                clusters=self.k,
+                seed=self.random_state,
+            )
             km_model_pretrain = KMeans(n_clusters=self.k)
             clusters[~np.isfinite(clusters)] = -1e9
             km_model_pretrain.cluster_centers_ = clusters
         except:
-            km_model_pretrain = KMeans(n_clusters=self.k,
-                                       n_init=20,
-                                       random_state=self.random_state,
-                                       n_jobs=self.n_jobs
-                                       )
+            km_model_pretrain = KMeans(
+                n_clusters=self.k,
+                n_init=20,
+                random_state=self.random_state,
+                n_jobs=self.n_jobs,
+            )
             km_model_pretrain.fit(data_with_target)
 
         # Run k-means a second time to get the clusters in the original space
@@ -114,21 +115,23 @@ class KMeansFeaturizer:
         # Go through a single iteration of cluster assignment and centroid
         # recomputation.
         try:
-            clusters, assignments = kmeans_cuda(X.astype(np.float32),
-                                                init=km_model_pretrain.cluster_centers_[:, :-1],
-                                                clusters=self.k,
-                                                seed=self.random_state
-                                                )
+            clusters, assignments = kmeans_cuda(
+                X.astype(np.float32),
+                init=km_model_pretrain.cluster_centers_[:, :-1],
+                clusters=self.k,
+                seed=self.random_state,
+            )
             km_model = KMeans(n_clusters=self.k)
             clusters[~np.isfinite(clusters)] = -1e9
             km_model.cluster_centers_ = clusters
         except:
-            km_model = KMeans(n_clusters=self.k,
-                              init=km_model_pretrain.cluster_centers_[:, :-1],
-                              n_init=1,
-                              max_iter=1,
-                              n_jobs=self.n_jobs
-                              )
+            km_model = KMeans(
+                n_clusters=self.k,
+                init=km_model_pretrain.cluster_centers_[:, :-1],
+                n_init=1,
+                max_iter=1,
+                n_jobs=self.n_jobs,
+            )
             km_model.fit(X)
 
         self.km_model = km_model

@@ -1,6 +1,7 @@
 import inspect
-from .. import config
 import os
+
+from .. import config
 
 
 def get_source(function):
@@ -14,8 +15,8 @@ def get_source(function):
 
     """
     src = inspect.getsource(function)
-    if src[0] == '@':
-        src = src[src.find('\n') + 1:]
+    if src[0] == "@":
+        src = src[src.find("\n") + 1:]
     return src
 
 
@@ -32,10 +33,10 @@ def shorten(source):
         return source
     # source = source.replace('columns=', '')
     left = source[:config.MAX_LEN_SOURCE // 2]
-    left = left[:left.rfind(' ')]
+    left = left[:left.rfind(" ")]
     right = source[-config.MAX_LEN_SOURCE // 2:]
-    right = right[right.find(' '):]
-    return left + ' ...' + right
+    right = right[right.find(" "):]
+    return left + " ..." + right
 
 
 def source_path(function):
@@ -60,7 +61,7 @@ def save_source(function):
 
     """
     path = source_path(function)
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         f.write(get_source(function))
 
 
@@ -87,7 +88,7 @@ def load_source(function):
     """
     if not source_is_saved(function):
         raise FileNotFoundError
-    with open(source_path(function), 'r') as f:
+    with open(source_path(function), "r") as f:
         source = f.read()
     return source
 

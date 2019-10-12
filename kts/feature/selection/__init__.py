@@ -1,1 +1,5 @@
-from .selector import BuiltinImportance, PermutationImportance, SklearnPermutationImportance
+from .selector import (
+    BuiltinImportance,
+    PermutationImportance,
+    SklearnPermutationImportance,
+)
