@@ -11,6 +11,18 @@ VERSION += 1
 with open('VERSION', 'w') as f:
     f.write(str(VERSION))
 
+extras = {
+    'zoo': ['catboost', 'xgboost', 'lightgbm'],
+    'nn': ['skorch'],
+    'selection': ['eli5'],
+    'ray': ["ray[modin]"],
+}
+
+all_deps = []
+for group_name in extras:
+    all_deps += extras[group_name]
+extras['all'] = all_deps
+
 setuptools.setup(
     name="kts",
     version=f"0.2.{VERSION}",
@@ -26,6 +38,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    extras_require=extras,
     install_requires=[
         "mprop",
         "pandas",
