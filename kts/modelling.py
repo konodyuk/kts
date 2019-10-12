@@ -2,13 +2,22 @@ import numpy as np
 from hashlib import sha256
 import json
 
+from .utils import SourceMetaClass
 
 class NamingMixin:
     @property
     def __name__(self):
-        self.params = {key: self.get_params()[key] for key in self.tracked_params if
+        try:
+            ctx_short_name = self.short_name
+        except:
+            ctx_short_name = self.get_short_name()
+        try:
+            ctx_tracked_params = self.tracked_params
+        except:
+            ctx_tracked_params = self.get_tracked_params()
+        self.params = {key: self.get_params()[key] for key in ctx_tracked_params if
                        key in self.get_params()}
-        return f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-3:] if self.params else 'default'}"
+        return f"{ctx_short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-3:] if self.params else 'default'}"
 
 
 class ArithmeticMixin:
@@ -43,14 +52,31 @@ class SourceMixin:
         return f"{self.__class__.__name__}({res})"
 
 
-class Model(ArithmeticMixin, NamingMixin, SourceMixin):
-    tracked_params = []
-    short_name = 'model'
+class PreprocessingMixin:
+    def preprocess(self, X, y):
+        """
+        Preprocess input before feeding it into model
+        :param X: np.array
+        :param y: np.array or None (fitting or inference)
+        :return: (X_processed, y_processed)
+        """
+        return X, y
 
+    def preprocess_fit(self, X, y, *args, **kwargs):
+        X_proc, y_proc = self.preprocess(X, y)
+        self.fit(X_proc, y_proc, *args, **kwargs)
+
+    def preprocess_predict(self, X, *args, **kwargs):
+        X_proc, _ = self.preprocess(X, None)
+        return self.predict(X_proc, *args, **kwargs)
+
+
+class Model(ArithmeticMixin, NamingMixin, SourceMixin, PreprocessingMixin):
     def __repr__(self):
-        return self.__name__
+        return f"[{self.__name__}] {self.source}"
 
-class WeightedModel(ArithmeticMixin): # MulNode
+
+class WeightedModel(ArithmeticMixin, PreprocessingMixin):  # MulNode
     """
     Multiplies predictions by a certain coefficient.
     """
@@ -72,10 +98,10 @@ class WeightedModel(ArithmeticMixin): # MulNode
         :param X: data matrix
         :return:
         """
-        return self.coeff * self.model.predict(X)
+        return self.coeff * self.model.preprocess_predict(X)
 
 
-class Ensemble(ArithmeticMixin): # AddNode
+class Ensemble(ArithmeticMixin, PreprocessingMixin):  # AddNode
     """
     Sums up all predictions of all models.
     """
@@ -117,7 +143,7 @@ class Ensemble(ArithmeticMixin): # AddNode
         """
         res = 0
         for model in self.models:
-            res += model.predict(X)
+            res += model.preprocess_predict(X)
         return res / self.norm_coeff
 
     def __mul__(self, x):
@@ -128,54 +154,25 @@ class Ensemble(ArithmeticMixin): # AddNode
         return Ensemble([model / x for model in self.models])
 
 
-class CustomModel(ArithmeticMixin):
-    def __init__(self, model, tracked_params=[], short_name=None, task='bc'):
-        self.estimator = model
-        self.short_name = (short_name if short_name is not None else self.get_short_name(model))
-        self.tracked_params = tracked_params
-        self.fit = self.estimator.fit
-        self.task = task
-
-    @property
-    def __name__(self):
-        self.params = {key: self.estimator.get_params()[key] for key in self.tracked_params if
-                       key in self.estimator.get_params()}
-        return f"{self.short_name}_{sha256((json.dumps(self.params, sort_keys=True)).encode()).hexdigest()[-2:] if self.params else 'default'}"
-
-    @staticmethod
-    def get_short_name(instance):
-        return instance.__class__.__name__.lower().replace('classifier', '_clf').replace('regressor', '_rg')
-
-    def __dir__(self):
-        return set(dir(super())) | set(dir(self.estimator))
-
-    def __getattr__(self, key):
-        return getattr(self.estimator, key)
-
-    def __setattr__(self, key, value):
-        if 'estimator' in self.__dict__ and key in dir(self.estimator):
-            setattr(self.estimator, key, value)
-        else:
-            super().__setattr__(key, value)
-
-    def predict(self, X, **kw):
-        if self.task == 'bc':
-            return self.estimator.predict_proba(X, **kw)[:, 1]
-        elif self.task == 'c':
-            return self.estimator.predict_proba(X, **kw)
-        elif self.task == 'r':
-            return self.estimator.predict(X, **kw)
+class CustomModelSourceMetaClass(SourceMetaClass):
+    def check_methods(methods):
+        required_methods = ['get_short_name', 'get_tracked_params']
+        for meth in required_methods:
+            assert meth in methods, f"Method .{meth}() is required to define a custom model"
 
 
-def model(model, tracked_params=[], short_name=None, task='bc'):
-    """
-    Creates a custom but trackable model.
-    :param model: model object
-    :param tracked_params: parameters to be tracked
-    :param short_name: short name for your model, like 'rf' for RandomForestClassifier
-    :param task: 'bc' for binary classification,
-                 'c'  for classification,
-                 'r'  for regression
-    :return:
-    """
-    return CustomModel(model, tracked_params, short_name, task)
+class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
+    def get_short_name(self):
+        return 'custom_model'
+
+    def get_tracked_params(self):
+        return []
+
+    def preprocess(self, X, y):
+        """
+        Preprocess input before feeding it into model
+        :param X: np.array
+        :param y: np.array or None (fitting or inference)
+        :return: (X_processed, y_processed)
+        """
+        return X, y
