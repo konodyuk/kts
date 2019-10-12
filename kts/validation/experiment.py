@@ -11,7 +11,7 @@ from fastprogress import progress_bar as pb
 
 
 class Experiment(ArithmeticMixin):
-    def __init__(self, pipeline, oof, score, std, description, splitter, metric, feature_list, helper_list):
+    def __init__(self, pipeline, oof, score, std, description, validator, feature_list, helper_list):
         self.pipeline = pipeline
         self.model = self.pipeline.models[0].model.model  # TODO: test out
         self.model_name = self.model.__class__.__name__
@@ -23,11 +23,10 @@ class Experiment(ArithmeticMixin):
         self.score = score
         self.std = std
         self.identifier = hash_str(f'{pipeline.__name__}')[:6].upper()
-        self.oof.columns = [self.identifier]
+        self.oof.columns = [col_name.replace('prediction', self.identifier) for col_name in self.oof.columns]
         self.__doc__ = description if description is not None else 'no description'
         self.__name__ = f"{self.identifier}-{round(score, 4)}-{pipeline.__name__}"
-        self.splitter = splitter
-        self.metric = metric
+        self.validator = validator
         self.features = list(feature_list)
         self.helpers = list(helper_list)
 
@@ -40,7 +39,7 @@ class Experiment(ArithmeticMixin):
 
     def __repr__(self):
         fields = {
-            'Score': f"{round(self.score, 7)}, std: {round(self.std, 7)} ({self.metric.__name__})",
+            'Score': f"{round(self.score, 7)}, std: {round(self.std, 7)} ({self.validator.metric.__name__})",
             'Identifier': self.identifier,
             'Description': self.__doc__,
             # 'Model': self.model_name + f'\tx{len(self.models)}',
@@ -50,7 +49,7 @@ class Experiment(ArithmeticMixin):
             'FeatureSet': self.featureset.__name__,       #
             '|- description': self.featureset.__doc__,    #
             '|- source': self.featureset.__repr__(),      # both "source" rows will be considered identical
-            'Splitter': self.splitter,
+            'Splitter': self.validator.splitter,
         }
 
         table = tt.Texttable(max_width=80)
@@ -69,7 +68,7 @@ class Experiment(ArithmeticMixin):
             'FS description': self.featureset.__doc__,
             'Model source': self.model.source,
             'FS source': self.featureset.__repr__(),
-            'Splitter': repr(self.splitter)
+            'Splitter': repr(self.validator.splitter)
         }
         for field in fields:
             fields[field] = [fields[field]]
