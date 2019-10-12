@@ -37,7 +37,7 @@ identity.source = "stl.identity"
 def merge(dfs):
     if len(dfs) == 1:
         return dfs[0]
-    return pd.concat([df.df if isinstance(df, KTDF) else df for df in dfs], axis=1)
+    return pd.concat(dfs, axis=1)
 
 
 def column_selector(columns):
@@ -94,7 +94,7 @@ def compose(funcs):
 # TODO: reimplement using sklearn.preprocessing.OHE
 def make_ohe(cols, sep='_ohe_'):
     def __make_ohe(df):
-        return pd.get_dummies(df.df[cols], prefix_sep=sep, columns=cols)
+        return pd.get_dummies(df[cols], prefix_sep=sep, columns=cols)
 
     # return FeatureConstructor(__make_ohe, cache_default=False)
     return wrap_stl_function(make_ohe, __make_ohe)
@@ -138,7 +138,7 @@ def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
                 else:
                     enc = df.encoders[f"__te_{col}_{target_col}_{aggregation_name}"]
                     global_answer = df.encoders[f"__te_{col}_{target_col}_{aggregation_name}_global_answer"]
-                res[f"{col}{sep}{target_col}_{aggregation_name}"] = df[col].map(enc)
+                res[f"{col}{sep}{target_col}_{aggregation_name}"] = df[col].map(enc).astype(np.float)
                 res[f"{col}{sep}{target_col}_{aggregation_name}"].fillna(global_answer, inplace=True)
         return res
 
@@ -281,23 +281,18 @@ from ..validation.leaderboard import leaderboard as lb
 def stack(ids):
     def __stack(df):
         oof_preds = merge([lb[id_exp].oof for id_exp in ids])
+        oof_col_names = merge([lb[id_exp].oof.columns for id_exp in ids])
         try:
             res = oof_preds[df.index]
             if res.isna().sum().sum() > 0:
                 bad_indices = res.isna().sum(axis=1) > 0
-                # try:
-                #     preds = Parallel(n_jobs=-1)([delayed(lb[id_exp].predict)(df[bad_indices]) for id_exp in ids])
-                # except Exception as e:
-                #     raise e
                 preds = [lb[id_exp].predict(df[bad_indices]) for id_exp in ids]
-                res[bad_indices] = merge([pd.DataFrame({id_exp: pred}) for id_exp, pred in zip(ids, preds)])
+                res[bad_indices] = merge([pd.DataFrame(data=pred, columns=col_names)
+                                          for col_names, pred in zip(oof_col_names, preds)])
         except:
-            # try:
-            #     preds = Parallel(n_jobs=-1)([delayed(lb[id_exp].predict)(df) for id_exp in ids])
-            # except Exception as e:
-            #     raise e
             preds = [lb[id_exp].predict(df) for id_exp in ids]
-            res = merge([pd.DataFrame({id_exp: pred}) for id_exp, pred in zip(ids, preds)])
+            res = merge([pd.DataFrame(data=pred, columns=col_names)
+                                      for col_names, pred in zip(oof_col_names, preds)])
             res.set_index(df.index, inplace=True)
         return res
 
