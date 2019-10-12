@@ -7,8 +7,10 @@ from ..utils import captcha
 from .selection.selector import BuiltinImportance
 import glob
 import os
+import pandas as pd
 import numpy as np
 import inspect
+from typing import Optional, Union, List, Tuple, Dict, Any
 
 
 class FeatureConstructor:
@@ -24,7 +26,7 @@ class FeatureConstructor:
     def __call__(self, df, cache=None, **kwargs):
         if not self.stl:
             self = caching.cache.load_obj(self.__name__ + '_fc')
-        ktdf = dataframe.DataFrame(df)
+        ktdf = dataframe.DataFrame(df=df)
         if type(cache) == type(None):
             cache = self.cache_default
         if not cache or config.preview_call:  # written to avoid caching when @preview function uses @registered function inside
@@ -37,7 +39,7 @@ class FeatureConstructor:
                 cached_encoders = caching.cache.load_obj(name_metadata)
                 for key, value in cached_encoders.items():
                     ktdf.encoders[key] = value
-            return dataframe.DataFrame(caching.cache.load_df(name), ktdf.train, ktdf.encoders, ktdf.slice_id)
+            return dataframe.DataFrame(df=caching.cache.load_df(name), train=ktdf.train, encoders=ktdf.encoders, slice_id=ktdf.slice_id)
         else:
             result = self.function(ktdf)
             try:
@@ -60,7 +62,7 @@ class FeatureConstructor:
                     print('Cancelled')
             if ktdf.encoders:
                 caching.cache.cache_obj(ktdf.encoders, name_metadata)
-            return dataframe.DataFrame(result, ktdf.train, ktdf.encoders, ktdf.slice_id)
+            return dataframe.DataFrame(df=result, train=ktdf.train, encoders=ktdf.encoders, slice_id=ktdf.slice_id)
 
     def __repr__(self):
         if self.stl:
@@ -86,11 +88,22 @@ class FeatureConstructor:
         from . import stl
         return stl.compose([self, other])
 
+FeatureListType = Union[FeatureConstructor, List[FeatureConstructor], Tuple[FeatureConstructor], List["FeatureListType"], Tuple["FeatureListType"]]
+
 from . import stl
 
 
 class FeatureSet:
-    def __init__(self, fc_before, fc_after=stl.empty_like, df_input=None, target_column=None, group_column=None, name=None, description=None, desc=None, encoders=None):
+    def __init__(self,
+                 fc_before: FeatureListType,
+                 fc_after: FeatureListType = stl.empty_like,
+                 df_input: Optional[pd.DataFrame] = None,
+                 target_columns: Optional[Union[List[str], str]] = None,
+                 auxiliary_columns: Optional[Union[List[str], str]] = None,
+                 name: Optional[str] = None,
+                 description: Optional[str] = None,
+                 desc: Optional[str] = None,
+                 encoders: Optional[Dict[str, Any]] = None):
         if type(fc_before) == list:
             self.fc_before = stl.concat(fc_before)
         elif type(fc_before) == tuple:
@@ -103,8 +116,16 @@ class FeatureSet:
             self.fc_after = stl.compose(fc_after)
         else:
             self.fc_after = fc_after
-        self.target_column = target_column
-        self.group_column = group_column
+        self.target_columns = target_columns
+        if isinstance(self.target_columns, str):
+            self.target_columns = [self.target_columns]
+        elif self.target_columns is None:
+            self.target_columns = []
+        self.auxiliary_columns = auxiliary_columns
+        if isinstance(self.auxiliary_columns, str):
+            self.auxiliary_columns = [self.auxiliary_columns]
+        elif self.auxiliary_columns is None:
+            self.auxiliary_columns = []
         self.encoders = (encoders if encoders is not None else dict())
         if df_input is not None:
             self.set_df(df_input)
@@ -119,13 +140,13 @@ class FeatureSet:
         self.altsource = None
 
     def set_df(self, df_input):
-        self.df_input = dataframe.DataFrame(df_input)
+        self.df_input = dataframe.DataFrame(df=df_input)
         self.df_input.train = True
         self.df_input.encoders = self.encoders
         self.df = self.fc_before(self.df_input)
 
     def __call__(self, df):
-        ktdf = dataframe.DataFrame(df)
+        ktdf = dataframe.DataFrame(df=df)
         ktdf.encoders = self.encoders
         return stl.merge([
             self.fc_before(ktdf),
@@ -137,7 +158,7 @@ class FeatureSet:
             raise AttributeError("Input DataFrame is not defined")
         return stl.merge([
             self.df.iloc[idx],
-            self.fc_after(dataframe.DataFrame(self.df_input.iloc[idx], train=1))  # BUG: should have .train=True?
+            self.fc_after(dataframe.DataFrame(df=self.df_input.iloc[idx], train=1))  # BUG: should have .train=True?
         ])  # made .train=1 only for preview purposes
         # actually, FS[a:b] functionality is made only for debug
         # why not write config.preview_call = 1 then?
@@ -145,8 +166,8 @@ class FeatureSet:
     def empty_copy(self):
         res = FeatureSet(fc_before=self.fc_before,
                         fc_after=self.fc_after,
-                        target_column=self.target_column,
-                        group_column=self.group_column,
+                        target_columns=self.target_columns,
+                        auxiliary_columns=self.auxiliary_columns,
                         encoders=self.encoders,
                         name=self.__name__,
                         description=self.__doc__)
@@ -158,22 +179,31 @@ class FeatureSet:
 
     @property
     def target(self):
-        if self.target_column:
-            if self.target_column in self.df_input.columns:
-                return self.df_input[self.target_column]
-            elif self.target_column in self.df.columns:
-                return self.df[self.target_column]
+        if len(self.target_columns) > 0:
+            if set(self.target_columns) < set(self.df_input.columns):
+                return self.df_input[self.target_columns]
+            elif set(self.target_columns) < set(self.df_input.columns):
+                return self.df[self.target_columns]
             else:
-                raise AttributeError("Target column is neither given as input nor computed")
+                raise AttributeError("Target columns are neither given as input nor computed")
         else:
-            raise AttributeError("Target column is not defined.")
+            raise AttributeError("Target columns are not defined.")
 
     @property
-    def groups(self):
-        if self.group_column:
-            return self.df_input[self.group_column]
+    def auxiliary(self):
+        if len(self.auxiliary_columns) > 0:
+            if set(self.auxiliary_columns) < set(self.df_input.columns):
+                return self.df_input[self.auxiliary_columns]
+            elif set(self.auxiliary_columns) < set(self.df_input.columns):
+                return self.df[self.auxiliary_columns]
+            else:
+                raise AttributeError("Auxiliary columns are neither given as input nor computed")
         else:
-            raise AttributeError("Group column is not defined.")
+            raise AttributeError("Auxiliary columns are not defined.")
+
+    @property
+    def aux(self):
+        return self.auxiliary
 
     def __get_src(self, fc):
         if fc.__name__ == 'empty_like':
@@ -194,7 +224,7 @@ class FeatureSet:
         prefix = 'FeatureSet('
         fs_source = prefix + 'fc_before=' + fc_before_source + ',\n' \
                     + ' ' * len(prefix) + 'fc_after=' + fc_after_source + ',\n' \
-                    + ' ' * len(prefix) + 'target_column=' + repr(self.target_column) + ', group_column=' + repr(self.group_column if 'group_column' in dir(self) else None) + ')'
+                    + ' ' * len(prefix) + 'target_columns=' + repr(self.target_columns) + ', auxiliary_columns=' + repr(self.auxiliary_columns if 'auxiliary_columns' in dir(self) else None) + ')'
         return fs_source
 
     @property
@@ -244,8 +274,8 @@ class FeatureSet:
         res = FeatureSet(fc_before=self.fc_before + good_features,
                          fc_after=self.fc_after + good_features,
                          df_input=self.df_input,
-                         target_column=self.target_column,
-                         group_column=self.group_column,
+                         target_columns=self.target_columns,
+                         auxiliary_columns=self.auxiliary_columns,
                          encoders=self.encoders,
                          name=f"{self.__name__}_{calculator.short_name}_{n_best}",
                          description=f"Select {n_best} best features from {self._first_name} using {calculator.__class__.__name__}")
@@ -266,7 +296,7 @@ class FeatureSlice:
 
     def __call__(self, df=None):
         if isinstance(df, type(None)):
-            fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[self.slice],
+            fsl_level_df = dataframe.DataFrame(df=self.featureset.df_input.iloc[self.slice],
                                                # ALERT: may face memory leak here
                                                slice_id=self.slice_id,
                                                train=True,
@@ -275,10 +305,11 @@ class FeatureSlice:
                 self.featureset.df.iloc[self.slice],
                 self.featureset.fc_after(fsl_level_df)
             ])
-            self.columns = [i for i in result.columns if i != self.featureset.target_column]
+            self.columns = [i for i in result.columns if i not in self.featureset.target_columns \
+                                                     and i not in self.featureset.auxiliary_columns]
             return result[self.columns]
         elif isinstance(df, slice) or isinstance(df, np.ndarray) or isinstance(df, list):
-            fsl_level_df = dataframe.DataFrame(self.featureset.df_input.iloc[df],  # ALERT: may face memory leak here
+            fsl_level_df = dataframe.DataFrame(df=self.featureset.df_input.iloc[df],  # ALERT: may face memory leak here
                                                slice_id=self.slice_id,
                                                train=False,
                                                encoders=self.second_level_encoders)
@@ -290,9 +321,9 @@ class FeatureSlice:
                 result[column] = 0
             return result[self.columns]
         else:
-            fs_level_df = dataframe.DataFrame(df,
+            fs_level_df = dataframe.DataFrame(df=df,
                                               encoders=self.first_level_encoders)
-            fsl_level_df = dataframe.DataFrame(df,
+            fsl_level_df = dataframe.DataFrame(df=df,
                                                encoders=self.second_level_encoders,
                                                slice_id=self.slice_id)
             result = stl.merge([
