@@ -19,13 +19,25 @@ import numpy as np
 
 
 class ImportanceCalculator(ABC):
+    """ """
     @property
     @abc.abstractmethod
     def short_name(self):
+        """ """
         pass
 
     @abc.abstractmethod
     def calc(self, model, featureslice, experiment) -> dict:
+        """
+
+        Args:
+          model: 
+          featureslice: 
+          experiment: 
+
+        Returns:
+
+        """
         raise NotImplementedError
 
     def __repr__(self):
@@ -33,6 +45,7 @@ class ImportanceCalculator(ABC):
 
 
 class BuiltinImportance(ImportanceCalculator):
+    """ """
     short_name = 'bltn'
 
     def __init__(self):
@@ -40,6 +53,16 @@ class BuiltinImportance(ImportanceCalculator):
         pass
 
     def calc(self, model, featureslice, experiment):
+        """
+
+        Args:
+          model: 
+          featureslice: 
+          experiment: 
+
+        Returns:
+
+        """
         return {name: imp for name, imp in zip(featureslice.columns, model.feature_importances_)}
 
 
@@ -57,6 +80,7 @@ class BuiltinImportance(ImportanceCalculator):
 try:
     import eli5.sklearn
     class SklearnPermutationImportance(ImportanceCalculator):
+        """ """
         short_name = 'perm'
 
         def __init__(self, n_rows=1000, n_iter=5, random_state=42):
@@ -66,6 +90,16 @@ try:
             self.random_state = random_state
 
         def calc(self, model, featureslice, experiment):
+            """
+
+            Args:
+              model: 
+              featureslice: 
+              experiment: 
+
+            Returns:
+
+            """
             if 'df_input' not in dir(featureslice.featureset) or featureslice.featureset.df_input is None:
                 raise AttributeError(f"No input dataframe for featureset of the experiment found. "
                                      f"Set it with lb['{experiment.identifier}'].set_df(df)")
@@ -85,6 +119,7 @@ except ImportError:
 try:
     from eli5.permutation_importance import get_score_importances
     class PermutationImportance(ImportanceCalculator):
+        """ """
         short_name = 'perm'
 
         def __init__(self, n_rows=1000, n_iter=5, random_state=42):
@@ -94,11 +129,30 @@ try:
             self.random_state = random_state
 
         def calc(self, model, featureslice, experiment):
+            """
+
+            Args:
+              model: 
+              featureslice: 
+              experiment: 
+
+            Returns:
+
+            """
             if 'df_input' not in dir(featureslice.featureset) or featureslice.featureset.df_input is None:
                 raise AttributeError(f"No input dataframe for featureset of the experiment found. "
                                      f"Set it with lb['{experiment.identifier}'].set_df(df)")
 
             def score_func(X, y):
+                """
+
+                Args:
+                  X: 
+                  y: 
+
+                Returns:
+
+                """
                 return experiment.metric(y, model.predict(X))
             X = featureslice(featureslice.idx_test[:self.n_rows]).values
             y = featureslice.featureset.target.values[featureslice.idx_test][:self.n_rows]

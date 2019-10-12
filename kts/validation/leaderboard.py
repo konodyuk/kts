@@ -7,6 +7,7 @@ from .. import config
 
 
 class Leaderboard:
+    """ """
     def __init__(self):
         if config.LB_DF_NAME in cache.cached_dfs():
             self._df = cache.load_df(config.LB_DF_NAME)
@@ -15,15 +16,32 @@ class Leaderboard:
             cache.cache_df(self._df, config.LB_DF_NAME)
 
     def register(self, experiment):
+        """
+
+        Args:
+          experiment: 
+
+        Returns:
+
+        """
         if experiment.__name__ + '_exp' in cache.cached_objs():
             return
         cache.cache_obj(experiment, experiment.__name__ + '_exp')
         self.add_row(experiment.as_df())
 
     def reload(self):
+        """ """
         self._df = cache.load_df(config.LB_DF_NAME)
 
     def add_row(self, row):
+        """
+
+        Args:
+          row: 
+
+        Returns:
+
+        """
         self.reload()
         self._df = self._df.append(row)
         self._df = self._df.sort_values('Score', ascending=(config.GOAL == 'MINIMIZE'))
@@ -45,14 +63,17 @@ class Leaderboard:
         return res
 
     def _repr_html_(self):
+        """ """
         self.reload()
         return self._df.style._repr_html_()
 
     @property
     def df(self):
+        """ """
         return self._df.copy()
 
     def refresh(self):
+        """ """
         names = [name for name in cache.cached_objs() if name.endswith('_exp')]
         print(f'You want to refresh existing leaderboard.'
               f' It will require loading ALL ({len(names)}) existing experiments '

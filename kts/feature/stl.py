@@ -10,6 +10,15 @@ from ..utils import list_hash, extract_signature, is_helper
 
 
 def wrap_stl_function(outer_function, inner_function):
+    """
+
+    Args:
+      outer_function: 
+      inner_function: 
+
+    Returns:
+
+    """
     source = f'stl.{outer_function.__name__}({extract_signature(outer_function)})'
     fc = FeatureConstructor(inner_function, cache_default=False, stl=True)
     fc.source = source
@@ -35,12 +44,28 @@ identity.source = "stl.identity"
 
 
 def merge(dfs):
+    """
+
+    Args:
+      dfs: 
+
+    Returns:
+
+    """
     if len(dfs) == 1:
         return dfs[0]
     return pd.concat(dfs, axis=1)
 
 
 def column_selector(columns):
+    """
+
+    Args:
+      columns: 
+
+    Returns:
+
+    """
     def __col_selector(df):
         return df[[col for col in columns if col in df.columns]]
 
@@ -49,6 +74,14 @@ def column_selector(columns):
 
 
 def column_dropper(columns):
+    """
+
+    Args:
+      columns: 
+
+    Returns:
+
+    """
     def __col_dropper(df):
         return df.drop([col for col in columns if col in df.columns], axis=1)
 
@@ -57,6 +90,14 @@ def column_dropper(columns):
 
 
 def concat(funcs):
+    """
+
+    Args:
+      funcs: 
+
+    Returns:
+
+    """
     funcs = sum([i.args['funcs'] if i.source.startswith('stl.concat') else [i] for i in funcs], [])
 
     def __concat(df):
@@ -72,6 +113,14 @@ def concat(funcs):
 
 
 def compose(funcs):
+    """
+
+    Args:
+      funcs: 
+
+    Returns:
+
+    """
     if len(funcs) == 2 and funcs[0].source.startswith('stl.concat') and funcs[1].source.startswith('stl.column_selector'):
         selection_list = funcs[1].args['columns']
         return concat([func + selection_list for func in funcs[0].args['funcs']])
@@ -93,6 +142,15 @@ def compose(funcs):
 
 # TODO: reimplement using sklearn.preprocessing.OHE
 def make_ohe(cols, sep='_ohe_'):
+    """
+
+    Args:
+      cols: 
+      sep:  (Default value = '_ohe_')
+
+    Returns:
+
+    """
     def __make_ohe(df):
         return pd.get_dummies(df[cols], prefix_sep=sep, columns=cols)
 
@@ -107,13 +165,17 @@ def make_ohe(cols, sep='_ohe_'):
 #       where global_mean is to be extracted inside of fit() call
 # TODO: set global_answer var and .fillna(global_answer) for each pair of columns (for new classes)
 def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
-    """ Template for creating target encoding FeatureConstructors
+    """Template for creating target encoding FeatureConstructors
 
-    :param cols: columns to encode
-    :param target_cols: columns which values are aggregated
-    :param aggregation: name of built-in pandas aggregation or @helper-function
-    :param sep: string separator used for column naming
-    :return: FeatureConstructor: df -> features
+    Args:
+      cols: columns to encode
+      target_cols: columns which values are aggregated
+      aggregation: name of built-in pandas aggregation or @helper-function (Default value = 'mean')
+      sep: string separator used for column naming (Default value = '_te_')
+
+    Returns:
+      FeatureConstructor: df -> features
+
     """
     if type(cols) != list:
         cols = [cols]
@@ -147,6 +209,17 @@ def target_encoding(cols, target_cols, aggregation='mean', sep='_te_'):
 
 
 def target_encode_list(cols, target_col, aggregation='mean', prefix='me_list_'):
+    """
+
+    Args:
+      cols: 
+      target_col: 
+      aggregation:  (Default value = 'mean')
+      prefix:  (Default value = 'me_list_')
+
+    Returns:
+
+    """
     def __target_encode_list(df):
         res = empty_like(df)
         filler = [np.nan]
@@ -171,15 +244,30 @@ import swifter
 
 
 def _apply_df(args):
+    """
+
+    Args:
+      args: 
+
+    Returns:
+
+    """
     df, func, num, kw = args
     return num, df.swifter.apply(func, **kw)
 
 
 def apply(dataframe, function, **kwargs):
-    """
-    Applies function to dataframe faster.
+    """Applies function to dataframe faster.
     If n_threads is in kwargs and is greater than 1, applies by multiprocessing.
     :return: same as df.apply(function)
+
+    Args:
+      dataframe: 
+      function: 
+      **kwargs: 
+
+    Returns:
+
     """
     if 'n_threads' in kwargs:
         n_threads = kwargs.pop('n_threads')
@@ -196,16 +284,42 @@ def apply(dataframe, function, **kwargs):
 
 
 def get_categorical(df):
+    """
+
+    Args:
+      df: 
+
+    Returns:
+
+    """
     cat_features = [col for col in df.columns if df[col].dtype == object]
     return cat_features
 
 
 def get_numeric(df):
+    """
+
+    Args:
+      df: 
+
+    Returns:
+
+    """
     num_features = [col for col in df.columns if df[col].dtype != object]
     return num_features
 
 
 def discretize(cols, bins, prefix='disc_'):
+    """
+
+    Args:
+      cols: 
+      bins: 
+      prefix:  (Default value = 'disc_')
+
+    Returns:
+
+    """
     def __discretize(df):
         res = empty_like(df)
         for col in cols:
@@ -222,6 +336,16 @@ def discretize(cols, bins, prefix='disc_'):
 
 
 def discretize_quantile(cols, bins, prefix='disc_q_'):
+    """
+
+    Args:
+      cols: 
+      bins: 
+      prefix:  (Default value = 'disc_q_')
+
+    Returns:
+
+    """
     def __discretize_quantile(df):
         res = empty_like(df)
         for col in cols:
@@ -238,6 +362,19 @@ def discretize_quantile(cols, bins, prefix='disc_q_'):
 
 
 def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, prefix='km_', **kwargs):
+    """
+
+    Args:
+      cols: 
+      n_clusters: 
+      target_col:  (Default value = None)
+      target_importance:  (Default value = 5.0)
+      prefix:  (Default value = 'km_')
+      **kwargs: 
+
+    Returns:
+
+    """
     def __kmeans_encoding(df):
         res = empty_like(df)
         res_column_name = f'{prefix}{n_clusters}_{list_hash(cols, 5)}_{round(target_importance, 4)}'
@@ -258,6 +395,15 @@ def kmeans_encoding(cols, n_clusters, target_col=None, target_importance=5.0, pr
 
 
 def standardize(cols=None, prefix='std_'):
+    """
+
+    Args:
+      cols:  (Default value = None)
+      prefix:  (Default value = 'std_')
+
+    Returns:
+
+    """
     def __standardize(df):
         res = empty_like(df)
         cols_inner = copy.copy(cols)
@@ -279,6 +425,14 @@ def standardize(cols=None, prefix='std_'):
 
 from ..validation.leaderboard import leaderboard as lb
 def stack(ids):
+    """
+
+    Args:
+      ids: 
+
+    Returns:
+
+    """
     def __stack(df):
         oof_preds = merge([lb[id_exp].oof for id_exp in ids])
         oof_col_names = merge([lb[id_exp].oof.columns for id_exp in ids])
@@ -301,6 +455,14 @@ def stack(ids):
 
 from ..storage.caching import load
 def from_df(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     def __from_df(df):
         tmp = load(name)
         return tmp.loc[df.index]
@@ -310,6 +472,15 @@ def from_df(name):
 
 # TODO: implement
 def cv_apply(feature_constructor, split):
+    """
+
+    Args:
+      feature_constructor: 
+      split: 
+
+    Returns:
+
+    """
     raise NotImplementedError
     def __cv_apply(df):
         res = empty_like(df)

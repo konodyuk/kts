@@ -2,6 +2,7 @@ from ..modelling import *
 
 
 class RegressorMixin(Model):
+    """ """
     pass
 
 
@@ -9,6 +10,7 @@ try:
     from xgboost import XGBRegressor as _XGBR
 
     class XGBRegressor(RegressorMixin, _XGBR):
+        """ """
         short_name = 'xgb'
         tracked_params = [
             'base_score',
@@ -36,6 +38,7 @@ try:
     from lightgbm import LGBMRegressor as _LGBMR
 
     class LGBMRegressor(RegressorMixin, _LGBMR):
+        """ """
         short_name = 'lgb'
         tracked_params = [
             'class_weight',
@@ -70,6 +73,7 @@ except ImportError:
 try:
     from catboost import CatBoostRegressor as _CBR
     class CatBoostRegressor(RegressorMixin, _CBR):
+        """ """
         short_name = 'cb'
         tracked_params = [
             'iterations',
@@ -93,6 +97,7 @@ except ImportError:
 
 from sklearn.ensemble import RandomForestRegressor as _RFR
 class RandomForestRegressor(RegressorMixin, _RFR):
+    """ """
     short_name = 'rf'
     tracked_params = [
         'bootstrap',
@@ -113,6 +118,7 @@ class RandomForestRegressor(RegressorMixin, _RFR):
 
 from sklearn.linear_model import LinearRegression as _LR
 class LinearRegression(RegressorMixin, _LR):
+    """ """
     short_name = 'lr'
     tracked_params = [
         'C',

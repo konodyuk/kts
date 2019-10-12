@@ -5,6 +5,7 @@ from warnings import warn
 
 
 def find_root_dir():
+    """ """
     i = 0
     while os.path.realpath('../' * i) != '/':
         if os.path.exists('../' * i + 'kts_config.py'):
@@ -17,11 +18,20 @@ def find_root_dir():
 
 
 def parse(file):
+    """
+
+    Args:
+      file: 
+
+    Returns:
+
+    """
     with open(file) as f:
         return json.load(f)
 
 
 def get_mode():
+    """ """
     if find_root_dir():
         # config.storage_path = parse(find_root_dir() + '.kts')['storage_path']
         cache_mode = 'disk_and_ram'
@@ -36,6 +46,14 @@ def get_mode():
 
 
 def check_structure(paths):
+    """
+
+    Args:
+      paths: 
+
+    Returns:
+
+    """
     for path in paths:
         if not os.path.isdir(path):
             return False
@@ -50,6 +68,7 @@ This error could also be raised by importing kts from a directory of existing pr
 
 
 def check_file_system():
+    """ """
     paths = ['../input', '../notebooks', '../storage/info', '../storage/sources', '../output']
 
     if check_structure(paths):

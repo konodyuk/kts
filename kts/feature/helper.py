@@ -28,6 +28,7 @@ from collections import MutableSequence
 
 
 class HelperList(MutableSequence):
+    """ """
     def __init__(self):
         self.full_name = "kts.feature.helper.helper_list"  # such a hardcode
         self.names = [self.full_name]
@@ -40,6 +41,7 @@ class HelperList(MutableSequence):
         self.name_to_idx = dict()
 
     def recalc(self):
+        """ """
         self.objects = []
         self.name_to_idx = dict()
         names = [obj for obj in caching.cache.cached_objs() if obj.endswith('_helper')]
@@ -69,9 +71,26 @@ class HelperList(MutableSequence):
         raise AttributeError('This object is read-only')
 
     def insert(self, key, value):
+        """
+
+        Args:
+          key: 
+          value: 
+
+        Returns:
+
+        """
         raise AttributeError('This object is read-only')
 
     def define_in_scope(self, global_scope):
+        """
+
+        Args:
+          global_scope: 
+
+        Returns:
+
+        """
         self.recalc()
         for func in self.name_to_idx:
             for name in self.names:

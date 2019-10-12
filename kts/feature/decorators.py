@@ -9,8 +9,7 @@ import os
 
 
 def preview(df, sizes=(2, 4, 6)):
-    """
-    Applies function to heads of particular dataframe.
+    """Applies function to heads of particular dataframe.
     
     Example:
     ``` python
@@ -18,6 +17,13 @@ def preview(df, sizes=(2, 4, 6)):
     def make_ohe_pclass(df):
         ...
     ```
+
+    Args:
+      df: 
+      sizes:  (Default value = (2, 4, 6):
+
+    Returns:
+
     """
 
     def __preview(function):
@@ -39,8 +45,7 @@ def preview(df, sizes=(2, 4, 6)):
 
 
 def register(*args, cache_default=True):
-    """
-    Registers function for further caching its calls and restoring source.
+    """Registers function for further caching its calls and restoring source.
     
     Example:
     ``` python
@@ -48,6 +53,13 @@ def register(*args, cache_default=True):
     def make_ohe_pclass(df):
         ...
     ```
+
+    Args:
+      *args: 
+      cache_default:  (Default value = True)
+
+    Returns:
+
     """
 
     def __register(func):
@@ -70,15 +82,21 @@ def register(*args, cache_default=True):
 
 
 def deregister(name, force=False):
-    """
-    Deletes sources and cached calls of a certain function.
+    """Deletes sources and cached calls of a certain function.
     Usage:
-
+    
     ``` python
     deregister('make_new_features')
-
+    
     deregister('make_new_features', force=True)
     ```
+
+    Args:
+      name: 
+      force:  (Default value = False)
+
+    Returns:
+
     """
     confirmation = ''
     fc_name = name + '_fc'
@@ -105,8 +123,7 @@ def deregister(name, force=False):
 
 
 def dropper(function):
-    """
-    Registers function that won't be cached.
+    """Registers function that won't be cached.
     Is recommended to be used only with functions which actually drop columns or rows and don't produce any new data.
     
     Example:
@@ -115,6 +132,11 @@ def dropper(function):
     def drop_pclass(df):
         return stl.column_dropper(['Pclass'])(df)
     ```
+
+    Args:
+      function:
+
+    Returns:
     """
     #     TODO:
     #     if cache.is_cached(function.__name__):
@@ -125,8 +147,7 @@ def dropper(function):
 
 
 def selector(function):
-    """
-    Registers function that won't be cached.
+    """Registers function that won't be cached.
     Is recommended to be used only with functions which actually select columns or rows and don't produce any new data.
     
     Example:
@@ -135,6 +156,12 @@ def selector(function):
     def select_pclass_cabin(df):
         return stl.column_selector(['Pclass', 'Cabin'])(df)
     ```
+
+    Args:
+      function: 
+
+    Returns:
+
     """
 
     deregister(function.__name__, force=True)
@@ -142,12 +169,15 @@ def selector(function):
 
 
 def helper(func):
-    """
-    Save function as helper to store its source
+    """Save function as helper to store its source
     and be able to define it in any notebook with kts.helpers.define_in_scope()
 
-    :param func: function
-    :return: function with .source method
+    Args:
+      func: function
+
+    Returns:
+      function with .source method
+
     """
     assert '__name__' in dir(func), 'Helper should have a name'
     func.source = source_utils.get_source(func)

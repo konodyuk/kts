@@ -5,6 +5,7 @@ import json
 from .utils import SourceMetaClass
 
 class NamingMixin:
+    """ """
     @property
     def __name__(self):
         try:
@@ -21,6 +22,7 @@ class NamingMixin:
 
 
 class ArithmeticMixin:
+    """ """
     def __mul__(self, x):
         return WeightedModel(self, x)
 
@@ -43,8 +45,10 @@ class ArithmeticMixin:
 
 
 class SourceMixin:
+    """ """
     @property
     def source(self):
+        """ """
         args = []
         for key, value in self.get_params().items():
             args.append(f"{key}={repr(value)}")
@@ -53,33 +57,58 @@ class SourceMixin:
 
 
 class PreprocessingMixin:
+    """ """
     def preprocess(self, X, y):
-        """
-        Preprocess input before feeding it into model
-        :param X: np.array
-        :param y: np.array or None (fitting or inference)
-        :return: (X_processed, y_processed)
+        """Preprocess input before feeding it into model
+
+        Args:
+          X: np.array
+          y: np.array or None (fitting or inference)
+
+        Returns:
+          X_processed, y_processed)
+
         """
         return X, y
 
     def preprocess_fit(self, X, y, *args, **kwargs):
+        """
+
+        Args:
+          X: 
+          y: 
+          *args: 
+          **kwargs: 
+
+        Returns:
+
+        """
         X_proc, y_proc = self.preprocess(X, y)
         self.fit(X_proc, y_proc, *args, **kwargs)
 
     def preprocess_predict(self, X, *args, **kwargs):
+        """
+
+        Args:
+          X: 
+          *args: 
+          **kwargs: 
+
+        Returns:
+
+        """
         X_proc, _ = self.preprocess(X, None)
         return self.predict(X_proc, *args, **kwargs)
 
 
 class Model(ArithmeticMixin, NamingMixin, SourceMixin, PreprocessingMixin):
+    """ """
     def __repr__(self):
         return f"[{self.__name__}] {self.source}"
 
 
 class WeightedModel(ArithmeticMixin, PreprocessingMixin):  # MulNode
-    """
-    Multiplies predictions by a certain coefficient.
-    """
+    """Multiplies predictions by a certain coefficient."""
     def __init__(self, model, coeff):
         self.model = model
         self.coeff = coeff
@@ -93,18 +122,19 @@ class WeightedModel(ArithmeticMixin, PreprocessingMixin):  # MulNode
             self.__name__ += f"{self.model.__name__}"
 
     def predict(self, X):
-        """
-        Standard prediction method.
-        :param X: data matrix
-        :return:
+        """Standard prediction method.
+
+        Args:
+          X: data matrix
+
+        Returns:
+
         """
         return self.coeff * self.model.preprocess_predict(X)
 
 
 class Ensemble(ArithmeticMixin, PreprocessingMixin):  # AddNode
-    """
-    Sums up all predictions of all models.
-    """
+    """Sums up all predictions of all models."""
     def __init__(self, models):
         self.models = []
         ensembles = [model for model in models if type(model) == type(self)]
@@ -136,10 +166,13 @@ class Ensemble(ArithmeticMixin, PreprocessingMixin):  # AddNode
         self.__name__ = ' + '.join([(model / self.norm_coeff).__name__ for model in self.models])
 
     def predict(self, X):
-        """
-        Standard prediction method.
-        :param X: data matrix
-        :return:
+        """Standard prediction method.
+
+        Args:
+          X: data matrix
+
+        Returns:
+
         """
         res = 0
         for model in self.models:
@@ -155,24 +188,40 @@ class Ensemble(ArithmeticMixin, PreprocessingMixin):  # AddNode
 
 
 class CustomModelSourceMetaClass(SourceMetaClass):
+    """ """
     def check_methods(methods):
+        """
+
+        Args:
+          methods: 
+
+        Returns:
+
+        """
         required_methods = ['get_short_name', 'get_tracked_params']
         for meth in required_methods:
             assert meth in methods, f"Method .{meth}() is required to define a custom model"
 
 
 class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
+    """ """
     def get_short_name(self):
+        """ """
         return 'custom_model'
 
     def get_tracked_params(self):
+        """ """
         return []
 
     def preprocess(self, X, y):
-        """
-        Preprocess input before feeding it into model
-        :param X: np.array
-        :param y: np.array or None (fitting or inference)
-        :return: (X_processed, y_processed)
+        """Preprocess input before feeding it into model
+
+        Args:
+          X: np.array
+          y: np.array or None (fitting or inference)
+
+        Returns:
+          X_processed, y_processed)
+
         """
         return X, y

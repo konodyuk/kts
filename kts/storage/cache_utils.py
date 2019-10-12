@@ -10,6 +10,7 @@ from ..utils import captcha
 
 
 def clear_storage():
+    """ """
     from .caching import cache
     cache.memory.clear()
     if not captcha():
@@ -21,6 +22,14 @@ def clear_storage():
 
 
 def get_hash_df(df):
+    """
+
+    Args:
+      df: 
+
+    Returns:
+
+    """
     idx_hash = hashlib.sha256(pd.util.hash_pandas_object(df.index).values).hexdigest()
 
     sorted_cols = df.columns.sort_values()
@@ -37,23 +46,53 @@ def get_hash_df(df):
 
 
 def get_hash_slice(idxs):
+    """
+
+    Args:
+      idxs: 
+
+    Returns:
+
+    """
     if isinstance(idxs, slice):
         idxs = (-1337, idxs.start, idxs.stop, idxs.step)
     return hex(hash(frozenset(idxs)))[2:]
 
 
 def get_df_volume(df):
+    """
+
+    Args:
+      df: 
+
+    Returns:
+
+    """
     return df.memory_usage(index=True).sum()
 
 
 def get_path_df(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     return config.storage_path + name + '_df'
 
 
 def save_df(df, path):
-    """
-    Saves a dataframe as feather binary file. Adds to df and additional column filled
+    """Saves a dataframe as feather binary file. Adds to df and additional column filled
     with index values and having a special name.
+
+    Args:
+      df: 
+      path: 
+
+    Returns:
+
     """
     # print('saving df', path)
     # try:
@@ -80,9 +119,14 @@ def save_df(df, path):
 
 
 def load_df(path):
-    """
-    Loads a dataframe from feather format and sets as index that additional
+    """Loads a dataframe from feather format and sets as index that additional
     column added with saving by save_df. Restores original name of index column.
+
+    Args:
+      path: 
+
+    Returns:
+
     """
     try:
         tmp = feather.read_dataframe(path, use_threads=True)
@@ -99,12 +143,26 @@ def load_df(path):
 
 
 def get_path_obj(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     return config.storage_path + name + '_obj'
 
 
 def save_obj(obj, path):
-    """
-    Saves object
+    """Saves object
+
+    Args:
+      obj: 
+      path: 
+
+    Returns:
+
     """
     try:
         dill.dump(obj, open(path, 'wb'))
@@ -115,15 +173,36 @@ def save_obj(obj, path):
 
 
 def load_obj(path):
-    """
-    Loads object
+    """Loads object
+
+    Args:
+      path: 
+
+    Returns:
+
     """
     return dill.load(open(path, 'rb'))
 
 
 def get_path_info(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     return config.info_path + name + '_info'
 
 
 def get_time(path):
+    """
+
+    Args:
+      path: 
+
+    Returns:
+
+    """
     return int(os.path.getmtime(path))

@@ -3,12 +3,21 @@ from fastprogress import progress_bar
 
 
 class Pipeline(ArithmeticMixin, PreprocessingMixin):
+    """ """
     def __init__(self, model, featureslice):
         self.model = model
         self.featureslice = featureslice
         self.__name__ = self.model.__name__ + '-' + self.featureslice.featureset.__name__
 
     def fit(self, **kwargs):
+        """
+
+        Args:
+          **kwargs: 
+
+        Returns:
+
+        """
         if 'masterbar' in kwargs:
             mb = kwargs.pop('masterbar')
         else:
@@ -36,6 +45,15 @@ class Pipeline(ArithmeticMixin, PreprocessingMixin):
             pb.update(2)
 
     def predict(self, df, **kwargs):
+        """
+
+        Args:
+          df: 
+          **kwargs: 
+
+        Returns:
+
+        """
         if 'masterbar' in kwargs:
             mb = kwargs.pop('masterbar')
         else:

@@ -5,12 +5,14 @@ import os
 
 
 class Info:
+    """ """
     def __init__(self):
         raise DeprecationWarning('Info is deprecated, edit kts_config.py instead')
         super().__setattr__('__attributes', dict())
         self.recalc()
 
     def recalc(self):
+        """ """
         for name in glob(config.info_path + '*'):
             super().__getattribute__('__attributes')[name.split('/')[-1][:-5]] = cache_utils.load_obj(name)
             

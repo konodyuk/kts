@@ -11,6 +11,7 @@ from fastprogress import progress_bar as pb
 
 
 class Experiment(ArithmeticMixin):
+    """ """
     def __init__(self, pipeline, oof, score, std, description, validator, feature_list, helper_list):
         self.pipeline = pipeline
         self.model = self.pipeline.models[0].model.model  # TODO: test out
@@ -35,6 +36,14 @@ class Experiment(ArithmeticMixin):
         return string
 
     def predict(self, df):
+        """
+
+        Args:
+          df: 
+
+        Returns:
+
+        """
         return self.pipeline.predict(df)
 
     def __repr__(self):
@@ -58,6 +67,7 @@ class Experiment(ArithmeticMixin):
         return table.draw()
 
     def as_dict(self):
+        """ """
         fields = {
             'Score': self.score,
             'std': self.std,
@@ -75,9 +85,20 @@ class Experiment(ArithmeticMixin):
         return fields
 
     def as_df(self):
+        """ """
         return pd.DataFrame(self.as_dict()).set_index('ID')
 
     def feature_importances(self, plot=False, importance_calculator=BuiltinImportance(), **kw):
+        """
+
+        Args:
+          plot:  (Default value = False)
+          importance_calculator:  (Default value = BuiltinImportance())
+          **kw: 
+
+        Returns:
+
+        """
         if plot:
             return plot_importances(self, calculator=importance_calculator, **kw)
         res = pd.DataFrame()
@@ -90,20 +111,31 @@ class Experiment(ArithmeticMixin):
         return res
 
     def set_df(self, df_input):
+        """
+
+        Args:
+          df_input: 
+
+        Returns:
+
+        """
         self.tie_featuresets()
         self.featureset.set_df(df_input)
 
     def tie_featuresets(self):
+        """ """
         for i in range(len(self.pipeline.models)):
             self.pipeline.models[i].model.featureslice.featureset = self.featureset
 
 
 class ExperimentList(MutableSequence):
+    """ """
     def __init__(self):
         self.experiments = []
         self.name_to_idx = dict()
 
     def recalc(self):
+        """ """
         self.experiments = []
         self.name_to_idx = dict()
         names = [obj for obj in cache.cached_objs() if obj.endswith('_exp')]
@@ -164,9 +196,26 @@ class ExperimentList(MutableSequence):
         raise AttributeError('This object is read-only')
 
     def insert(self, key, value):
+        """
+
+        Args:
+          key: 
+          value: 
+
+        Returns:
+
+        """
         raise AttributeError('This object is read-only')
 
     def register(self, experiment):
+        """
+
+        Args:
+          experiment: 
+
+        Returns:
+
+        """
         cache.cache_obj(experiment, experiment.__name__ + '_exp')
 
     def __len__(self):

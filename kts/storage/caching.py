@@ -8,10 +8,26 @@ from .dataframe import DataFrame as KTDF
 
 
 def allow_service(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     return name in config.service_names
 
 
 def allow_all(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     return True
 
 if config.cache_policy == 'service':
@@ -24,9 +40,7 @@ else:
 
 
 class Cache:
-    """
-    Default LRU cache for DataFrames and objects. Uses both RAM and disk space.
-    """
+    """Default LRU cache for DataFrames and objects. Uses both RAM and disk space."""
 
     def __init__(self):
         self.memory = dict()
@@ -36,10 +50,13 @@ class Cache:
 
     @staticmethod
     def set_memory_limit(volume):
-        """
-        Sets a new memory limit in bytes
-        :param volume: new memory limit
-        :return:
+        """Sets a new memory limit in bytes
+
+        Args:
+          volume: new memory limit
+
+        Returns:
+
         """
         config.memory_limit = volume
 
@@ -61,21 +78,28 @@ class Cache:
             self.edited_at.pop(key)
 
     def is_cached_df(self, name):
-        """
-        Checks whether given df is cached
-        :param name: name of dataframe
-        :return: True or False (cache hit or miss)
+        """Checks whether given df is cached
+
+        Args:
+          name: name of dataframe
+
+        Returns:
+          True or False (cache hit or miss)
+
         """
         # dict_name = name + '_df'
         # return dict_name in self.memory or os.path.exists(cache_utils.get_path_df(name))
         return os.path.exists(cache_utils.get_path_df(name))
 
     def cache_df(self, df, name):
-        """
-        Caches dataframe with given name
-        :param df: df
-        :param name: df name
-        :return:
+        """Caches dataframe with given name
+
+        Args:
+          df: df
+          name: df name
+
+        Returns:
+
         """
         if not gate(name):
             return
@@ -93,10 +117,13 @@ class Cache:
         self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_df(name))
 
     def load_df(self, name):
-        """
-        Loads dataframe from cache
-        :param name: name of df
-        :return:
+        """Loads dataframe from cache
+
+        Args:
+          name: name of df
+
+        Returns:
+
         """
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
@@ -117,10 +144,13 @@ class Cache:
             return tmp
 
     def remove_df(self, name):
-        """
-        Removes dataframe from cache
-        :param name: name of df
-        :return:
+        """Removes dataframe from cache
+
+        Args:
+          name: name of df
+
+        Returns:
+
         """
         dict_name = name + '_df'
         if dict_name in self.memory:
@@ -135,30 +165,41 @@ class Cache:
 
     @staticmethod
     def cached_dfs():
-        """
-        Returns list of cached dataframes
+        """Returns list of cached dataframes
         :return:
+
+        Args:
+
+        Returns:
+
         """
         return [df.split('/')[-1][:-3] for df in
                 sorted(glob(config.storage_path + '*' + '_df'), key=os.path.getmtime)]
 
 
     def is_cached_obj(self, name):
-        """
-        Checks whether object is in cache
-        :param name: name of object
-        :return: True or False (cache hit or miss)
+        """Checks whether object is in cache
+
+        Args:
+          name: name of object
+
+        Returns:
+          True or False (cache hit or miss)
+
         """
         # dict_name = name + '_obj'
         # return dict_name in self.memory or os.path.exists(cache_utils.get_path_obj(name))
         return os.path.exists(cache_utils.get_path_obj(name))
 
     def cache_obj(self, obj, name):
-        """
-        Caches object with given name
-        :param obj: object
-        :param name: object name
-        :return:
+        """Caches object with given name
+
+        Args:
+          obj: object
+          name: object name
+
+        Returns:
+
         """
         if self.is_cached_obj(name):
             return
@@ -169,10 +210,13 @@ class Cache:
         self.edited_at[dict_name] = cache_utils.get_time(cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
-        """
-        Loads object from cache
-        :param name: name of object
-        :return:
+        """Loads object from cache
+
+        Args:
+          name: name of object
+
+        Returns:
+
         """
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
@@ -190,10 +234,13 @@ class Cache:
             return tmp
 
     def remove_obj(self, name):
-        """
-        Removes object from cache
-        :param name: name of object
-        :return:
+        """Removes object from cache
+
+        Args:
+          name: name of object
+
+        Returns:
+
         """
         dict_name = name + '_obj'
         if dict_name in self.memory:
@@ -207,18 +254,20 @@ class Cache:
 
     @staticmethod
     def cached_objs():
-        """
-        Returns list of cached objects
+        """Returns list of cached objects
         :return:
+
+        Args:
+
+        Returns:
+
         """
         return [df.split('/')[-1][:-4] for df in
                 sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
 
 
 class RAMCache:
-    """
-    LRU cache for DataFrames and objects. Uses only RAM, no disk space is consumed.
-    """
+    """LRU cache for DataFrames and objects. Uses only RAM, no disk space is consumed."""
 
     def __init__(self):
         self.memory = dict()
@@ -227,10 +276,13 @@ class RAMCache:
 
     @staticmethod
     def set_memory_limit(volume):
-        """
-        Sets a new memory limit in bytes
-        :param volume: new memory limit
-        :return:
+        """Sets a new memory limit in bytes
+
+        Args:
+          volume: new memory limit
+
+        Returns:
+
         """
         config.memory_limit = volume
 
@@ -251,20 +303,27 @@ class RAMCache:
             self.last_used.pop(key)
 
     def is_cached_df(self, name):
-        """
-        Checks whether given df is cached
-        :param name: name of dataframe
-        :return: True or False (cache hit or miss)
+        """Checks whether given df is cached
+
+        Args:
+          name: name of dataframe
+
+        Returns:
+          True or False (cache hit or miss)
+
         """
         dict_name = name + '_df'
         return dict_name in self.memory
 
     def cache_df(self, df, name):
-        """
-        Caches dataframe with given name
-        :param df: df
-        :param name: df name
-        :return:
+        """Caches dataframe with given name
+
+        Args:
+          df: df
+          name: df name
+
+        Returns:
+
         """
         if not gate(name):
             return
@@ -280,10 +339,13 @@ class RAMCache:
         self.last_used[dict_name] = datetime.datetime.now()
 
     def load_df(self, name):
-        """
-        Loads dataframe from cache
-        :param name: name of df
-        :return:
+        """Loads dataframe from cache
+
+        Args:
+          name: name of df
+
+        Returns:
+
         """
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
@@ -293,10 +355,13 @@ class RAMCache:
         return self.memory[dict_name]
 
     def remove_df(self, name):
-        """
-        Removes dataframe from cache
-        :param name: name of df
-        :return:
+        """Removes dataframe from cache
+
+        Args:
+          name: name of df
+
+        Returns:
+
         """
         dict_name = name + '_df'
         if dict_name in self.memory:
@@ -306,27 +371,38 @@ class RAMCache:
             self.last_used.pop(dict_name)
 
     def cached_dfs(self):
-        """
-        Returns list of cached dataframes
+        """Returns list of cached dataframes
         :return:
+
+        Args:
+
+        Returns:
+
         """
         return [i[:-3] for i in list(self.memory.keys()) if i.endswith('_df')]
 
     def is_cached_obj(self, name):
-        """
-        Checks whether object is in cache
-        :param name: name of object
-        :return: True or False (cache hit or miss)
+        """Checks whether object is in cache
+
+        Args:
+          name: name of object
+
+        Returns:
+          True or False (cache hit or miss)
+
         """
         dict_name = name + '_obj'
         return dict_name in self.memory
 
     def cache_obj(self, obj, name):
-        """
-        Caches object with given name
-        :param obj: object
-        :param name: object name
-        :return:
+        """Caches object with given name
+
+        Args:
+          obj: object
+          name: object name
+
+        Returns:
+
         """
         if self.is_cached_obj(name):
             return
@@ -335,10 +411,13 @@ class RAMCache:
         self.memory[dict_name] = obj
 
     def load_obj(self, name):
-        """
-        Loads object from cache
-        :param name: name of object
-        :return:
+        """Loads object from cache
+
+        Args:
+          name: name of object
+
+        Returns:
+
         """
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
@@ -347,55 +426,70 @@ class RAMCache:
         return self.memory[dict_name]
 
     def remove_obj(self, name):
-        """
-        Removes object from cache
-        :param name: name of object
-        :return:
+        """Removes object from cache
+
+        Args:
+          name: name of object
+
+        Returns:
+
         """
         dict_name = name + '_obj'
         if dict_name in self.memory:
             self.memory.pop(dict_name)
 
     def cached_objs(self):
-        """
-        Returns list of cached objects
+        """Returns list of cached objects
         :return:
+
+        Args:
+
+        Returns:
+
         """
         return [i[:-4] for i in list(self.memory.keys()) if i.endswith('_obj')]
 
 
 class DiskCache:
-    """
-    Saves and loads directly from disk, no RAM boosting.
-    """
+    """Saves and loads directly from disk, no RAM boosting."""
 
     def __init__(self):
         pass
 
     def is_cached_df(self, name):
-        """
-        Checks whether given df is cached
-        :param name: name of dataframe
-        :return: True or False (cache hit or miss)
+        """Checks whether given df is cached
+
+        Args:
+          name: name of dataframe
+
+        Returns:
+          True or False (cache hit or miss)
+
         """
         return os.path.exists(cache_utils.get_path_df(name))
 
     def cache_df(self, df, name):
-        """
-        Caches dataframe with given name
-        :param df: df
-        :param name: df name
-        :return:
+        """Caches dataframe with given name
+
+        Args:
+          df: df
+          name: df name
+
+        Returns:
+
         """
         if not gate(name):
             return
         cache_utils.save_df(df, cache_utils.get_path_df(name))
 
     def load_df(self, name):
-        """
-        Loads dataframe from cache
-        :param name: name of df
-        :return:
+        """Loads dataframe from cache
+
+        Args:
+          name: name of df
+
+        Returns:
+
         """
         if not self.is_cached_df(name):
             raise KeyError("No such df in cache")
@@ -403,38 +497,52 @@ class DiskCache:
         return cache_utils.load_df(cache_utils.get_path_df(name))
 
     def remove_df(self, name):
-        """
-        Removes dataframe from cache
-        :param name: name of df
-        :return:
+        """Removes dataframe from cache
+
+        Args:
+          name: name of df
+
+        Returns:
+
         """
         if os.path.exists(cache_utils.get_path_df(name)):
             os.remove(cache_utils.get_path_df(name))
 
     @staticmethod
     def cached_dfs():
-        """
-        Returns list of cached dataframes
+        """Returns list of cached dataframes
         :return:
+
+        Args:
+
+        Returns:
+
         """
         return [df.split('/')[-1][:-3] for df in
                 sorted(glob(config.storage_path + '*' + '_df'), key=os.path.getmtime)]
 
 
     def is_cached_obj(self, name):
-        """
-        Checks whether object is in cache
-        :param name: name of object
-        :return: True or False (cache hit or miss)
+        """Checks whether object is in cache
+
+        Args:
+          name: name of object
+
+        Returns:
+          True or False (cache hit or miss)
+
         """
         return os.path.exists(cache_utils.get_path_obj(name))
 
     def cache_obj(self, obj, name):
-        """
-        Caches object with given name
-        :param obj: object
-        :param name: object name
-        :return:
+        """Caches object with given name
+
+        Args:
+          obj: object
+          name: object name
+
+        Returns:
+
         """
         if self.is_cached_obj(name):
             return
@@ -442,10 +550,13 @@ class DiskCache:
         cache_utils.save_obj(obj, cache_utils.get_path_obj(name))
 
     def load_obj(self, name):
-        """
-        Loads object from cache
-        :param name: name of object
-        :return:
+        """Loads object from cache
+
+        Args:
+          name: name of object
+
+        Returns:
+
         """
         if not self.is_cached_obj(name):
             raise KeyError("No such object in cache")
@@ -453,19 +564,26 @@ class DiskCache:
         return cache_utils.load_obj(cache_utils.get_path_obj(name))
 
     def remove_obj(self, name):
-        """
-        Removes object from cache
-        :param name: name of object
-        :return:
+        """Removes object from cache
+
+        Args:
+          name: name of object
+
+        Returns:
+
         """
         if os.path.exists(cache_utils.get_path_obj(name)):
             os.remove(cache_utils.get_path_obj(name))
 
     @staticmethod
     def cached_objs():
-        """
-        Returns list of cached objects
+        """Returns list of cached objects
         :return:
+
+        Args:
+
+        Returns:
+
         """
         return [df.split('/')[-1][:-4] for df in
                 sorted(glob(config.storage_path + '*' + '_obj'), key=os.path.getmtime)]
@@ -486,6 +604,15 @@ USER_SEP = '__USER__'
 
 
 def save(obj, name):
+    """
+
+    Args:
+      obj: 
+      name: 
+
+    Returns:
+
+    """
     if name in ls():
         raise KeyError("You've already saved object with this name. If you want to overwrite it, first use kts.rm()")
     if isinstance(obj, KTDF) or isinstance(obj, pd.DataFrame):
@@ -495,6 +622,7 @@ def save(obj, name):
 
 
 def ls():
+    """ """
     return [df.split('/')[-1][:-4 - len(USER_SEP)] for df in
             sorted(glob(config.storage_path + '*' + USER_SEP + '_obj'), key=os.path.getmtime)
            ] + [df.split('/')[-1][:-3 - len(USER_SEP)] for df in
@@ -502,6 +630,14 @@ def ls():
 
 
 def get_type(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     if cache.is_cached_obj(name + USER_SEP):
         return 'obj'
     else:
@@ -509,6 +645,14 @@ def get_type(name):
 
 
 def load(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     if name not in ls():
         raise KeyError("No such object in cache")
     if get_type(name) == 'df':
@@ -518,6 +662,14 @@ def load(name):
 
 
 def remove(name):
+    """
+
+    Args:
+      name: 
+
+    Returns:
+
+    """
     if name not in ls():
         return
     if get_type(name) == 'df':

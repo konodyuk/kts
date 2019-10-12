@@ -2,13 +2,24 @@ from ..modelling import *
 
 
 class MultiClassifierMixin(Model):
+    """ """
     def predict(self, X, **kwargs):
+        """
+
+        Args:
+          X: 
+          **kwargs: 
+
+        Returns:
+
+        """
         return self.predict_proba(X, **kwargs)
 
 try:
     from xgboost import XGBClassifier as _XGBC
 
     class XGBClassifier(MultiClassifierMixin, _XGBC):
+        """ """
         short_name = 'xgb'
         tracked_params = [
             'base_score',
@@ -36,6 +47,7 @@ try:
     from lightgbm import LGBMClassifier as _LGBMC
 
     class LGBMClassifier(MultiClassifierMixin, _LGBMC):
+        """ """
         short_name = 'lgb'
         tracked_params = [
             'class_weight',
@@ -71,6 +83,7 @@ try:
     from catboost import CatBoostClassifier as _CBC
 
     class CatBoostClassifier(MultiClassifierMixin, _CBC):
+        """ """
         short_name = 'cb'
         tracked_params = [
             'iterations',
@@ -94,6 +107,7 @@ except ImportError:
 
 from sklearn.ensemble import RandomForestClassifier as _RFC
 class RandomForestClassifier(MultiClassifierMixin, _RFC):
+    """ """
     short_name = 'rf'
     tracked_params = [
         'bootstrap',
@@ -114,6 +128,7 @@ class RandomForestClassifier(MultiClassifierMixin, _RFC):
 
 from sklearn.linear_model import LogisticRegression as _LR
 class LogisticRegression(MultiClassifierMixin, _LR):
+    """ """
     short_name = 'lr'
     tracked_params = [
         'C',

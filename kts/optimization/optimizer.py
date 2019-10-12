@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 plt.style.use('dark_background') # such a bad thing, it should rather be specified in kts_config.py file in a kts-project
 
 class Optimizer:
+    """ """
     def __init__(self, model, featureset, target, validator, goal='maximize', search_spaces=None):
         raise NotImplementedError
         if isinstance(search_spaces, type(None)):
@@ -29,6 +30,14 @@ class Optimizer:
             raise ValueError('Goal should be either to maximize or minimize objective.')
     
     def optimize(self, n_iters):
+        """
+
+        Args:
+          n_iters: 
+
+        Returns:
+
+        """
         for i in range(n_iters):
             pt = self.opt.ask()
             self.model.params = {k: v for k, v in zip(self.parameter_names, 
@@ -39,6 +48,7 @@ class Optimizer:
             plt.show()
 
     def plot_objective(self):
+        """ """
         res = create_result(Xi=self.opt.Xi, 
                             yi=self.opt.yi, 
                             space=self.opt.space, 
@@ -49,6 +59,7 @@ class Optimizer:
         
         
     def plot_evaluations(self):
+        """ """
         res = create_result(Xi=self.opt.Xi, 
                             yi=self.opt.yi, 
                             space=self.opt.space, 

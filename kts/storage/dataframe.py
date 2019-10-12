@@ -3,42 +3,25 @@ from copy import deepcopy
 
 
 class DataFrame(pd.DataFrame):
-    """
-    A wrapper over the standard DataFrame class.
+    """A wrapper over the standard DataFrame class.
     Complements it with .train and .encoders attributes.
-
+    
     This class is implemented to provide an indicator
     for functions whether they serve a train or test call and let propagate
     this indicator further to inner functions.
 
-    Attention:
-    ----------
-    Any attribute of type pd.DataFrame will be automatically converted to kts.DataFrame type,
-    but an attribute of type 'method' will produce a pd.DataFrame:
-    ```
-    df = pd.DataFrame()
-    ktdf = kts.DataFrame(df)
-    type(ktdf)
-    -> kts.DataFrame
-    type(ktdf.T)
-    -> pd.DataFrame  # because .T is actually a @property
-    type(ktdf[['A', 'B']])
-    -> kts.DataFrame
-    type(ktdf.drop([])
-    -> pd.DataFrame
-    type(ktdf.fillna(ktdf.mean()))
-    -> pd.DataFrame
-    ```
-
     Example:
-    --------
-    ```
-    def a(df):
-        res = stl.empty_like(df)
-        tmp = b(df)
-        res['res'] = b['b'] ** 2
-        return res
-    ```
+        ```
+        def a(df):
+            res = stl.empty_like(df)
+            tmp = b(df)
+            res['res'] = b['b'] ** 2
+            return res
+        ```
+    Args:
+
+    Returns:
+
     """
 
     _metadata = ['train', 'encoders', 'slice_id']
@@ -64,9 +47,19 @@ class DataFrame(pd.DataFrame):
 
     @property
     def _constructor(self):
+        """ """
         return DataFrame
 
 
 def link(df, ktdf):
+    """
+
+    Args:
+      df: 
+      ktdf: 
+
+    Returns:
+
+    """
     assert isinstance(ktdf, DataFrame), 'Second dataframe should be of type KTDF, not pd.DF'
     return DataFrame(df=df, train=ktdf.train, encoders=ktdf.encoders, slice_id=ktdf.slice_id)

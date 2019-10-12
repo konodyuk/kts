@@ -6,6 +6,14 @@ from warnings import warn
 
 
 def assert_splitters(exps):
+    """
+
+    Args:
+      exps: 
+
+    Returns:
+
+    """
     all_splitters = set()
     for exp in exps:
         all_splitters.add(repr(exp.splitter))
@@ -14,6 +22,14 @@ def assert_splitters(exps):
 
 
 def assert_metrics(exps):
+    """
+
+    Args:
+      exps: 
+
+    Returns:
+
+    """
     all_metrics = set()
     for exp in exps:
         if 'source' in dir(exp.validator.metric):
@@ -26,6 +42,18 @@ def assert_metrics(exps):
 
 
 def stack(ids, safe=True, inner_splitter=None, metric=None, validator_class=Validator):
+    """
+
+    Args:
+      ids: 
+      safe:  (Default value = True)
+      inner_splitter:  (Default value = None)
+      metric:  (Default value = None)
+      validator_class:  (Default value = Validator)
+
+    Returns:
+
+    """
     experiments = lb[ids]
     if safe:
         assert_splitters(experiments)

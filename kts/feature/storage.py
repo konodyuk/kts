@@ -14,6 +14,7 @@ from typing import Optional, Union, List, Tuple, Dict, Any
 
 
 class FeatureConstructor:
+    """ """
     def __init__(self, function, cache_default=True, stl=False):
         self.function = function
         self.cache_default = cache_default
@@ -94,6 +95,7 @@ from . import stl
 
 
 class FeatureSet:
+    """ """
     def __init__(self,
                  fc_before: FeatureListType,
                  fc_after: FeatureListType = stl.empty_like,
@@ -140,6 +142,14 @@ class FeatureSet:
         self.altsource = None
 
     def set_df(self, df_input):
+        """
+
+        Args:
+          df_input: 
+
+        Returns:
+
+        """
         self.df_input = dataframe.DataFrame(df=df_input)
         self.df_input.train = True
         self.df_input.encoders = self.encoders
@@ -164,6 +174,7 @@ class FeatureSet:
         # why not write config.preview_call = 1 then?
 
     def empty_copy(self):
+        """ """
         res = FeatureSet(fc_before=self.fc_before,
                         fc_after=self.fc_after,
                         target_columns=self.target_columns,
@@ -175,10 +186,20 @@ class FeatureSet:
         return res
 
     def slice(self, idx_train, idx_test):
+        """
+
+        Args:
+          idx_train: 
+          idx_test: 
+
+        Returns:
+
+        """
         return FeatureSlice(self, idx_train, idx_test)
 
     @property
     def target(self):
+        """ """
         if len(self.target_columns) > 0:
             if set(self.target_columns) < set(self.df_input.columns):
                 return self.df_input[self.target_columns]
@@ -191,6 +212,7 @@ class FeatureSet:
 
     @property
     def auxiliary(self):
+        """ """
         if len(self.auxiliary_columns) > 0:
             if set(self.auxiliary_columns) < set(self.df_input.columns):
                 return self.df_input[self.auxiliary_columns]
@@ -203,6 +225,7 @@ class FeatureSet:
 
     @property
     def aux(self):
+        """ """
         return self.auxiliary
 
     def __get_src(self, fc):
@@ -216,6 +239,14 @@ class FeatureSet:
             return fc.__name__
 
     def _source(self, short=True):
+        """
+
+        Args:
+          short:  (Default value = True)
+
+        Returns:
+
+        """
         fc_before_source = self.__get_src(self.fc_before)
         fc_after_source = self.__get_src(self.fc_after)
         if short:
@@ -229,9 +260,11 @@ class FeatureSet:
 
     @property
     def source(self):
+        """ """
         return self._source(short=False)
 
     def recover_name(self):
+        """ """
         if self._first_name:
             return self._first_name
         ans = []
@@ -261,6 +294,14 @@ class FeatureSet:
         return self.recover_name()
 
     def set_name(self, name):
+        """
+
+        Args:
+          name: 
+
+        Returns:
+
+        """
         self._first_name = name
 
     def __repr__(self):
@@ -270,6 +311,17 @@ class FeatureSet:
             return self._source(short=True)
 
     def select(self, n_best, experiment, calculator=BuiltinImportance(), mode='max'):
+        """
+
+        Args:
+          n_best: 
+          experiment: 
+          calculator:  (Default value = BuiltinImportance())
+          mode:  (Default value = 'max')
+
+        Returns:
+
+        """
         good_features = list(experiment.feature_importances(importance_calculator=calculator).agg(mode).sort_values(ascending=False).head(n_best).index)
         res = FeatureSet(fc_before=self.fc_before + good_features,
                          fc_after=self.fc_after + good_features,
@@ -284,6 +336,7 @@ class FeatureSet:
 
 
 class FeatureSlice:
+    """ """
     def __init__(self, featureset, slice, idx_test):
         self.featureset = featureset
         self.slice = slice
@@ -336,9 +389,11 @@ class FeatureSlice:
 
     @property
     def target(self):
+        """ """
         return self.featureset.target.iloc[self.slice]
 
     def compress(self):
+        """ """
         self.featureset = self.featureset.empty_copy()
 
 
@@ -346,6 +401,7 @@ from collections import MutableSequence
 
 
 class FeatureList(MutableSequence):
+    """ """
     def __init__(self):
         self.full_name = "kts.feature.storage.feature_list"  # such a hardcode
         self.names = [self.full_name]
@@ -358,6 +414,7 @@ class FeatureList(MutableSequence):
         self.name_to_idx = dict()
 
     def recalc(self):
+        """ """
         self.functors = []
         self.name_to_idx = dict()
         names = [obj for obj in caching.cache.cached_objs() if obj.endswith('_fc')]
@@ -387,9 +444,26 @@ class FeatureList(MutableSequence):
         raise AttributeError('This object is read-only')
 
     def insert(self, key, value):
+        """
+
+        Args:
+          key: 
+          value: 
+
+        Returns:
+
+        """
         raise AttributeError('This object is read-only')
 
     def define_in_scope(self, global_scope):
+        """
+
+        Args:
+          global_scope: 
+
+        Returns:
+
+        """
         self.recalc()
         for func in self.name_to_idx:
             for name in self.names:

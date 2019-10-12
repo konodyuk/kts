@@ -4,10 +4,26 @@ from ..storage import cache
 
 
 def is_identifier(string):
+    """
+
+    Args:
+      string: 
+
+    Returns:
+
+    """
     return isinstance(string, str) and bool(re.match('[0-9A-F]{6}', string))
 
 
 def is_list_of_identifiers(a):
+    """
+
+    Args:
+      a: 
+
+    Returns:
+
+    """
     if not isinstance(a, list):
         return False
     for i in a:
@@ -17,6 +33,14 @@ def is_list_of_identifiers(a):
 
 
 def get_experiment(identifier):
+    """
+
+    Args:
+      identifier: 
+
+    Returns:
+
+    """
     assert is_identifier(identifier), 'You can only get experiment by ID'
     names = [name for name in cache.cached_objs() if name.endswith('_exp') and name.startswith(identifier)]
     if len(names) == 0:

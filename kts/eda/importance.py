@@ -4,13 +4,17 @@ from matplotlib.pyplot import figure
 
 
 def plot_importances(experiment, n_best=15, sort_by='max', calculator=BuiltinImportance(), fontsize=12):
-    """
-    Visualize feature importances (max, mean and std) of an experiment using a given calculator.
-    :param experiment: Experiment instance, like lb['012ABC']
-    :param sort_by: one of 'max', 'mean' and 'std'
-    :param calculator: ImportanceCalculator instance
-    :param fontsize:
-    :return:
+    """Visualize feature importances (max, mean and std) of an experiment using a given calculator.
+
+    Args:
+      experiment: Experiment instance, like lb['012ABC']
+      sort_by: one of 'max', 'mean' and 'std' (Default value = 'max')
+      calculator: ImportanceCalculator instance (Default value = BuiltinImportance())
+      fontsize: return: (Default value = 12)
+      n_best:  (Default value = 15)
+
+    Returns:
+
     """
     assert sort_by in ['max', 'mean', 'std']
     importances = experiment.feature_importances(importance_calculator=calculator)
