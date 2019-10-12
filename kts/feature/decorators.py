@@ -25,9 +25,9 @@ def preview(df, sizes=(2, 4, 6)):
         try:
             for sz in sizes:
                 if isinstance(df, dataframe.DataFrame):
-                    ktdf = dataframe.DataFrame(df.head(sz), df.train, df.encoders)
+                    ktdf = dataframe.DataFrame(df=df.head(sz), train=df.train, encoders=df.encoders)
                 else:
-                    ktdf = dataframe.DataFrame(df.head(sz), True, {})
+                    ktdf = dataframe.DataFrame(df=df.head(sz), train=True, encoders={})
                 # ktdf = dataframe.DataFrame(df.head(sz), True, {})
                 display(function(ktdf))
         except Exception as e:
