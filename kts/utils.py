@@ -111,7 +111,7 @@ def _create_source(class_name, base_classes, methods):
     base_class_names = ", ".join([bc.__name__ for bc in base_classes])
     res = f"""class {class_name}({base_class_names}):\n"""
     for name, meth in methods.items():
-        if name not in ["__module__", "__qualname__"]:
+        if name not in ["__module__", "__qualname__", "__doc__"]:
             try:
                 res += inspect.getsource(meth) + "\n"
             except TypeError:
@@ -135,8 +135,9 @@ def _check_signatures(class_name, base_classes, methods):
     for name, meth in methods.items():
         for base_class in base_classes:
             if name in base_class.__dict__ and name not in [
-                    "__module__",
-                    "__qualname__",
+                "__module__",
+                "__qualname__",
+                "__doc__",
             ]:
                 base_meth = getattr(base_class, name)
                 sign = inspect.signature(meth)
