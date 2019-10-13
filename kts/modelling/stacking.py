@@ -1,9 +1,9 @@
 from warnings import warn
 
-from .feature import stl
-from .validation.leaderboard import leaderboard as lb
-from .validation.split import Refiner
-from .validation.validator import Validator
+import kts.stl.misc
+from kts.validation.leaderboard import leaderboard as lb
+from kts.validation.split import Refiner
+from kts.validation.validator import Validator
 
 
 def assert_splitters(exps):
@@ -72,6 +72,6 @@ def stack(ids,
     refiner = Refiner(outer_splitter, inner_splitter)
     if metric is None:
         metric = experiments[0].validator.metric
-    fc_stack = stl.stack(ids)
+    fc_stack = kts.stl.misc.stack(ids)
     val_stack = validator_class(refiner, metric)
     return val_stack, fc_stack

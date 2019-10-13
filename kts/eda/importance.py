@@ -1,7 +1,7 @@
 import seaborn as sns
 from matplotlib.pyplot import figure
 
-from ..feature.selection.selector import BuiltinImportance
+from kts.feature_selection.selector import BuiltinImportance
 
 
 def plot_importances(experiment,

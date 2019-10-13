@@ -1,6 +1,6 @@
 from fastprogress import progress_bar
 
-from .modelling import ArithmeticMixin, PreprocessingMixin
+from kts.modelling.mixins import ArithmeticMixin, PreprocessingMixin
 
 
 class Pipeline(ArithmeticMixin, PreprocessingMixin):

@@ -1,20 +1,20 @@
 import pandas as pd
 from tqdm import tqdm
 
-from . import utils
-from .. import config
-from ..storage import cache
-from ..utils import captcha
+from kts.util import validation_utils
+from kts.util.misc import captcha
+from kts.config import GOAL, LB_DF_NAME
+from kts.core.backend.memory import cache
 
 
 class Leaderboard:
     """ """
     def __init__(self):
-        if config.LB_DF_NAME in cache.cached_dfs():
-            self._df = cache.load_df(config.LB_DF_NAME)
+        if LB_DF_NAME in cache.cached_dfs():
+            self._df = cache.load_df(LB_DF_NAME)
         else:
             self._df = pd.DataFrame()
-            cache.cache_df(self._df, config.LB_DF_NAME)
+            cache.cache_df(self._df, LB_DF_NAME)
 
     def register(self, experiment):
         """
@@ -32,7 +32,7 @@ class Leaderboard:
 
     def reload(self):
         """ """
-        self._df = cache.load_df(config.LB_DF_NAME)
+        self._df = cache.load_df(LB_DF_NAME)
 
     def add_row(self, row):
         """
@@ -46,18 +46,18 @@ class Leaderboard:
         self.reload()
         self._df = self._df.append(row)
         self._df = self._df.sort_values("Score",
-                                        ascending=(config.GOAL == "MINIMIZE"))
-        cache.remove_df(config.LB_DF_NAME)
-        cache.cache_df(self._df, config.LB_DF_NAME)
+                                        ascending=(GOAL == "MINIMIZE"))
+        cache.remove_df(LB_DF_NAME)
+        cache.cache_df(self._df, LB_DF_NAME)
 
     def __getattr__(self, item):
         return getattr(self._df, item)
 
     def __getitem__(self, key):
-        if utils.is_identifier(key):
-            return utils.get_experiment(key)
-        elif utils.is_list_of_identifiers(key):
-            return [utils.get_experiment(i) for i in key]
+        if validation_utils.is_identifier(key):
+            return validation_utils.get_experiment(key)
+        elif validation_utils.is_list_of_identifiers(key):
+            return [validation_utils.get_experiment(i) for i in key]
         else:
             res = self._df[key]
         if "style" in dir(res):
@@ -84,8 +84,8 @@ class Leaderboard:
         if not captcha():
             return
         self._df = pd.DataFrame()
-        cache.remove_df(config.LB_DF_NAME)
-        cache.cache_df(self._df, config.LB_DF_NAME)
+        cache.remove_df(LB_DF_NAME)
+        cache.cache_df(self._df, LB_DF_NAME)
         for name in tqdm(names):
             self.add_row(cache.load_obj(name).as_df())
         print("Done")

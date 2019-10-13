@@ -1,6 +1,6 @@
-from . import binary_classification
-from . import classification
-from . import regression
+from kts.zoo import binary_classification
+from kts.zoo import classification
+from kts.zoo import regression
 
 c = classification
 bc = binary_classification

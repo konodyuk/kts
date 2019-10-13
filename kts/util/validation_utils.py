@@ -1,7 +1,7 @@
 import re
 import warnings
 
-from ..storage import cache
+from kts.core.backend.memory import cache
 
 
 def is_identifier(string):

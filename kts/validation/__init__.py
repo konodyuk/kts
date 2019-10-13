@@ -1,1 +1,1 @@
-from .split import *
+from kts.validation.split import *

@@ -1,25 +1,26 @@
 from IPython.display import display
 
-from .storage import FeatureConstructor
-from .. import config
-from ..storage import dataframe
-from ..storage import source_utils
-from ..storage.caching import cache
+from kts import config
+from kts.core import dataframe
+from kts.core.backend.memory import cache
+from kts.core.feature_constructor import FeatureConstructor
+from kts.util import source_utils
 
 
 def preview(df, sizes=(2, 4, 6)):
     """Applies function to heads of particular dataframe.
     
     Example:
-    ``` python
-    @preview(df, sizes=[5, 15])
-    def make_ohe_pclass(df):
-        ...
-    ```
+        .. code::
+
+            @preview(df, sizes=[5, 15])
+            def make_ohe_pclass(df):
+                ...
+
 
     Args:
-      df: 
-      sizes:  (Default value = (2, 4, 6):
+        df:
+        sizes:  (Default value = (2, 4, 6):
 
     Returns:
 
@@ -50,15 +51,16 @@ def register(*args, cache_default=True):
     """Registers function for further caching its calls and restoring source.
     
     Example:
-    ``` python
-    @register
-    def make_ohe_pclass(df):
-        ...
-    ```
+        .. code::
+
+            @register
+            def make_ohe_pclass(df):
+                ...
+
 
     Args:
-      *args: 
-      cache_default:  (Default value = True)
+        *args:
+        cache_default:  (Default value = True)
 
     Returns:
 
@@ -87,16 +89,17 @@ def register(*args, cache_default=True):
 
 def deregister(name, force=False):
     """Deletes sources and cached calls of a certain function.
-    Usage:
-    
-    ``` python
-    deregister('make_new_features')
-    
-    deregister('make_new_features', force=True)
-    ```
+
+    Example:
+        .. code::
+
+            deregister('make_new_features')
+
+            deregister('make_new_features', force=True)
+
 
     Args:
-      name: 
+      name:
       force:  (Default value = False)
 
     Returns:
@@ -134,14 +137,15 @@ def dropper(function):
     Is recommended to be used only with functions which actually drop columns or rows and don't produce any new data.
     
     Example:
-    ``` python
-    @dropper
-    def drop_pclass(df):
-        return stl.column_dropper(['Pclass'])(df)
-    ```
+        .. code:: python
+
+            @dropper
+            def drop_pclass(df):
+                return stl.column_dropper(['Pclass'])(df)
+
 
     Args:
-      function:
+        function:
 
     Returns:
     """
@@ -154,14 +158,14 @@ def selector(function):
     Is recommended to be used only with functions which actually select columns or rows and don't produce any new data.
     
     Example:
-    ``` python
-    @selector
-    def select_pclass_cabin(df):
-        return stl.column_selector(['Pclass', 'Cabin'])(df)
-    ```
+        .. code::
+
+            @selector
+            def select_pclass_cabin(df):
+               return stl.column_selector(['Pclass', 'Cabin'])(df)
 
     Args:
-      function: 
+        function:
 
     Returns:
 
@@ -175,10 +179,10 @@ def helper(func):
     and be able to define it in any notebook with kts.helpers.define_in_scope()
 
     Args:
-      func: function
+        func: function
 
     Returns:
-      function with .source method
+        function with .source method
 
     """
     assert "__name__" in dir(func), "Helper should have a name"

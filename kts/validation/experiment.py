@@ -1,15 +1,11 @@
-import re
-from collections import MutableSequence
-
 import pandas as pd
 import texttable as tt
 from fastprogress import progress_bar as pb
 
-from ..eda.importance import plot_importances
-from ..feature.selection.selector import BuiltinImportance
-from ..modelling import ArithmeticMixin
-from ..storage import cache
-from ..utils import hash_str
+from kts.feature_selection.selector import BuiltinImportance
+from kts.util.misc import hash_str
+from kts.eda.importance import plot_importances
+from kts.modelling.mixins import ArithmeticMixin
 
 
 class Experiment(ArithmeticMixin):

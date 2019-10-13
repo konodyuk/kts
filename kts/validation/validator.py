@@ -5,12 +5,15 @@ import pandas as pd
 from fastprogress import master_bar
 from fastprogress.fastprogress import IN_NOTEBOOK
 
-from .experiment import Experiment
-from .leaderboard import leaderboard
-from ..feature.storage import FeatureSet
-from ..modelling import Ensemble, Model
-from ..pipeline import Pipeline
-from ..utils import SourceMetaClass
+from kts.api.feature import FeatureSet
+from kts.modelling.pipeline import Pipeline
+from kts.util.misc import SourceMetaClass
+from kts.validation.experiment import Experiment
+from kts.validation.leaderboard import leaderboard
+from kts.modelling.mixins import Ensemble, Model
+from kts.api.feature import feature_list
+from kts.api.helper import helper_list
+
 
 if IN_NOTEBOOK:
     from IPython.display import HTML
@@ -156,9 +159,6 @@ class Validator(metaclass=SourceMetaClass):
         score = np.mean(scores)
         std = np.std(scores)
         oof = self.oof_to_df(oof, featureset)
-
-        from ..feature.storage import feature_list
-        from ..feature.helper import helper_list
 
         exp = Experiment(
             pipeline=final_ensemble,

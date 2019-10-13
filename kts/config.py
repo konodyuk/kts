@@ -1,13 +1,12 @@
 import sys
 
-import mprop
 import numpy as np
 
-from .environment.file_system import get_mode
+from kts.environment.file_system import get_mode
 
-seed = 31337
-np.random.seed(seed)
-seeds = np.random.randint(100, size=10)
+SEED = 31337
+np.random.seed(SEED)
+SEEDS = np.random.randint(100, size=10)
 
 storage_path = "../storage/"
 # root_dir = '../'
@@ -27,60 +26,6 @@ LB_DF_NAME = "__leaderboard"
 
 service_names = [LB_DF_NAME]
 
-
-@property
-def feature_path(config):
-    """
-
-    Args:
-      config: 
-
-    Returns:
-
-    """
-    return storage_path + "features/"
-
-
-@property
-def info_path(config):
-    """
-
-    Args:
-      config: 
-
-    Returns:
-
-    """
-    return storage_path + "info/"
-
-
-@property
-def source_path(config):
-    """
-
-    Args:
-      config: 
-
-    Returns:
-
-    """
-    return storage_path + "sources/"
-
-
-@property
-def experiment_path(config):
-    """
-
-    Args:
-      config: 
-
-    Returns:
-
-    """
-    return storage_path + "experiment/"
-
-
-mprop.init()
 
 if cache_mode in ["disk", "disk_and_ram"]:
     sys.path.insert(0, root_dir)

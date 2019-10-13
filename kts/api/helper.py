@@ -1,35 +1,12 @@
 from collections import MutableSequence
 
-from ..storage import caching
-
-# class Helper:
-#     def __init__(self, function):
-#         self.function = function
-#         self.__name__ = function.__name__
-#         self.source = source_utils.get_source(function)
-#         self.__call__ = self.function.__call__
-#
-#     # # @functools.wraps(source_utils.get_source)
-#     def __call__(self, *args, **kwargs):
-#         return self.function(*args, **kwargs)
-#
-#     # def __getattribute__(self, item):
-#     #     print(item)
-#     #     return getattr(self.function, item)
-#
-#     def __repr__(self):
-#         return self.function.__name__
-#
-#     def __str__(self):
-#         return self.__name__
-#
-#
+from kts.core.backend import memory
 
 
 class HelperList(MutableSequence):
     """ """
     def __init__(self):
-        self.full_name = "kts.feature.helper.helper_list"  # such a hardcode
+        self.full_name = "kts.api.helper.helper_list"  # such a hardcode
         self.names = [self.full_name]
         while self.names[-1].count("."):
             self.names.append(self.names[-1][self.names[-1].find(".") + 1:])
@@ -44,11 +21,11 @@ class HelperList(MutableSequence):
         self.objects = []
         self.name_to_idx = dict()
         names = [
-            obj for obj in caching.cache.cached_objs()
+            obj for obj in memory.cache.cached_objs()
             if obj.endswith("_helper")
         ]
         for idx, name in enumerate(names):
-            functor = caching.cache.load_obj(name)
+            functor = memory.cache.load_obj(name)
             self.objects.append(functor)
             self.name_to_idx[functor.__name__] = idx
 

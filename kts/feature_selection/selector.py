@@ -5,19 +5,6 @@ import numpy as np
 from sklearn.metrics import make_scorer
 from sklearn.model_selection._split import _build_repr
 
-# class BaseSelector(ABC):
-#     @property
-#     @abc.abstractmethod
-#     def short_name(self):
-#         pass
-#
-#     def __init__(self):
-#         pass
-#
-#     @abc.abstractmethod
-#     def select(self, model, featureslice):
-#         raise NotImplementedError
-
 
 class ImportanceCalculator(ABC):
     """ """

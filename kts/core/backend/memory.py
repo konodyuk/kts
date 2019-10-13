@@ -4,9 +4,9 @@ from glob import glob
 
 import pandas as pd
 
-from . import cache_utils
-from .dataframe import DataFrame as KTDF
-from .. import config
+from kts.core.dataframe import DataFrame as KTDF
+from kts.util import cache_utils
+from kts import config
 
 
 def allow_service(name):

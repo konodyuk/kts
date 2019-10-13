@@ -1,11 +1,4 @@
-from ..modelling import *
-
-
-class RegressorMixin(Model):
-    """ """
-
-    pass
-
+from kts.modelling.mixins import RegressorMixin
 
 try:
     from xgboost import XGBRegressor as _XGBR

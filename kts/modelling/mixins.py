@@ -1,9 +1,6 @@
-import json
-from hashlib import sha256
-
 import numpy as np
-
-from .utils import SourceMetaClass
+from hashlib import sha256
+import json
 
 
 class NamingMixin:
@@ -79,10 +76,10 @@ class PreprocessingMixin:
         """
 
         Args:
-          X: 
-          y: 
-          *args: 
-          **kwargs: 
+          X:
+          y:
+          *args:
+          **kwargs:
 
         Returns:
 
@@ -94,9 +91,9 @@ class PreprocessingMixin:
         """
 
         Args:
-          X: 
-          *args: 
-          **kwargs: 
+          X:
+          *args:
+          **kwargs:
 
         Returns:
 
@@ -197,41 +194,37 @@ class Ensemble(ArithmeticMixin, PreprocessingMixin):  # AddNode
         return Ensemble([model / x for model in self.models])
 
 
-class CustomModelSourceMetaClass(SourceMetaClass):
+class BinaryClassifierMixin(Model):
     """ """
-    def check_methods(methods):
+    def predict(self, X, **kwargs):
         """
 
         Args:
-          methods: 
+          X:
+          **kwargs:
 
         Returns:
 
         """
-        required_methods = ["get_short_name", "get_tracked_params"]
-        for meth in required_methods:
-            assert (meth in methods), f"Method .{meth}() is required to define a custom model"
+        return self.predict_proba(X, **kwargs)[:, 1]
 
 
-class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
+class MultiClassifierMixin(Model):
     """ """
-    def get_short_name(self):
-        """ """
-        return "custom_model"
-
-    def get_tracked_params(self):
-        """ """
-        return []
-
-    def preprocess(self, X, y):
-        """Preprocess input before feeding it into model
+    def predict(self, X, **kwargs):
+        """
 
         Args:
-          X: np.array
-          y: np.array or None (fitting or inference)
+          X:
+          **kwargs:
 
         Returns:
-          X_processed, y_processed)
 
         """
-        return X, y
+        return self.predict_proba(X, **kwargs)
+
+
+class RegressorMixin(Model):
+    """ """
+
+    pass

@@ -5,32 +5,21 @@ sys.path.insert(0, ".")
 # from .environment import get_mode
 # get_mode()
 from . import config
-from .feature.decorators import preview, register, deregister, dropper, selector, helper
-from .feature import stl
-from .feature.storage import feature_list as features
-from .feature import helper_list as helpers
-from .feature.storage import FeatureSet
-from .validation.validator import Validator
-from .modelling import CustomModel
-from .storage.dataframe import link
-from .storage import cache
-from .storage.dataframe import DataFrame as KTDF
-from .storage.caching import save, load, ls, remove, rm
-from .validation.leaderboard import leaderboard
+from kts.api.decorators import preview, register, deregister, dropper, selector, helper
+from . import stl
+from kts.api.feature import feature_list as features
+from kts.api.helper import helper_list as helpers
+from kts.api.feature import FeatureSet
+from kts.validation.validator import Validator
+from kts.core.dataframe import link
+from kts.core.dataframe import DataFrame as KTDF
+from kts.core.backend.memory import save, load, ls, remove, rm
+from kts.validation.leaderboard import leaderboard
+from . import zoo
+from kts.modelling.stacking import stack
+from kts.modelling.custom_model import CustomModel
+from kts.core.backend.memory import cache
+from . import eda
+from kts import feature_selection
 
 lb = leaderboard
-from . import zoo
-from .ensembling import stack
-
-# from .submission import submit
-from . import eda
-from .feature import selection
-
-# import mprop
-#
-# @property
-# def __version__(kts):
-#     ans = os.popen(f'{sys.executable} -m pip show kts').read().split()
-#     return [ans[i + 1] for i in range(len(ans)) if 'version' in ans[i].lower()][0]
-#
-# mprop.init()

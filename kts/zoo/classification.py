@@ -1,20 +1,4 @@
-from ..modelling import *
-
-
-class MultiClassifierMixin(Model):
-    """ """
-    def predict(self, X, **kwargs):
-        """
-
-        Args:
-          X: 
-          **kwargs: 
-
-        Returns:
-
-        """
-        return self.predict_proba(X, **kwargs)
-
+from kts.modelling.mixins import MultiClassifierMixin
 
 try:
     from xgboost import XGBClassifier as _XGBC

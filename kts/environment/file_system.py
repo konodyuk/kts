@@ -1,8 +1,6 @@
 import json
 import os
 
-# from .. import config
-
 
 def find_root_dir():
     """ """

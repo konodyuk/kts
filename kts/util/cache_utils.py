@@ -7,19 +7,19 @@ import feather
 import numpy as np
 import pandas as pd
 
-from .. import config
-from ..utils import captcha
+from kts.util.misc import captcha
+from kts import config
 
 
 def clear_storage():
     """ """
-    from .caching import cache
+    from kts.core.backend.memory import cache
 
     cache.memory.clear()
     if not captcha():
         print("You aren't smart enough to take such decisions")
         return
-    for path in glob(config.storage_path + "*_*") + glob(config.source_path + "*"):
+    for path in glob(config.storage_path + "*_*"):
         print(f"deleting {path}")
         os.remove(path)
 
@@ -191,18 +191,6 @@ def load_obj(path):
 
     """
     return dill.load(open(path, "rb"))
-
-
-def get_path_info(name):
-    """
-
-    Args:
-      name: 
-
-    Returns:
-
-    """
-    return config.info_path + name + "_info"
 
 
 def get_time(path):

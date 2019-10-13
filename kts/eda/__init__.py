@@ -1,1 +1,1 @@
-from .importance import plot_importances
+from kts.eda.importance import plot_importances
