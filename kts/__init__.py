@@ -10,7 +10,6 @@ from .feature import stl
 from .feature.storage import feature_list as features
 from .feature import helper_list as helpers
 from .feature.storage import FeatureSet
-from .validation.experiment import experiment_list as experiments
 from .validation.validator import Validator
 from .modelling import CustomModel
 from .storage.dataframe import link
