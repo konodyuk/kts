@@ -44,7 +44,6 @@ setuptools.setup(
         "pandas",
         "numpy",
         "scikit-learn",
-        "scikit-optimize",
         "matplotlib",
         "seaborn",
         "dill",
