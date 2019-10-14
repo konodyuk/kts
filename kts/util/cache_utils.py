@@ -19,7 +19,7 @@ def clear_storage():
     if not captcha():
         print("You aren't smart enough to take such decisions")
         return
-    for path in glob(config.storage_path + "*_*"):
+    for path in glob(config.STORAGE_PATH + "*_*"):
         print(f"deleting {path}")
         os.remove(path)
 
@@ -89,7 +89,7 @@ def get_path_df(name):
     Returns:
 
     """
-    return config.storage_path + name + "_df"
+    return config.STORAGE_PATH + name + "_df"
 
 
 def save_df(df, path):
@@ -110,7 +110,7 @@ def save_df(df, path):
     #     print('enc: no attr')
     not_trivial_index = type(df.index) != pd.RangeIndex
     if not_trivial_index:
-        index_name = f"{config.index_prefix}{df.index.name}"
+        index_name = f"{config.INDEX_COLUMN_PREFIX}{df.index.name}"
         df[index_name] = df.index.values
         df.reset_index(drop=True, inplace=True)
     try:
@@ -124,7 +124,7 @@ def save_df(df, path):
             df.to_pickle(path)
     if not_trivial_index:
         df.set_index(index_name, inplace=True)
-        df.index.name = df.index.name[len(config.index_prefix):]
+        df.index.name = df.index.name[len(config.INDEX_COLUMN_PREFIX):]
 
 
 def load_df(path):
@@ -144,10 +144,10 @@ def load_df(path):
             tmp = pd.read_parquet(path)
         except:
             tmp = pd.read_pickle(path)
-    index_col = tmp.columns[tmp.columns.str.contains(config.index_prefix)]
+    index_col = tmp.columns[tmp.columns.str.contains(config.INDEX_COLUMN_PREFIX)]
     if any(index_col):
         tmp.set_index(index_col.values[0], inplace=True)
-        tmp.index.name = tmp.index.name[len(config.index_prefix):]
+        tmp.index.name = tmp.index.name[len(config.INDEX_COLUMN_PREFIX):]
     return tmp
 
 
@@ -160,7 +160,7 @@ def get_path_obj(name):
     Returns:
 
     """
-    return config.storage_path + name + "_obj"
+    return config.STORAGE_PATH + name + "_obj"
 
 
 def save_obj(obj, path):

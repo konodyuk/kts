@@ -18,7 +18,7 @@ def allow_service(name):
     Returns:
 
     """
-    return name in config.service_names
+    return name in config.SERVICE_DF_NAMES
 
 
 def allow_all(name):
@@ -33,14 +33,14 @@ def allow_all(name):
     return True
 
 
-if config.cache_policy == "service":
+if config.CACHE_POLICY == "service":
     gate = allow_service
-elif config.cache_policy == "everything":
+elif config.CACHE_POLICY == "everything":
     gate = allow_all
 else:
     raise UserWarning(
-        f'config.cache_policy should be either "service" or "everything". '
-        f'Now it is "{config.cache_policy}"')
+        f'config.CACHE_POLICY should be either "service" or "everything". '
+        f'Now it is "{config.CACHE_POLICY}"')
 
 
 class Cache:
@@ -61,7 +61,7 @@ class Cache:
         Returns:
 
         """
-        config.memory_limit = volume
+        config.MEMORY_LIMIT = volume
 
     def __release_volume(self, df):
         """
@@ -73,7 +73,7 @@ class Cache:
         items = sorted([(time, key) for (key, time) in self.last_used.items()])
         cur = 0
         while self.current_volume + cache_utils.get_df_volume(
-                df) > config.memory_limit:
+                df) > config.MEMORY_LIMIT:
             key = items[cur][1]
             cur += 1
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
@@ -109,7 +109,7 @@ class Cache:
             return
         if self.is_cached_df(name):
             return
-        if cache_utils.get_df_volume(df) > config.memory_limit:
+        if cache_utils.get_df_volume(df) > config.MEMORY_LIMIT:
             raise MemoryError
 
         dict_name = name + "_df"
@@ -185,7 +185,7 @@ class Cache:
         """
         return [
             df.split("/")[-1][:-3]
-            for df in sorted(glob(config.storage_path + "*" + "_df"),
+            for df in sorted(glob(config.STORAGE_PATH + "*" + "_df"),
                              key=os.path.getmtime)
         ]
 
@@ -281,7 +281,7 @@ class Cache:
         """
         return [
             df.split("/")[-1][:-4]
-            for df in sorted(glob(config.storage_path + "*" + "_obj"),
+            for df in sorted(glob(config.STORAGE_PATH + "*" + "_obj"),
                              key=os.path.getmtime)
         ]
 
@@ -303,7 +303,7 @@ class RAMCache:
         Returns:
 
         """
-        config.memory_limit = volume
+        config.MEMORY_LIMIT = volume
 
     def __release_volume(self, df):
         """
@@ -314,7 +314,7 @@ class RAMCache:
 
         items = sorted([(time, key) for (key, time) in self.last_used.items()])
         cur = 0
-        while self.current_volume + cache_utils.get_df_volume(df) > config.memory_limit:
+        while self.current_volume + cache_utils.get_df_volume(df) > config.MEMORY_LIMIT:
             key = items[cur][1]
             cur += 1
             self.current_volume -= cache_utils.get_df_volume(self.memory[key])
@@ -348,7 +348,7 @@ class RAMCache:
             return
         if self.is_cached_df(name):
             return
-        if cache_utils.get_df_volume(df) > config.memory_limit:
+        if cache_utils.get_df_volume(df) > config.MEMORY_LIMIT:
             raise MemoryError
 
         dict_name = name + "_df"
@@ -539,7 +539,7 @@ class DiskCache:
         """
         return [
             df.split("/")[-1][:-3]
-            for df in sorted(glob(config.storage_path + "*" + "_df"),
+            for df in sorted(glob(config.STORAGE_PATH + "*" + "_df"),
                              key=os.path.getmtime)
         ]
 
@@ -608,21 +608,21 @@ class DiskCache:
         """
         return [
             df.split("/")[-1][:-4]
-            for df in sorted(glob(config.storage_path + "*" + "_obj"),
+            for df in sorted(glob(config.STORAGE_PATH + "*" + "_obj"),
                              key=os.path.getmtime)
         ]
 
 
-if config.cache_mode == "disk_and_ram":
+if config.CACHE_MODE == "disk_and_ram":
     cache = Cache()
-elif config.cache_mode == "ram":
+elif config.CACHE_MODE == "ram":
     cache = RAMCache()
-elif config.cache_mode == "disk":
+elif config.CACHE_MODE == "disk":
     cache = DiskCache()
 else:
     raise UserWarning(
-        f'config.cache_mode should be one of "disk", "disk_and_ram", "ram". '
-        f'Now it is "{config.cache_mode}"')
+        f'config.CACHE_MODE should be one of "disk", "disk_and_ram", "ram". '
+        f'Now it is "{config.CACHE_MODE}"')
 
 USER_SEP = "__USER__"
 
@@ -649,15 +649,7 @@ def save(obj, name):
 
 def ls():
     """ """
-    return [
-        df.split("/")[-1][:-4 - len(USER_SEP)]
-        for df in sorted(glob(config.storage_path + "*" + USER_SEP + "_obj"),
-                         key=os.path.getmtime)
-    ] + [
-        df.split("/")[-1][:-3 - len(USER_SEP)]
-        for df in sorted(glob(config.storage_path + "*" + USER_SEP + "_df"),
-                         key=os.path.getmtime)
-    ]
+    return [i[:i.find(USER_SEP)] for i in cache.cached_dfs() + cache.cached_objs() if USER_SEP in i]
 
 
 def get_type(name):

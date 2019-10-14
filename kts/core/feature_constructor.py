@@ -22,7 +22,7 @@ class FeatureConstructor:
         ktdf = dataframe.DataFrame(df=df)
         if type(cache) == type(None):
             cache = self.cache_default
-        if not cache or config.preview_call:  # written to avoid caching when @preview function uses @registered function inside
+        if not cache or config.IS_PREVIEW_CALL:  # written to avoid caching when @preview function uses @registered function inside
             return self.function(ktdf, **kwargs)
 
         name = f"{self.function.__name__}__{cache_utils.get_hash_df(ktdf)[:4]}__{ktdf.slice_id[-4:]}"
@@ -45,7 +45,7 @@ class FeatureConstructor:
             except MemoryError:
                 print(f"The dataframe is too large to be cached. "
                       f"It is {cache_utils.get_df_volume(result)}, "
-                      f"but current memory limit is {config.memory_limit}.")
+                      f"but current memory limit is {config.MEMORY_LIMIT}.")
                 print(f"Setting memory limit to {cache_utils.get_df_volume(result) * 2}")
                 ans = input('Please confirm memory limit change. Enter "No" to cancel it.')
                 do_change = True

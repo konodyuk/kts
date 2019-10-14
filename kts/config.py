@@ -1,34 +1,25 @@
 import sys
-
-import numpy as np
-
 from kts.environment.file_system import get_mode
 
-SEED = 31337
-np.random.seed(SEED)
-SEEDS = np.random.randint(100, size=10)
-
-storage_path = "../storage/"
-# root_dir = '../'
-index_prefix = "__kts__index_"
-preview_call = 0
-memory_limit = 4 * (1024**3)  # 4 Gb
-mode = "local"
+STORAGE_PATH = "../storage/"
+INDEX_COLUMN_PREFIX = "__kts__index_"
+IS_PREVIEW_CALL = 0
+MEMORY_LIMIT = 4 * (1024 ** 3)  # 4 Gb
 GOAL = "MAXIMIZE"
 MAX_LEN_SOURCE = 100
 
-# cache_mode = 'disk_and_ram'  # "disk", "disk_and_ram", "ram"
-# cache_policy = 'everything'  # "everything", "service"
+# CACHE_MODE = 'disk_and_ram'  # "disk", "disk_and_ram", "ram"
+# CACHE_POLICY = 'everything'  # "everything", "service"
 
-cache_mode, cache_policy, root_dir = get_mode()
+CACHE_MODE, CACHE_POLICY, ROOT_DIR = get_mode()
 
 LB_DF_NAME = "__leaderboard"
 
-service_names = [LB_DF_NAME]
+SERVICE_DF_NAMES = [LB_DF_NAME]
 
 
-if cache_mode in ["disk", "disk_and_ram"]:
-    sys.path.insert(0, root_dir)
+if CACHE_MODE in ["disk", "disk_and_ram"]:
+    sys.path.insert(0, ROOT_DIR)
     try:
         import kts_config as user_config
         from kts_config import *
@@ -37,5 +28,5 @@ if cache_mode in ["disk", "disk_and_ram"]:
 
 # So dumb. I know.
 # TODO: implement all this ... with pathlib
-if not storage_path.endswith("/"):
-    storage_path += "/"
+if not STORAGE_PATH.endswith("/"):
+    STORAGE_PATH += "/"

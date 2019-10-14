@@ -95,7 +95,7 @@ class FeatureSet:
                                     train=1)),  # BUG: should have .train=True?
         ])  # made .train=1 only for preview purposes
         # actually, FS[a:b] functionality is made only for debug
-        # why not write config.preview_call = 1 then?
+        # why not write config.IS_PREVIEW_CALL = 1 then?
 
     def empty_copy(self):
         """ """
