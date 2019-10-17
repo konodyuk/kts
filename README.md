@@ -1,7 +1,7 @@
 ![KTS logo](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/banner_alpha.png)
 
 [![PyPI version](https://img.shields.io/pypi/v/kts.svg)](https://pypi.org/project/kts/)
-[![Docs](https://img.shields.io/readthedocs/kts)](https://kts.readthedots.io/)
+[![Docs](https://img.shields.io/readthedocs/kts)](https://kts.readthedocs.io/)
 
 **An ultimate workflow for solving machine learning competitions with tabular data.**
 
@@ -44,11 +44,11 @@ def feature_1(df):
     ...
     
 @register
-def feature_1(df):
+def feature_2(df):
     ...
     
 @register
-def feature_1(df):
+def feature_3(df):
     ...
 ```
 

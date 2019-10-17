@@ -24,11 +24,11 @@ def feature_1(df):
     ...
     
 @register
-def feature_1(df):
+def feature_2(df):
     ...
     
 @register
-def feature_1(df):
+def feature_3(df):
     ...
 ```
 
