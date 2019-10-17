@@ -1,23 +1,3 @@
-![KTS logo](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/banner_alpha.png)
-
-[![PyPI version](https://img.shields.io/pypi/v/kts.svg)](https://pypi.org/project/kts/)
-[![Docs](https://img.shields.io/readthedocs/kts)](https://kts.readthedots.io/)
-
-**An ultimate workflow for solving machine learning competitions with tabular data.**
-
-Install KTS with `pip install kts`. Compatible with Python 3.6+. 
-
-## Features
-
--  Modular feature engineering
--  Source code tracking
--  Caching of interim results
--  Standard library for feature engineering
--  Easy customization
--  Local leaderboard
--  Leak-free stacking in one line
--  Parallel or distributed backend (feature computing/training/inference/hyperparameter tuning) -- coming soon
-
 
 ## Quick Start
 
@@ -113,20 +93,3 @@ test_predictions = logreg_exp.predict(test)
 
 Check out the [docs](https://kts.readthedocs.io) for a detailed description of the features of KTS and its best practices of usage.  
 
-## Command line interface
-Use it to create a new project:
-```
-$ mkdir project
-$ cd project
-$ kts init
-```
-or download an example from [kts-examples](https://github.com/konodyuk/kts-examples) repo:
-```
-$ kts example titanic
-```
-
-## Contribution
-Contact me in [Telegram](https://telegram.me/konodyuk) or [ODS Slack](https://opendatascience.slack.com/team/UC43HUBQV) to share any thoughts about the framework or examples. You're always welcome to propose new features or even implement them. 
-
-## Acknowledgements
-Core of the project was designed and implemented by the team of [Mikhail Andronov](https://github.com/Academich), [Roman Gorb](https://github.com/rvg77) and [Nikita Konodyuk](https://github.com/konodyuk) under the mentorship of [Alexander Avdyushenko](https://github.com/avalur) during a project practice held by Yandex and Higher School of Economics on 1-14 February 2019 at Educational Center «Sirius».
