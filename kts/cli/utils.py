@@ -31,7 +31,7 @@ def parse(file):
 def get_mode():
     """ """
     if find_root_dir():
-        # config.storage_path = parse(find_root_dir() + '.kts')['storage_path']
+        # config.STORAGE_PATH = parse(find_root_dir() + '.kts')['STORAGE_PATH']
         cache_mode = "disk_and_ram"
         cache_policy = "everything"
         root_dir = find_root_dir()
