@@ -1,10 +1,8 @@
-import json
 import os
 import shutil
 
 
 def find_root_dir():
-    """ """
     i = 0
     while os.path.realpath("../" * i) != "/":
         if os.path.exists("../" * i + "kts_config.py"):
@@ -17,7 +15,6 @@ def find_root_dir():
 
 
 def get_mode():
-    """ """
     if find_root_dir():
         # config.STORAGE_PATH = parse(find_root_dir() + '.kts')['STORAGE_PATH']
         cache_mode = "disk_and_ram"

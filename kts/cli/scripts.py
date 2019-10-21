@@ -1,4 +1,6 @@
 import os
+import shutil
+import time
 
 import click
 
@@ -15,6 +17,10 @@ def cli():
 
 @cli.command()
 def init():
+    """Initialize empty KTS project.
+
+    Create ./input, ./notebooks, ./kts_config.py, etc.
+    """
     if check_existence(KTS_PROJECT_PATHS):
         list_files('./')
         if click.confirm('Do you want to clear existing kts file system?'):
@@ -28,12 +34,17 @@ def init():
     if os.path.exists('./kts_config.py'):
         if click.confirm('Config found. Overwrite?'):
             create_config()
+    else:
+        create_config()
 
 
 @cli.command()
 @click.argument('name', type=click.Choice(VALID_EXAMPLES))
-def download_example(name):
-    f""""""
+def example(name):
+    """Download an example to current dir.
+    
+    Download the example named NAME from github.com/konodyuk/kts-examples repository.
+    """
     if os.path.exists(name):
         raise OSError(f'Path ./{name} already exists.')
     download_name = ".kts_examples_" + str(int(time.time()))
@@ -41,4 +52,3 @@ def download_example(name):
     shutil.move(f"{download_name}/{name}", f"{name}")
     os.system(f"""cd {name} && echo "n\ny\ny" | kts init""")
     shutil.rmtree(f"{download_name}")
-
