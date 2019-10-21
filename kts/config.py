@@ -1,5 +1,5 @@
 import sys
-from kts.environment.file_system import get_mode
+from kts.cli.utils import get_mode
 
 STORAGE_PATH = "../storage/"
 INDEX_COLUMN_PREFIX = "__kts__index_"

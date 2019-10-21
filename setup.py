@@ -51,6 +51,10 @@ setuptools.setup(
         "swifter",
         "kts-cli",
         "texttable",
-        "fastprogress"
-    ]
+        "fastprogress",
+        "click"
+    ],
+    entry_points={
+        "console_scripts": ['kts=kts.cli.scripts:cli']
+    }
 )
