@@ -5,15 +5,14 @@ import pandas as pd
 from fastprogress import master_bar
 from fastprogress.fastprogress import IN_NOTEBOOK
 
-from kts.api.feature import FeatureSet
+from kts.api.feature import feature_list
+from kts.api.helper import helper_list
+from kts.core.feature_set import FeatureSet
+from kts.modelling.mixins import Ensemble, Model
 from kts.modelling.pipeline import Pipeline
 from kts.util.misc import SourceMetaClass
 from kts.validation.experiment import Experiment
 from kts.validation.leaderboard import leaderboard
-from kts.modelling.mixins import Ensemble, Model
-from kts.api.feature import feature_list
-from kts.api.helper import helper_list
-
 
 if IN_NOTEBOOK:
     from IPython.display import HTML
