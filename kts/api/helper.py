@@ -1,6 +1,21 @@
+import functools
 from collections import MutableSequence
 
 from kts.core.backend import memory
+from kts.util import source_utils
+
+
+class Helper:
+    def __init__(self, func):
+        self.func = func
+        self.__name__ = self.func.__name__
+        self.source = source_utils.get_source(func)
+        functools.update_wrapper(self, self.func)
+
+    def __call__(self, *args, **kwargs):
+        self = memory.cache.load_obj(self.__name__ + "_helper")
+        functools.update_wrapper(self, self.func)
+        return self.func(*args, **kwargs)
 
 
 class HelperList(MutableSequence):
@@ -50,26 +65,9 @@ class HelperList(MutableSequence):
         raise AttributeError("This object is read-only")
 
     def insert(self, key, value):
-        """
-
-        Args:
-          key: 
-          value: 
-
-        Returns:
-
-        """
         raise AttributeError("This object is read-only")
 
     def define_in_scope(self, global_scope):
-        """
-
-        Args:
-          global_scope: 
-
-        Returns:
-
-        """
         self.recalc()
         for func in self.name_to_idx:
             for name in self.names:

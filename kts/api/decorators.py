@@ -1,6 +1,7 @@
 from IPython.display import display
 
 from kts import config
+from kts.api.helper import Helper
 from kts.core import dataframe
 from kts.core.backend.memory import cache
 from kts.core.feature_constructor import FeatureConstructor
@@ -185,9 +186,11 @@ def helper(func):
         function with .source method
 
     """
-    assert "__name__" in dir(func), "Helper should have a name"
-    func.source = source_utils.get_source(func)
-    if func.__name__ + "_helper" in cache.cached_objs():
-        cache.remove_obj(func.__name__ + "_helper")
-    cache.cache_obj(func, func.__name__ + "_helper")
-    return func
+    helper_name = func.__name__ + "_helper"
+
+    if helper_name in cache.cached_objs():
+        cache.remove_obj(helper_name)
+
+    functor = Helper(func)
+    cache.cache_obj(functor, helper_name)
+    return functor
