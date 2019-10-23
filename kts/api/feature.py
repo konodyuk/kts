@@ -11,17 +11,15 @@ from kts.core.feature_constructor import FeatureConstructor
 from kts.feature_selection.selector import BuiltinImportance
 from kts.util import source_utils, cache_utils
 
-FeatureListType = Union[FeatureConstructor, List[FeatureConstructor],
-                        Tuple[FeatureConstructor], List["FeatureListType"],
-                        Tuple["FeatureListType"], ]
+InputFeaturesType = Union[FeatureConstructor, List[FeatureConstructor], Tuple[FeatureConstructor]]
 
 
 class FeatureSet:
     """ """
     def __init__(
             self,
-            fc_before: FeatureListType,
-            fc_after: FeatureListType = kts.core.base_constructors.empty_like,
+            fc_before: InputFeaturesType,
+            fc_after: InputFeaturesType = kts.core.base_constructors.empty_like,
             df_input: Optional[pd.DataFrame] = None,
             target_columns: Optional[Union[List[str], str]] = None,
             auxiliary_columns: Optional[Union[List[str], str]] = None,
