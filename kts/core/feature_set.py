@@ -124,7 +124,7 @@ class FeatureSet:
         if len(self.target_columns) > 0:
             if set(self.target_columns) < set(self.df_input.columns):
                 return self.df_input[self.target_columns]
-            elif set(self.target_columns) < set(self.df_input.columns):
+            elif set(self.target_columns) < set(self.df.columns):
                 return self.df[self.target_columns]
             else:
                 raise AttributeError("Target columns are neither given as input nor computed")
@@ -137,7 +137,7 @@ class FeatureSet:
         if len(self.auxiliary_columns) > 0:
             if set(self.auxiliary_columns) < set(self.df_input.columns):
                 return self.df_input[self.auxiliary_columns]
-            elif set(self.auxiliary_columns) < set(self.df_input.columns):
+            elif set(self.auxiliary_columns) < set(self.df.columns):
                 return self.df[self.auxiliary_columns]
             else:
                 raise AttributeError("Auxiliary columns are neither given as input nor computed")
