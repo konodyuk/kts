@@ -6,32 +6,40 @@ from kts.feature_selection.selector import BuiltinImportance
 
 def plot_importances(experiment,
                      n_best=15,
-                     sort_by="max",
+                     sort_by="mean",
                      calculator=BuiltinImportance(),
                      fontsize=12):
-    """Visualize feature importances (max, mean and std) of an experiment using a given calculator.
+    """Show feature importances of an experiment.
 
     Args:
       experiment: Experiment instance, like lb['012ABC']
-      sort_by: one of 'max', 'mean' and 'std' (Default value = 'max')
+      sort_by: one of 'max', 'mean', 'min', and 'std' (Default value = 'mean')
       calculator: ImportanceCalculator instance (Default value = BuiltinImportance())
-      fontsize: return: (Default value = 12)
-      n_best:  (Default value = 15)
-
-    Returns:
-
+      fontsize:  (Default value = 12)
+      n_best: number of features to show (Default value = 15)
     """
-    assert sort_by in ["max", "mean", "std"]
+
+    AGGS = ["max", "mean", "min", "std"]
+    assert sort_by in AGGS
     importances = experiment.feature_importances(
         importance_calculator=calculator)
-    tmp = importances.agg(["max", "mean", "std"])
-    tmp = tmp.T
-    tmp = tmp.reset_index()
+    tmp = importances.T.join(importances.agg(AGGS).T)
     tmp.sort_values(sort_by, ascending=False, inplace=True)
+    tmp = tmp.head(n_best)
+    tmp = tmp.drop(AGGS, axis=1).unstack().reset_index(level=1)
+    tmp.columns = ['feature', 'importance']
     figure(figsize=(8, n_best / 3))
-    sns.barplot(x="max", y="index", data=tmp.head(n_best), alpha=0.5)
-    sns.barplot(x="mean", y="index", data=tmp.head(n_best), alpha=0.7)
-    a = sns.barplot(x="std", y="index", data=tmp.head(n_best), alpha=1)
+    a = sns.barplot(x="importance",
+                    y="feature",
+                    data=tmp,
+                    capsize=0.2,
+                    errwidth=1.5,
+                    color='gray',
+                    errcolor=sns.mpl.rcParams['axes.edgecolor'])
+    a.spines['top'].set_visible(False)
+    a.spines['right'].set_visible(False)
+    a.spines['bottom'].set_visible(False)
+    a.spines['left'].set_visible(False)
     a.tick_params(labelsize=fontsize)
     a.set_xlabel("importance", fontsize=fontsize)
     a.set_ylabel("feature", fontsize=fontsize)
