@@ -23,12 +23,13 @@ def plot_importances(experiment,
     assert sort_by in AGGS
     importances = experiment.feature_importances(
         importance_calculator=calculator)
+    n_best = min(n_best, importances.shape[1])
     tmp = importances.T.join(importances.agg(AGGS).T)
     tmp.sort_values(sort_by, ascending=False, inplace=True)
     tmp = tmp.head(n_best)
     tmp = tmp.drop(AGGS, axis=1).unstack().reset_index(level=1)
     tmp.columns = ['feature', 'importance']
-    figure(figsize=(8, n_best / 3))
+    figure(figsize=(8, n_best / 2.5))
     a = sns.barplot(x="importance",
                     y="feature",
                     data=tmp,
