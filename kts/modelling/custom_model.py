@@ -1,34 +1,21 @@
+from typing import List
+
 from kts.modelling.mixins import Model
 from kts.util.misc import SourceMetaClass
 
 
 class CustomModelSourceMetaClass(SourceMetaClass):
-    """ """
     def check_methods(methods):
-        """
-
-        Args:
-          methods:
-
-        Returns:
-
-        """
-        required_methods = ["get_short_name", "get_tracked_params"]
+        required_methods = ["get_tracked_params"]
         for meth in required_methods:
             assert (meth in methods), f"Method .{meth}() is required to define a custom model"
 
 
 class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
-    """ """
-    def get_short_name(self):
-        """ """
-        return "custom_model"
-
     def get_tracked_params(self):
-        """ """
         return []
 
-    def preprocess(self, X, y):
+    def preprocess(self, X, y=None):
         """Preprocess input before feeding it into model
 
         Args:
@@ -40,3 +27,10 @@ class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
 
         """
         return X, y
+
+
+def custom_model(ModelClass: type, tracked_params: List[str], name: str = None):
+    raise NotImplemented
+    if name is None:
+        name = ModelClass.__name__
+    return type(name, (ModelClass, CustomModel), {'get_tracked_params': lambda self: tracked_params})
