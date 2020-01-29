@@ -45,8 +45,8 @@ class Leaderboard(ui.HTMLRepr):
     @property
     def html(self):
         return ui.Leaderboard(self.sorted_aliases).html
-    
 
+leaderboard = Leaderboard('main')  # TODO: sync with lbs
 
 class LeaderboardList:
     def __init__(self):
