@@ -214,7 +214,7 @@ class CVFeatureSet:
     def n_folds(self):
         return len(self.folds)
     
-    def fold(self, idx) -> Fold:
+    def fold(self, idx) -> 'Fold':
         return Fold(self, idx)
 
 
