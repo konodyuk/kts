@@ -1,4 +1,3 @@
-import hashlib
 import inspect
 import time
 from abc import ABCMeta
@@ -8,7 +7,6 @@ import numpy as np
 
 
 def captcha():
-    """ """
     np.random.seed(int(time.time()))
     a, b = np.random.randint(5, 30, size=2)
     c = int(input(f"{a} + {b} = "))
@@ -16,42 +14,7 @@ def captcha():
         return False
     return True
 
-
-def list_hash(lst, length):
-    """
-
-    Args:
-      lst: 
-      length: 
-
-    Returns:
-
-    """
-    return hashlib.sha256(repr(tuple(lst)).encode()).hexdigest()[:length]
-
-
-def hash_str(a):
-    """
-
-    Args:
-      a: 
-
-    Returns:
-
-    """
-    return hashlib.sha256(a.encode()).hexdigest()
-
-
 def extract_signature(func, return_dict=False):
-    """
-
-    Args:
-      func: 
-      return_dict:  (Default value = False)
-
-    Returns:
-
-    """
     args = inspect.getfullargspec(func).args
     defaults = inspect.getfullargspec(func).defaults
     values = {
@@ -62,8 +25,6 @@ def extract_signature(func, return_dict=False):
         defaults = []
     if args is None:
         args = []
-    # print(inspect.getfullargspec(func))
-    # print(values)
     if return_dict:
         return {arg: values[arg] for arg in args}
     sources = []
@@ -78,36 +39,16 @@ def extract_signature(func, return_dict=False):
 
 
 def is_helper(func):
-    """
-
-    Args:
-      func: 
-
-    Returns:
-
-    """
     return (callable(func) and "__name__" in dir(func)
             and "source" in dir(func) and isinstance(func.source, str)
             and "def" in func.source)  # genius
 
 
 class BadSignatureException(Exception):
-    """ """
-
     pass
 
 
 def _create_source(class_name, base_classes, methods):
-    """
-
-    Args:
-      class_name: 
-      base_classes: 
-      methods: 
-
-    Returns:
-
-    """
     base_class_names = ", ".join([bc.__name__ for bc in base_classes])
     res = f"""class {class_name}({base_class_names}):\n"""
     for name, meth in methods.items():
@@ -122,16 +63,6 @@ def _create_source(class_name, base_classes, methods):
 
 
 def _check_signatures(class_name, base_classes, methods):
-    """
-
-    Args:
-      class_name: 
-      base_classes: 
-      methods: 
-
-    Returns:
-
-    """
     for name, meth in methods.items():
         for base_class in base_classes:
             if name in base_class.__dict__ and name not in [
@@ -149,21 +80,11 @@ def _check_signatures(class_name, base_classes, methods):
 
 
 class SourceMetaClass(ABCMeta):
-    """ """
     def __new__(cls, class_name, base_classes, dict_of_methods):
         cls.check_methods(dict_of_methods)
         _check_signatures(class_name, base_classes, dict_of_methods)
-        dict_of_methods["class_source"] = _create_source(
-            class_name, base_classes, dict_of_methods)
+        dict_of_methods["class_source"] = _create_source(class_name, base_classes, dict_of_methods)
         return type.__new__(cls, class_name, base_classes, dict_of_methods)
 
     def check_methods(methods):
-        """
-
-        Args:
-          methods: 
-
-        Returns:
-
-        """
         pass
