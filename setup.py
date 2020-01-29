@@ -12,10 +12,9 @@ with open('VERSION', 'w') as f:
     f.write(str(VERSION))
 
 extras = {
-    'zoo': ['catboost', 'xgboost', 'lightgbm'],
-    'nn': ['skorch'],
+    'zoo': ['sklearn', 'catboost', 'xgboost', 'lightgbm', 'skorch'],
     'selection': ['eli5'],
-    'ray': ["ray[modin]"],
+    'ray': ["ray[tune]"],
 }
 
 all_deps = []
@@ -25,36 +24,56 @@ extras['all'] = all_deps
 
 setuptools.setup(
     name="kts",
-    version=f"0.2.{VERSION}",
+    version=f"0.3.{VERSION}",
     author="Nikita Konodyuk",
     author_email="konodyuk@gmail.com",
-    description="Competition-oriented framework for interactive feature engineering and building reproducible pipelines",
+    description="A framework for fast and interactive conducting machine learning experiments on tabular data",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/konodyuk/kts",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3",
+        'Development Status :: 3 - Alpha',
+
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+
         "License :: OSI Approved :: MIT License",
+
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+
         "Operating System :: OS Independent",
+    ],
+    keywords=[
+        "Machine Learning",
+        "Parallel Computing",
+        "Feature Engineering",
     ],
     extras_require=extras,
     install_requires=[
-        "mprop",
+        # "mprop",
         "pandas",
         "numpy",
         "scikit-learn",
         "matplotlib",
-        "seaborn",
+        # "seaborn",
         "dill",
         "feather-format",
-        "swifter",
-        "kts-cli",
-        "texttable",
-        "fastprogress",
-        "click"
+        # "swifter",
+        # "texttable",
+        # "fastprogress",
+        "click",
+        "python-forge",
+        "xxhash"
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
-    }
+    },
+    include_package_data=True
 )
