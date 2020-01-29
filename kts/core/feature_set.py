@@ -1,346 +1,345 @@
-import inspect
-from typing import Union, List, Tuple, Optional, Dict, Any
+import pprint
+from typing import Union, List, Tuple, Optional, Collection
 
 import numpy as np
 import pandas as pd
 
-import kts.core.base_constructors
-from kts.core import dataframe
-from kts.core.feature_constructor import FeatureConstructor
-from kts.feature_selection import BuiltinImportance
-from kts.util import source_utils, cache_utils
+from kts.core import ui
+from kts.core.cache import frame_cache
+from kts.core.frame import KTSFrame
+from kts.core.lists import feature_list
+from kts.core.runtime import FeatureConstructor
+from kts.core.runtime import run_manager
+from kts.settings import cfg
+from kts.util.hashing import hash_list, hash_fold
+
+AnyFrame = Union[pd.DataFrame, KTSFrame]
+
+
+class PreviewDataFrame:
+    """Looks like a real DataFrame without exposing its data to the global namespace.
+    
+    Prevents memory leaks when returning a new DataFrame object.
+    To be clear, the leak is caused not by just returning a new dataframe, 
+    but by saving it to IPython variable _{cell_run_id} (_35).
+    Therefore, the provided example will work only in IPython, but not in regular python console.
+    
+    Used in @preview and some of the methods of FeatureSet.
+    
+    Example:
+    ```
+    big_df = pd.DataFrame(np.random.rand(1000000, 100), columns=range(100))
+
+    def ret_slice():
+        return big_df.loc[np.arange(100, 1000000, 2), [2, 3]]
+    ret_slice() # run 10-20 times -- memory leak (+10 mb each time)
+
+    def ret_slice_preview():
+        return PreviewDataFrame(big_df.loc[np.arange(100, 1000000, 2), [2, 3]])
+    ret_slice_preview() # no leak
+    ```
+    """
+    def __init__(self, dataframe):
+        self.repr_html = dataframe._repr_html_()
+        self.repr_plaintext = dataframe.__repr__()
+    
+    def _repr_html_(self):
+        """HTML repr used in notebooks."""
+        return self.repr_html
+    
+    def __repr__(self):
+        """Plaintext repr used in console."""
+        return self.repr_plaintext
 
 
 class FeatureSet:
-    """ """
-    def __init__(
-            self,
-            fc_before: Union[FeatureConstructor, List[FeatureConstructor], Tuple[FeatureConstructor]],
-            fc_after: Union[FeatureConstructor, List[FeatureConstructor], Tuple[FeatureConstructor]] = kts.core.base_constructors.empty_like,
-            df_input: Optional[pd.DataFrame] = None,
-            target_columns: Optional[Union[List[str], str]] = None,
-            auxiliary_columns: Optional[Union[List[str], str]] = None,
-            name: Optional[str] = None,
-            description: Optional[str] = None,
-            desc: Optional[str] = None,
-            encoders: Optional[Dict[str, Any]] = None,
-    ):
-        if type(fc_before) == list:
-            self.fc_before = kts.core.base_constructors.concat(fc_before)
-        elif type(fc_before) == tuple:
-            self.fc_before = kts.core.base_constructors.compose(fc_before)
-        else:
-            self.fc_before = fc_before
-        if type(fc_after) == list:
-            self.fc_after = kts.core.base_constructors.concat(fc_after)
-        elif type(fc_after) == tuple:
-            self.fc_after = kts.core.base_constructors.compose(fc_after)
-        else:
-            self.fc_after = fc_after
-        self.target_columns = target_columns
-        if isinstance(self.target_columns, str):
-            self.target_columns = [self.target_columns]
-        elif self.target_columns is None:
-            self.target_columns = []
-        self.auxiliary_columns = auxiliary_columns
-        if isinstance(self.auxiliary_columns, str):
-            self.auxiliary_columns = [self.auxiliary_columns]
-        elif self.auxiliary_columns is None:
-            self.auxiliary_columns = []
-        self.encoders = encoders if encoders is not None else dict()
-        if df_input is not None:
-            self.set_df(df_input)
-        self._first_name = name
-        self.__doc__ = None
-        if desc is not None and description is not None:
-            raise ValueError(
-                "desc is an alias of description. You can't use both")
-        if description is not None:
-            self.__doc__ = description
-        elif desc is not None:
-            self.__doc__ = desc
-        self.altsource = None
+    def __init__(self,
+                 before_split: List[FeatureConstructor],
+                 after_split: Optional[List[FeatureConstructor]] = None,
+                 # overfitted: Optional[List[FeatureConstructor]] = None, # TODO
+                 train_frame: AnyFrame = None,
+                 test_frame: AnyFrame = None,
+                 targets: Optional[Union[List[str], str]] = None,
+                 auxiliary: Optional[Union[List[str], str]] = None,
+                 description: Optional[str] = None):
+        self.before_split = before_split
+        self.after_split = after_split
+        if not bool(self.before_split):
+            self.before_split = []
+        if not bool(self.after_split):
+            self.after_split = []
+        # self.overfitted = overfitted
+        self.train_frame = frame_cache.save(train_frame)
+        if test_frame is not None:
+            self.test_frame = frame_cache.save(test_frame)
+        if isinstance(targets, str):
+            targets = [targets]
+        self.targets = targets
+        if isinstance(auxiliary, str):
+            auxiliary = [auxiliary]
+        self.auxiliary = auxiliary
+        self.description = description
 
-    def set_df(self, df_input):
-        """
+    def split(self, folds):
+        return CVFeatureSet(self, folds)
 
-        Args:
-          df_input:
-
-        Returns:
-
-        """
-        self.df_input = dataframe.DataFrame(df=df_input)
-        self.df_input.train = True
-        self.df_input.encoders = self.encoders
-        self.df = self.fc_before(self.df_input)
-
-    def __call__(self, df):
-        ktdf = dataframe.DataFrame(df=df)
-        ktdf.encoders = self.encoders
-        return kts.core.base_constructors.merge([self.fc_before(ktdf), self.fc_after(ktdf)])
-
-    def __getitem__(self, idx):
-        if isinstance(self.df_input, type(None)):
-            raise AttributeError("Input DataFrame is not defined")
-        return kts.core.base_constructors.merge([
-            self.df.iloc[idx],
-            self.fc_after(
-                dataframe.DataFrame(df=self.df_input.iloc[idx],
-                                    train=1)),  # BUG: should have .train=True?
-        ])  # made .train=1 only for preview purposes
-        # actually, FS[a:b] functionality is made only for debug
-        # why not write config.IS_PREVIEW_CALL = 1 then?
-
-    def empty_copy(self):
-        """ """
-        res = FeatureSet(
-            fc_before=self.fc_before,
-            fc_after=self.fc_after,
-            target_columns=self.target_columns,
-            auxiliary_columns=self.auxiliary_columns,
-            encoders=self.encoders,
-            name=self.__name__,
-            description=self.__doc__,
-        )
-        res.altsource = self.altsource
-        return res
-
-    def slice(self, idx_train, idx_test):
-        """
-
-        Args:
-          idx_train:
-          idx_test:
-
-        Returns:
-
-        """
-        return FeatureSlice(self, idx_train, idx_test)
+    def compute(self, frame=None, report=None):
+        if report is None:
+            report = ui.FeatureComputingReport(feature_list)
+        if frame is None:
+            frame = frame_cache.load(self.train_frame)
+        frame = KTSFrame(frame)
+        frame.__meta__['fold'] = '0000'
+        frame.__meta__['train'] = True
+        parallel_cache = [i for i in self.before_split if i.parallel and i.cache]
+        run_manager.run(parallel_cache, frame, remote=True)
+        run_manager.supervise(report)
+        not_parallel_cache = [i for i in self.before_split if not i.parallel and i.cache]
+        run_manager.run(not_parallel_cache, frame, remote=False)
+        run_manager.merge_scheduled()
 
     @property
-    def target(self):
-        """ """
-        if len(self.target_columns) > 0:
-            if set(self.target_columns) < set(self.df_input.columns):
-                return self.df_input[self.target_columns]
-            elif set(self.target_columns) < set(self.df.columns):
-                return self.df[self.target_columns]
-            else:
-                raise AttributeError("Target columns are neither given as input nor computed")
+    def target(self) -> Union[PreviewDataFrame, AnyFrame]:
+        res = frame_cache.load(self.train_frame, columns=self.targets)
+        if cfg.preview_mode:
+            return PreviewDataFrame(res)
         else:
-            raise AttributeError("Target columns are not defined.")
+            return res
 
     @property
-    def auxiliary(self):
-        """ """
-        if len(self.auxiliary_columns) > 0:
-            if set(self.auxiliary_columns) < set(self.df_input.columns):
-                return self.df_input[self.auxiliary_columns]
-            elif set(self.auxiliary_columns) < set(self.df.columns):
-                return self.df[self.auxiliary_columns]
-            else:
-                raise AttributeError("Auxiliary columns are neither given as input nor computed")
+    def aux(self) -> Union[PreviewDataFrame, AnyFrame]:
+        res = frame_cache.load(self.train_frame, columns=self.auxiliary)
+        if cfg.preview_mode:
+            return PreviewDataFrame(res)
         else:
-            raise AttributeError("Auxiliary columns are not defined.")
+            return res
 
-    @property
-    def aux(self):
-        """ """
-        return self.auxiliary
-
-    def __get_src(self, fc):
-        if fc.__name__ == "empty_like":
-            return "stl.empty_like"
-        if not isinstance(fc, FeatureConstructor):
-            return source_utils.get_source(fc)
-        if fc.stl:
-            return fc.source
-        else:
-            return fc.__name__
-
-    def _source(self, short=True):
-        """
-
-        Args:
-          short:  (Default value = True)
-
-        Returns:
-
-        """
-        fc_before_source = self.__get_src(self.fc_before)
-        fc_after_source = self.__get_src(self.fc_after)
-        if short:
-            fc_before_source = source_utils.shorten(fc_before_source)
-            fc_after_source = source_utils.shorten(fc_after_source)
-        prefix = "FeatureSet("
-        fs_source = (prefix + "fc_before=" + fc_before_source + ",\n" +
-                     " " * len(prefix) + "fc_after=" + fc_after_source +
-                     ",\n" + " " * len(prefix) + "target_columns=" +
-                     repr(self.target_columns) + ", auxiliary_columns=" +
-                     repr(self.auxiliary_columns) + ")")
-        return fs_source
+    def __getitem__(self, key) -> PreviewDataFrame:
+        raise NotImplemented
 
     @property
     def source(self):
-        """ """
-        return self._source(short=False)
-
-    def recover_name(self):
-        """ """
-        if self._first_name:
-            return self._first_name
-        ans = []
-        frame = inspect.currentframe()
-        tmp = {}
-        for i in range(7):
-            try:
-                tmp = {**tmp, **frame.f_globals}
-            except:
-                pass
-            try:
-                frame = frame.f_back
-            except:
-                pass
-
-        for k, var in tmp.items():
-            if isinstance(var, self.__class__):
-                if hash(self) == hash(var) and k[0] != "_":
-                    ans.append(k)
-        if len(ans) != 1:
-            print(f"The name cannot be uniquely defined. Possible options are: {ans}. "
-                  f"Choosing {ans[0]}. You can set the name manually via FeatureSet(name=...) or using .set_name(...)")
-        self._first_name = ans[0]
-        return self._first_name
+        return f"FeatureSet({pprint.pformat([i.name for i in self.before_split])},\n " \
+               f"{pprint.pformat([i.name for i in self.after_split])})"
 
     @property
-    def __name__(self):
-        return self.recover_name()
-
-    def set_name(self, name):
-        """
-
-        Args:
-          name:
-
-        Returns:
-
-        """
-        self._first_name = name
-
-    def __repr__(self):
-        if "altsource" in self.__dict__ and self.altsource is not None:
-            return self.altsource
-        else:
-            return self._source(short=True)
-
-    def select(self,
-               n_best,
-               experiment,
-               calculator=BuiltinImportance(),
-               mode="max"):
-        """
-
-        Args:
-          n_best:
-          experiment:
-          calculator:  (Default value = BuiltinImportance())
-          mode:  (Default value = 'max')
-
-        Returns:
-
-        """
-        good_features = list(
-            experiment.feature_importances(
-                importance_calculator=calculator).agg(mode).sort_values(
-                    ascending=False).head(n_best).index)
-        res = FeatureSet(
-            fc_before=self.fc_before + good_features,
-            fc_after=self.fc_after + good_features,
-            df_input=self.df_input,
-            target_columns=self.target_columns,
-            auxiliary_columns=self.auxiliary_columns,
-            encoders=self.encoders,
-            name=f"{self.__name__}_{calculator.short_name}_{n_best}",
-            description=
-            f"Select {n_best} best features from {self._first_name} using {calculator.__class__.__name__}",
-        )
-        res.altsource = (
-            self.__repr__() +
-            f".select({n_best}, lb['{experiment.identifier}'], {calculator.__repr__()})"
-        )
-        return res
-
-
-class FeatureSlice:
-    """ """
-    def __init__(self, featureset, slice, idx_test):
-        self.featureset = featureset
-        self.slice = slice
-        self.idx_test = idx_test
-        self.slice_id = cache_utils.get_hash_slice(slice)
-        self.first_level_encoders = self.featureset.encoders
-        self.second_level_encoders = {}
-        self.columns = None
-        # self.df_input = copy(self.featureset.df_input)
-
-    def __call__(self, df=None):
-        if isinstance(df, type(None)):
-            fsl_level_df = dataframe.DataFrame(
-                df=self.featureset.df_input.iloc[self.slice],
-                # ALERT: may face memory leak here
-                slice_id=self.slice_id,
-                train=True,
-                encoders=self.second_level_encoders,
-            )
-            result = kts.core.base_constructors.merge([
-                self.featureset.df.iloc[self.slice],
-                self.featureset.fc_after(fsl_level_df),
-            ])
-            self.columns = [
-                i for i in result.columns
-                if i not in self.featureset.target_columns
-                and i not in self.featureset.auxiliary_columns
-            ]
-            return result[self.columns]
-        elif (isinstance(df, slice) or isinstance(df, np.ndarray)
-              or isinstance(df, list)):
-            fsl_level_df = dataframe.DataFrame(
-                df=self.featureset.df_input.
-                iloc[df],  # ALERT: may face memory leak here
-                slice_id=self.slice_id,
-                train=False,
-                encoders=self.second_level_encoders,
-            )
-            result = kts.core.base_constructors.merge([
-                self.featureset.df.iloc[df],
-                self.featureset.fc_after(fsl_level_df)
-            ])
-            for column in set(self.columns) - set(result.columns):
-                result[column] = 0
-            return result[self.columns]
-        else:
-            fs_level_df = dataframe.DataFrame(
-                df=df, encoders=self.first_level_encoders)
-            fsl_level_df = dataframe.DataFrame(
-                df=df,
-                encoders=self.second_level_encoders,
-                slice_id=self.slice_id)
-            result = kts.core.base_constructors.merge([
-                self.featureset.fc_before(
-                    fs_level_df),  # uses FeatureSet-level encoders
-                self.featureset.fc_after(
-                    fsl_level_df),  # uses FeatureSlice-level encoders
-            ])
-            for column in set(self.columns) - set(result.columns):
-                result[column] = 0
-            return result[self.columns]
+    def features(self):
+        return self.before_split + self.after_split
 
     @property
-    def target(self):
-        """ """
-        return self.featureset.target.iloc[self.slice]
+    def feature_pool(self):
+        return ui.Pool([ui.Raw(i.html_collapsible()) for i in self.features])
+    
+    def _html_elements(self, include_features=True):
+        elements = [ui.Annotation('name'), ui.Field(self.name)]
+        if self.description is not None:
+            elements += [ui.Annotation('description'), ui.Field(self.description)]
+        if include_features:
+            elements += [ui.Annotation('features'), self.feature_pool]
+        elements += [ui.Annotation('source'), ui.Code(self.source)]
+        return elements
+    
+    @property
+    def html(self):
+        return ui.Column([ui.Title('feature set')] + self._html_elements()).html
+    
+    @property
+    def html_collapsible(self):
+        cssid = np.random.randint(1000000000)
+        elements = [ui.TitleWithCross('feature set', cssid)]
+        elements += self._html_elements(include_features=False)
+        return ui.CollapsibleColumn(elements, ui.ThumbnailField('feature set', cssid), cssid).html
 
-    def compress(self):
-        """ """
-        self.featureset = self.featureset.empty_copy()
+    @property
+    def name(self):
+        sources_before = [i.source for i in self.before_split]
+        sources_after = [i.source for i in self.after_split]
+        return f"FS{hash_list(sources_before, 2)}{hash_list(sources_after, 2)}"
+    
+
+
+class CVFeatureSet:
+    def __init__(self, feature_set: FeatureSet, folds: List[Tuple[Collection, Collection]]):
+        self.feature_set = feature_set
+        self.fold_ids = []
+        for idx_train, idx_valid in folds:
+            assert len(set(idx_train) & set(idx_valid)) == 0 or all(idx_train == idx_valid), \
+            "Train and valid sets should either not intersect or be equal"
+            self.fold_ids.append(hash_fold(idx_train, idx_valid))
+        self.folds = folds
+
+    def compute(self, frame: AnyFrame = None, report=None):
+        self.feature_set.compute()
+        if report is None:
+            report = ui.FeatureComputingReport(feature_list)
+        if frame is not None:
+            for i in range(self.n_folds):
+                fold = self.fold(i)
+                fold.compute(frame, parallel=True, cache=True, report=report)
+            for i in range(self.n_folds):
+                fold = self.fold(i)
+                fold.compute(frame, parallel=False, cache=True, report=report)
+            return
+        for i in range(self.n_folds):
+            fold = self.fold(i)
+            fold.compute(fold.train_frame, parallel=True, cache=True, report=True, train=True)
+        for i in range(self.n_folds):
+            fold = self.fold(i)
+            fold.compute(fold.valid_frame, parallel=True, cache=True, report=True, train=False)
+        for i in range(self.n_folds):
+            fold = self.fold(i)
+            fold.compute(fold.train_frame, parallel=False, cache=True, report=True, train=True)
+        for i in range(self.n_folds):
+            fold = self.fold(i)
+            fold.compute(fold.valid_frame, parallel=False, cache=True, report=True, train=False)
+
+    # def compute_parallel(self, frame, report):
+    #     parallel_cache = [i for i in self.after_split if i.parallel and i.cache]
+    #     run_manager.run(parallel_cache, frame, remote=True)
+    #     run_manager.supervise(report)
+
+    # def compute_not_parallel(self, frame, report):
+    #     not_parallel_cache = [i for i in self.after_split if not i.parallel and i.cache]
+    #     run_manager.run(not_parallel_cache, frame, remote=False)
+
+    @property
+    def computed(self) -> bool:
+        raise NotImplemented
+
+    @property
+    def train_frame(self):
+        return self.feature_set.train_frame
+
+    @property
+    def n_folds(self):
+        return len(self.folds)
+    
+    def fold(self, idx) -> Fold:
+        return Fold(self, idx)
+
+
+class Fold:
+    def __init__(self, cv_feature_set: CVFeatureSet, fold_idx: int):
+        self.cv_feature_set = cv_feature_set
+        self.fold_idx = fold_idx
+
+    def compute(self, frame, report=None, parallel=None, cache=None, before=False, train=False):
+        frame = KTSFrame(frame)
+        frame.__meta__['fold'] = self.fold_id
+        frame.__meta__['train'] = train
+        if before:
+            feature_constructors = self.before_split
+        else:
+            feature_constructors = self.after_split
+        queue = [i for i in feature_constructors if i.parallel == parallel and i.cache == cache]
+        return run_manager.run(queue, frame, remote=parallel, ret=(not cache), report=report)
+        
+    @property
+    def train(self) -> np.ndarray:
+        self.cv_feature_set.compute()
+        frames = dict()
+        frames.update(self.aliases_before(self.train_frame, train=True))
+        frames.update(self.aliases_after(self.train_frame, train=True))
+        frames.update(self.compute(self.train_frame, report=self.report, parallel=True, cache=False, before=True, train=True))
+        frames.update(self.compute(self.train_frame, report=self.report, parallel=True, cache=False, before=False, train=True))
+        frames.update(self.compute(self.train_frame, report=self.report, parallel=False, cache=False, before=True, train=True))
+        frames.update(self.compute(self.train_frame, report=self.report, parallel=False, cache=False, before=False, train=True))
+        frames_sorted = [frames[fc.name] for fc in self.before_split + self.after_split]
+        return frame_cache.concat(frames_sorted)
+
+    @property
+    def valid(self) -> np.ndarray:
+        self.cv_feature_set.compute()
+        frames = dict()
+        frames.update(self.aliases_before(self.valid_frame))
+        frames.update(self.aliases_after(self.valid_frame))
+        frames.update(self.compute(self.valid_frame, report=self.report, parallel=True, cache=False, before=True))
+        frames.update(self.compute(self.valid_frame, report=self.report, parallel=True, cache=False, before=False))
+        frames.update(self.compute(self.valid_frame, report=self.report, parallel=False, cache=False, before=True))
+        frames.update(self.compute(self.valid_frame, report=self.report, parallel=False, cache=False, before=False))
+        frames_sorted = [frames[fc.name] for fc in self.before_split + self.after_split]
+        return frame_cache.concat(frames_sorted)
+
+    def __call__(self, frame: AnyFrame) -> np.ndarray:
+        self.cv_feature_set.compute()
+        frames = dict()
+        frames.update(self.aliases_before(frame))
+        frames.update(self.aliases_after(frame))
+        frames.update(self.compute(frame, report=self.report, parallel=True, cache=False, before=True))
+        frames.update(self.compute(frame, report=self.report, parallel=True, cache=False, before=False))
+        frames.update(self.compute(frame, report=self.report, parallel=False, cache=False, before=True))
+        frames.update(self.compute(frame, report=self.report, parallel=False, cache=False, before=False))
+        frames_sorted = [frames[fc.name] for fc in self.before_split + self.after_split]
+        return frame_cache.concat(frames_sorted)
+
+    @property
+    def train_target(self) -> np.ndarray:
+        self.cv_feature_set.compute()
+        return self.alias_before(train=True) & self.targets
+
+    @property
+    def valid_target(self) -> np.ndarray:
+        self.cv_feature_set.compute()
+        return self.alias_before(train=False) & self.targets
+
+    def aliases_before(self, frame: AnyFrame, train=False):
+        frame = KTSFrame(frame)
+        frame.__meta__['fold'] = self.fold_id
+        frame.__meta__['train'] = train
+        return [i.get_alias(frame) for i in self.before_split if i.cache]
+
+    def alias_before(self, train=False):
+        frame = self.train_frame if train else self.valid_frame
+        aliases = self.aliases_before(frame, train=train)
+        res_alias = aliases[0]
+        for alias in aliases[1:]:
+            res_alias = res_alias.join(alias)
+        return res_alias
+
+    def aliases_after(self, frame: AnyFrame, train=False):
+        frame = KTSFrame(frame)
+        frame.__meta__['fold'] = self.fold_id
+        frame.__meta__['train'] = train
+        return [i.get_alias(frame) for i in self.after_split if i.cache]
+    
+    @property
+    def before_split(self):
+        return self.feature_set.before_split
+
+    @property
+    def after_split(self):
+        return self.feature_set.after_split
+
+    @property
+    def feature_set(self):
+        return self.cv_feature_set.feature_set
+    
+    @property
+    def train_frame(self):
+        name = self.feature_set.train_frame
+        return frame_cache.load(name, index=self.idx_train)
+
+    @property
+    def valid_frame(self):
+        name = self.feature_set.train_frame
+        return frame_cache.load(name, index=self.idx_train)
+
+    @property
+    def idx_train(self):
+        return self.cv_feature_set.folds[self.fold_idx][0]
+
+    @property
+    def idx_valid(self):
+        return self.cv_feature_set.folds[self.fold_idx][1]
+
+    @property
+    def fold_id(self):
+        return self.cv_feature_set.fold_ids[self.fold_idx]
+    
+    @property
+    def report(self):
+        return self.cv_feature_set.report if 'report' in dir(self.cv_feature_set) else None
+
+    @property
+    def targets(self):
+        return self.feature_set.targets
