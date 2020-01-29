@@ -1,94 +1,69 @@
-import pandas as pd
-from tqdm import tqdm
+from kts.core import ui
+from kts.core.cache import CachedMapping, CachedList
+from kts.validation.experiment import Experiment
 
-from kts.util import validation_utils
-from kts.util.misc import captcha
-from kts.config import GOAL, LB_DF_NAME
-from kts.core.backend.memory import cache
+experiments = CachedMapping('experiments')
 
 
-class Leaderboard:
-    """ """
-    def __init__(self):
-        if LB_DF_NAME in cache.cached_dfs():
-            self._df = cache.load_df(LB_DF_NAME)
-        else:
-            self._df = pd.DataFrame()
-            cache.cache_df(self._df, LB_DF_NAME)
-
-    def register(self, experiment):
-        """
-
-        Args:
-          experiment: 
-
-        Returns:
-
-        """
-        if experiment.__name__ + "_exp" in cache.cached_objs():
-            return
-        cache.cache_obj(experiment, experiment.__name__ + "_exp")
-        self.add_row(experiment.as_df())
-
-    def reload(self):
-        """ """
-        self._df = cache.load_df(LB_DF_NAME)
-
-    def add_row(self, row):
-        """
-
-        Args:
-          row: 
-
-        Returns:
-
-        """
-        self.reload()
-        self._df = self._df.append(row)
-        self._df = self._df.sort_values("Score",
-                                        ascending=(GOAL == "MINIMIZE"))
-        cache.remove_df(LB_DF_NAME)
-        cache.cache_df(self._df, LB_DF_NAME)
-
-    def __getattr__(self, item):
-        return getattr(self._df, item)
+class Leaderboard(ui.HTMLRepr):
+    def __init__(self, name='main'):
+        self.name = name
+        self.aliases = CachedList(f'lb_{name}')
 
     def __getitem__(self, key):
-        if validation_utils.is_identifier(key):
-            return validation_utils.get_experiment(key)
-        elif validation_utils.is_list_of_identifiers(key):
-            return [validation_utils.get_experiment(i) for i in key]
+        if isinstance(key, str):
+            return experiments[key]
+        elif isinstance(key, int):
+            return experiments[self.aliases[key].id]
+        elif isinstance(key, slice):
+            return [experiments[i.id] for i in self.aliases[key]]
         else:
-            res = self._df[key]
-        if "style" in dir(res):
-            return res.style
-        return res
+            raise KeyError
 
-    def _repr_html_(self):
-        """ """
-        self.reload()
-        return self._df.style._repr_html_()
+    def __getattr__(self, key):
+        return experiments[key]
+
+    def __dir__(self):
+        return list(experiments.keys())
+
+    def __contains__(self, key):
+        return key in experiments
+
+    def __len__(self):
+        return len(self.aliases)
+    
+    def register(self, experiment):
+        assert experiment.id not in experiments
+        experiments[experiment.id] = experiment
+        self.aliases[experiment.id] = experiment.alias
 
     @property
-    def df(self):
-        """ """
-        return self._df.copy()
-
-    def refresh(self):
-        """ """
-        names = [name for name in cache.cached_objs() if name.endswith("_exp")]
-        print(
-            f"You want to refresh existing leaderboard."
-            f" It will require loading ALL ({len(names)}) existing experiments "
-            f"and may take time. Do you want to continue?")
-        if not captcha():
-            return
-        self._df = pd.DataFrame()
-        cache.remove_df(LB_DF_NAME)
-        cache.cache_df(self._df, LB_DF_NAME)
-        for name in tqdm(names):
-            self.add_row(cache.load_obj(name).as_df())
-        print("Done")
+    def sorted_aliases(self):
+        res = list(self.aliases)
+        return sorted(res, key=lambda e: e.score)
+    
+    @property
+    def html(self):
+        return ui.Leaderboard(self.sorted_aliases).html
+    
 
 
-leaderboard = Leaderboard()
+class LeaderboardList:
+    def __init__(self):
+        self.leaderboards = CachedMapping('leaderboards')
+
+    def __getitem__(self, key):
+        return self.leaderboards[key]
+
+    def __getattr__(self, key):
+        return self.leaderboards[key]
+
+    def __dir__(self):
+        return list(self.leaderboards.keys())
+
+    def register(self, experiment: Experiment, leaderboard_name: str):
+        if leaderboard_name not in self.leaderboards:
+            self.leaderboards[leaderboard_name] = Leaderboard(leaderboard_name)
+        self.leaderboards[leaderboard_name].register(experiment)
+
+leaderboard_list = LeaderboardList()
