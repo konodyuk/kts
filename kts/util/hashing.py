@@ -1,6 +1,9 @@
 import hashlib
+import json
 from string import ascii_uppercase as alpha
+from typing import List, Union
 
+import numpy as np
 import pandas as pd
 import xxhash
 
@@ -35,14 +38,16 @@ def hash_list(a: List[Union[int, str]], l=None, base26=True):
     hashed_list = [hash_str(i) for i in a]
     return hash_str('_'.join(hashed_list), l, base26)
 
+
 def hash_fold(idx_train, idx_valid):
     h = xxhash.xxh64()
     h.update(idx_train)
-    h.update(idx_test)
+    h.update(idx_valid)
     return h.hexdigest() 
 
 
 hash_frame_cache = dict()
+
 
 def hash_frame(df):
     if id(df) in hash_frame_cache:
