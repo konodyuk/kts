@@ -134,7 +134,7 @@ class KTSFrame(pd.DataFrame):
     def _constructor(self):
         return self.__class__
 
-    def __hash__(self):
+    def hash(self):
         if '__memoized_hash__' not in dir(self):
             self.__memoized_hash__ = hash_frame(self)
         return self.__memoized_hash__

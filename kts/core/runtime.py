@@ -19,8 +19,11 @@ from kts.core.frame import KTSFrame
 from kts.core.ui import *
 
 
+ray.init(ignore_reinit_error=True)  # needs fixing
+
+
 def safe_put(kf: KTSFrame):
-    h = hash(kf)
+    h = kf.hash()
     if ray.get(address_manager.has.remote(h)):
         oid = ray.get(address_manager.get.remote(h))
     else:
@@ -222,7 +225,7 @@ class AddressManager:
     def timestamp(self, key):
         return self.timestamps[key]
 
-address_manager = AddressManager()
+address_manager = AddressManager.remote()
 
 
 def filter_signals(signals: List[Tuple[Any, rs.Signal]], signal_type: type):
@@ -269,7 +272,7 @@ class RunManager:
         results = dict()
         for feature_constructor in feature_constructors:
             if not remote:
-                pbar.run_id = RunID(feature_constructor.name, frame.scope, hash(frame))
+                pbar.run_id = RunID(feature_constructor.name, frame.scope, frame.hash())
             results[feature_constructor.name] = feature_constructor(frame, ret=ret)
         if ret:
             return results
@@ -431,7 +434,7 @@ class BaseFeatureConstructor(ABC):
         self.worker = worker
 
     def local_worker(self, *args, kf: KTSFrame):
-        run_id = RunID(kf._scope, kf._fold, hash(kf))
+        run_id = RunID(kf._scope, kf._fold, kf.hash())
         had_state = bool(kf.state)
         stats = Stats(kf)
         if kf._remote:
@@ -448,13 +451,13 @@ class BaseFeatureConstructor(ABC):
         return res_kf, res_state, stats.data
 
     def schedule(self, *args, scope: str, kf: KTSFrame) -> Tuple[RunID, Union[ObjectID, AnyFrame], Union[ObjectID, Dict], Union[ObjectID, Dict]]:
-        run_id = RunID(scope, kf._fold, hash(kf))
+        run_id = RunID(scope, kf._fold, kf.hash())
         with self.set_scope(kf, scope):
             if self.parallel:
                 self.setup_worker()
                 meta = kf.__meta__
                 oid = safe_put(kf)
-                res_df, res_state, stats = self.worker(*args, df=oid, meta=meta)
+                res_df, res_state, stats = self.worker.remote(*args, df=oid, meta=meta)
             else:                
                 res_df, res_state, stats = self.local_worker(*args, kf=kf)
         return run_id, res_df, res_state, stats
@@ -475,7 +478,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         result_dfs = dict()
         for args in self.map(kf):
             scope = self.get_scope(*args)
-            run_id = RunID(scope, kf.__meta__['fold'], hash(kf))
+            run_id = RunID(scope, kf.__meta__['fold'], kf.hash())
             res_df = self.request_resource(run_id, kf)
             if res_df is not None:
                 result_dfs[args] = res_df
@@ -492,7 +495,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         return scheduled_dfs, result_dfs
 
     def assemble_futures(self, scheduled_dfs: Dict[Tuple, ObjectID], result_dfs: Dict[Tuple, AnyFrame], kf: KTSFrame) -> KTSFrame:
-        for k, v in scheduled_dfs:
+        for k, v in scheduled_dfs.items():
             result_dfs[k] = ray.get(v)
         res_list = list()
         for args in self.map(kf):
@@ -528,7 +531,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         aliases = list()
         for args in self.map(kf):
             scope = self.get_scope(*args)
-            run_id = RunID(scope, kf.__meta__['fold'], hash(kf))
+            run_id = RunID(scope, kf.__meta__['fold'], kf.hash())
             aliases.append(fc.load_run(run_id))
         res_alias = aliases[0]
         for alias in aliases[1:]:
@@ -549,11 +552,11 @@ class FeatureConstructor(ParallelFeatureConstructor):
     parallel = True
     cache = True
 
-    def __init__(self, func, dependencies=None):
+    def __init__(self, func):
         self.func = func
         self.name = func.__name__
         self.source = inspect.getsource(func)
-        self.dependencies = dependencies if dependencies is not None else dict()
+        self.dependencies = self.extract_dependencies(func)
 
     def compute(self, kf: KTSFrame):
         kwargs = {key: self.request_resource(value, kf) for key, value in self.dependencies}
@@ -568,9 +571,18 @@ class FeatureConstructor(ParallelFeatureConstructor):
         return result
 
     def get_alias(self, kf: KTSFrame):
-        run_id = RunID(self.name, kf.fold, hash(kf))
+        run_id = RunID(self.name, kf.fold, kf.hash())
         rm = kf.__meta__['run_manager']
         return rm.get_run(run_id)
+
+    def extract_dependencies(self, func):
+        dependencies = dict()
+        for k, v in inspect.signature(func).parameters.items():
+            if isinstance(v.default, str) or isinstance(v.default, int) or isinstance(v.default, bool):
+                dependencies[k] = v.default
+            elif v.default != inspect._empty:
+                raise UserWarning(f"Unknown argument: {k}={repr(v.default)}.")
+        return dependencies
 
 
 class GenericFeatureConstructor:
