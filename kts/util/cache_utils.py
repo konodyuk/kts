@@ -1,14 +1,11 @@
-import hashlib
 import os
 from glob import glob
 
 import dill
 import feather
-import numpy as np
 import pandas as pd
 
 from kts.util.misc import captcha
-from kts import config
 
 
 def clear_storage():
@@ -22,51 +19,6 @@ def clear_storage():
     for path in glob(config.STORAGE_PATH + "*_*"):
         print(f"deleting {path}")
         os.remove(path)
-
-
-def get_hash_df(df):
-    """
-
-    Args:
-      df: 
-
-    Returns:
-
-    """
-    idx_hash = hashlib.sha256(pd.util.hash_pandas_object(
-        df.index).values).hexdigest()
-
-    sorted_cols = df.columns.sort_values()
-    col_hash = hashlib.sha256(
-        pd.util.hash_pandas_object(sorted_cols).values).hexdigest()
-    try:
-        hash_first, hash_last = pd.util.hash_pandas_object(
-            df.iloc[[0, -1]][sorted_cols]).values
-    except:
-        hash_first = hashlib.sha256(
-            df.iloc[[0]][sorted_cols].to_csv().encode("utf-8")).hexdigest()
-        hash_last = hashlib.sha256(
-            df.iloc[[-1]][sorted_cols].to_csv().encode("utf-8")).hexdigest()
-
-    return hashlib.sha256(np.array([idx_hash, col_hash, hash_first,
-                                    hash_last])).hexdigest()
-
-    # return hashlib.sha256(pd.util.hash_pandas_object(df, index=True).values).hexdigest()
-
-
-def get_hash_slice(idxs):
-    """
-
-    Args:
-      idxs: 
-
-    Returns:
-
-    """
-    if isinstance(idxs, slice):
-        idxs = (-1337, idxs.start, idxs.stop, idxs.step)
-    return hex(hash(frozenset(idxs)))[2:]
-
 
 def get_df_volume(df):
     """
