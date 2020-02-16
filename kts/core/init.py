@@ -3,7 +3,7 @@ from pathlib import Path
 
 from kts.core import ui
 from kts.settings import cfg
-
+from kts.core.runtime import ray, create_address_manager, get_address_manager
 
 def find_scope():
     frame = inspect.currentframe()
@@ -25,8 +25,14 @@ def find_config():
         return None
 
 def init():
+    global address_manager
     cfg.scope = find_scope()
     config_path = find_config()
     if config_path is not None:
         cfg.load(config_path)
     ui.init()
+    ray.init(ignore_reinit_error=True)
+    try:
+        address_manager = get_address_manager()
+    except:
+        address_manager = create_address_manager()
