@@ -1,5 +1,7 @@
+from collections import defaultdict
 from typing import Collection, List, Dict, Union
 
+import numpy as np
 import pygments.token as pt
 from IPython.display import display
 from pygments import highlight
