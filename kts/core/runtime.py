@@ -12,17 +12,18 @@ import forge
 import pandas as pd
 import ray
 import ray.experimental.signal as rs
+from ray.experimental import get_actor
 from ray import ObjectID
 
 from kts.core.cache import frame_cache, CachedMapping, RunID, AnyFrame
 from kts.core.frame import KTSFrame
 from kts.core.ui import *
+from kts.util.debug import debug, exc
 
-
-ray.init(ignore_reinit_error=True)  # needs fixing
 
 
 def safe_put(kf: KTSFrame):
+    address_manager = get_address_manager()
     h = kf.hash()
     if ray.get(address_manager.has.remote(h)):
         oid = ray.get(address_manager.get.remote(h))
@@ -30,6 +31,12 @@ def safe_put(kf: KTSFrame):
         oid = ray.put(kf)
         address_manager.put.remote((h, oid))
     return oid
+
+def get_address_manager():
+    return get_actor('AddressManager')
+
+def create_address_manager():
+    return AddressManager.options(name="AddressManager").remote()
 
 class Stats:
     def __init__(self, df):
@@ -225,7 +232,8 @@ class AddressManager:
     def timestamp(self, key):
         return self.timestamps[key]
 
-address_manager = AddressManager.remote()
+    def ls(self):
+        return list(self.data.keys())
 
 
 def filter_signals(signals: List[Tuple[Any, rs.Signal]], signal_type: type):
@@ -278,11 +286,11 @@ class RunManager:
             return results
 
     def completed(self) -> bool:
-        return ray.wait(self.futures, num_returns=len(self.scheduled), timeout=0)[1] == 0
+        return len(ray.wait(self.futures, num_returns=len(self.scheduled), timeout=0)[1]) == 0
 
     @property
     def futures(self):
-        return [i.res_df for i in self.scheduled]
+        return [i.res_df for i in self.scheduled.values()]
 
     def find_run_id(self, oid):
         for k, v in self.scheduled:
@@ -294,15 +302,16 @@ class RunManager:
 
     def supervise(self, report=None):
         while not self.completed():
-            signals = rs.receive(self.futures)
+            signals = rs.receive(self.futures, timeout=0)
             syncs = filter_signals(signals, Sync)
             for sync in syncs:
                 self.sync(**sync.get_contents())
             resource_requests = filter_signals(signals, ResourceRequest)
             for rr in resource_requests:
-                key = ray.get(rr.get_contents())
-                if ray.get(address_manager.has(key)):
-                    if ray.get(address_manager.isnone(key)):
+                key = rr.get_contents()
+                address_manager = get_address_manager()
+                if ray.get(address_manager.has.remote(key)):
+                    if ray.get(address_manager.isnone.remote(key)):
                         self.put_resource(key)
                 else:
                     self.put_resource(key)
@@ -313,13 +322,16 @@ class RunManager:
             for rid, tc in text_chunks.items():
                 report.update_text(rid, **tc.get_contents())
 
+            time.sleep(0.1)
+
     def put_resource(self, key: Union[RunID, Tuple[str, str], str]):
         resource = self.get_resource(key)
+        address_manager = get_address_manager()
         if isinstance(resource, ObjectID):
-            address_manager.put((key, resource))
-        if resource is not None:
-            address = ray.put(resource)
-            address_manager.put((key, address))
+            address_manager.put.remote((key, resource))
+        # if resource is not None:
+        address = ray.put(resource)
+        address_manager.put.remote((key, address))
 
     def get_resource(self, key: Union[RunID, Tuple[str, str], str]) -> Any:
         if isinstance(key, RunID):
@@ -359,7 +371,20 @@ class RunManager:
 
 run_manager = RunManager()
 
-
+@ray.remote(num_return_vals=3)
+def worker(self, *args, df: pd.DataFrame, meta: Dict):
+    kf = KTSFrame(df, meta=meta)
+    kf.__meta__['remote'] = True
+    had_state = bool(kf.state)
+    stats = Stats(df)
+    with stats:
+        # with self.remote_io():
+        res_kf = self.compute(*args, kf)
+    if had_state:
+        res_state = None
+    else:
+        res_state = kf._state
+    return res_kf, res_state, stats.data
 
 class BaseFeatureConstructor(ABC):
     parallel = False
@@ -370,7 +395,8 @@ class BaseFeatureConstructor(ABC):
         if df._remote:
             request_time = time.time()
             rs.send(ResourceRequest(key))
-            while not ray.get(address_manager.has.remote(key)) or ray.get(address_manager.timestamp.remote(key)) < request_time:
+            address_manager = get_address_manager()
+            while not ray.get(address_manager.has.remote(key)): # TODO uncomment or ray.get(address_manager.timestamp.remote(key)) < request_time:
                 time.sleep(0.01)
             address = ray.get(address_manager.get.remote(key))
             resource = ray.get(address)
@@ -383,8 +409,9 @@ class BaseFeatureConstructor(ABC):
             return resource
 
     def sync(self, run_id, res_df, res_state, stats, df):
-        if run_id.fold == "preview":
-            return
+        # TODO remove
+        # if run_id.fold == "preview":
+        #     return
         if not self.cache:
             res_df = None
         if df.__meta__['remote']:
@@ -412,26 +439,26 @@ class BaseFeatureConstructor(ABC):
         yield
         kf.__meta__['scope'] = tmp
 
-    def setup_worker(self):
-        if self.worker is not None:
-            return
+    # def setup_worker(self):
+    #     if self.worker is not None:
+    #         return
 
-        @ray.remote(num_return_vals=3)
-        def worker(*args, df: pd.DataFrame, meta: Dict):
-            kf = KTSFrame(df, meta=meta)
-            kf.__meta__['remote'] = True
-            had_state = bool(kf.state)
-            stats = Stats(df)
-            with stats:
-                with self.remote_io():
-                    res_kf = self.compute(*args, kf)
-            if had_state:
-                res_state = None
-            else:
-                res_state = res_kf._state
-            return res_kf, res_state, stats.data
+    #     @ray.remote(num_return_vals=3)
+    #     def worker(*args, df: pd.DataFrame, meta: Dict):
+    #         kf = KTSFrame(df, meta=meta)
+    #         kf.__meta__['remote'] = True
+    #         had_state = bool(kf.state)
+    #         stats = Stats(df)
+    #         with stats:
+    #             with self.remote_io():
+    #                 res_kf = self.compute(*args, kf)
+    #         if had_state:
+    #             res_state = None
+    #         else:
+    #             res_state = res_kf._state
+    #         return res_kf, res_state, stats.data
 
-        self.worker = worker
+    #     self.worker = worker
 
     def local_worker(self, *args, kf: KTSFrame):
         run_id = RunID(kf._scope, kf._fold, kf.hash())
@@ -439,25 +466,25 @@ class BaseFeatureConstructor(ABC):
         stats = Stats(kf)
         if kf._remote:
             io = self.remote_io()
-        else:
-            io = self.local_io(kf.__meta__['report'], run_id)
+        # else:
+        #     io = self.local_io(kf.__meta__['report'], run_id)
         with stats:
-            with io:
-                res_kf = self.compute(*args, kf)
+            # with io:
+            res_kf = self.compute(*args, kf)
         if had_state:
             res_state = None
         else:
-            res_state = res_kf._state
+            res_state = kf._state
         return res_kf, res_state, stats.data
 
     def schedule(self, *args, scope: str, kf: KTSFrame) -> Tuple[RunID, Union[ObjectID, AnyFrame], Union[ObjectID, Dict], Union[ObjectID, Dict]]:
         run_id = RunID(scope, kf._fold, kf.hash())
         with self.set_scope(kf, scope):
             if self.parallel:
-                self.setup_worker()
+                # self.setup_worker()
                 meta = kf.__meta__
                 oid = safe_put(kf)
-                res_df, res_state, stats = self.worker.remote(*args, df=oid, meta=meta)
+                res_df, res_state, stats = worker.remote(self, *args, df=oid, meta=meta)
             else:                
                 res_df, res_state, stats = self.local_worker(*args, kf=kf)
         return run_id, res_df, res_state, stats
@@ -485,13 +512,16 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
                 continue
             state = self.request_resource(run_id.state_id, kf)
             kf_arg = kf.clear_states()
-            kf_arg.__meta__['remote'] = True
+            # kf_arg.__meta__['remote'] = True
             if state is not None:
                 kf_arg.set_scope(scope)
-                kf_arg._state = state
+                kf_arg.__states__[kf_arg._state_key] = state
             run_id, res_df, res_state, stats = self.schedule(*args, scope=scope, kf=kf_arg)
             self.sync(run_id, res_df, res_state, stats, kf)
-            scheduled_dfs[args] = res_df
+            if self.parallel:
+                scheduled_dfs[args] = res_df
+            else:
+                result_dfs[args] = res_df
         return scheduled_dfs, result_dfs
 
     def assemble_futures(self, scheduled_dfs: Dict[Tuple, ObjectID], result_dfs: Dict[Tuple, AnyFrame], kf: KTSFrame) -> KTSFrame:
@@ -501,14 +531,17 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         for args in self.map(kf):
             res_list.append(result_dfs[args])
         res = self.reduce(res_list)
-        res = KTSFrame(res)
-        res.__meta__ = kf.__meta__
+        # res = KTSFrame(res)
+        # res.__meta__ = kf.__meta__
         return res
 
     def __call__(self, kf: KTSFrame, ret=True) -> Optional[KTSFrame]:
         scheduled_dfs, result_dfs = self.get_futures(kf)
         if not ret:
             return
+        if 'run_manager' in kf.__meta__:
+            rm = kf.__meta__['run_manager']
+            rm.supervise()
         self.wait(scheduled_dfs.values())
         res = self.assemble_futures(scheduled_dfs, result_dfs, kf)
         return res
@@ -542,7 +575,7 @@ class InlineFeatureConstructor(BaseFeatureConstructor):
     parallel = False
     cache = False
 
-    def __call__(self, kf: KTSFrame, ret=False):
+    def __call__(self, kf: KTSFrame, ret=True):
         return self.compute(kf, ret=ret)
 
     def get_alias(self, kf: KTSFrame):
@@ -561,7 +594,9 @@ class FeatureConstructor(ParallelFeatureConstructor):
     def compute(self, kf: KTSFrame):
         kwargs = {key: self.request_resource(value, kf) for key, value in self.dependencies}
         result = self.func(kf, **kwargs)
-        if '__columns' in kf._state and result.columns != kf._state['__columns']:
+        if (not kf.train and '__columns' in kf._state 
+            and not (len(result.columns) == len(kf._state['__columns']) 
+                     and all(result.columns == kf._state['__columns']))):
             fixed_columns = kf._state['__columns']
             for col in set(fixed_columns) - set(result.columns):
                 result[col] = None
@@ -604,7 +639,7 @@ class GenericFeatureConstructor:
             instance_kwargs[k] = v
         res = FeatureConstructor(self.modify(self.func, instance_kwargs))
         res.name = f"{self.name}_" + "_".join(map(str, instance_kwargs.values()))
-        res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs)})"
+        res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
         res.parallel = self.parallel
         res.cache = self.cache
         return res
