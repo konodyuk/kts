@@ -1,5 +1,7 @@
 from time import strftime, localtime
 
+import numpy as np
+
 
 def format_value(value, time=False):
     if value is None:
