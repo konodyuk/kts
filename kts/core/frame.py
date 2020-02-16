@@ -118,7 +118,7 @@ class KTSFrame(pd.DataFrame):
         new = self.__class__(self, self._default_meta)
         for key in new.__meta__:
             new.__meta__[key] = self.__meta__[key]
-        new.__meta__['states'] = defaultdict()
+        new.__meta__['states'] = defaultdict(dict)
         return new
 
     # Commented out in order to keep kf.state['__columns'] = ... safe.
