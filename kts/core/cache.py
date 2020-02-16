@@ -303,6 +303,12 @@ class RunID:
     def __hash__(self):
         return hash(self.get_alias_name())
 
+    def __str__(self):
+        return f"RunID({repr(self.function_name)}, {repr(self.fold)}, {repr(self.input_frame)})"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class IndexBlock:
     def __init__(self, index_name: str, alias_names: List[str], name: str):
