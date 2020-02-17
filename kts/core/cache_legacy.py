@@ -1,18 +1,18 @@
-from collections import MutableMapping, MutableSequence
+from collections import OrderedDict
 from collections import OrderedDict
 from copy import copy
 from hashlib import sha256
 from itertools import chain
-from typing import List, Union, Dict, Callable, Set, Optional, Tuple, Any, Collection
+from typing import List, Union, Dict, Callable, Set, Optional, Collection
 
 import pandas as pd
 
 from kts.core.frame import KTSFrame
+from kts.core.run_id import RunID
+from kts.core.types import AnyFrame
 from kts.util.hashing import hash_frame
 
-AnyFrame = Union[pd.DataFrame, KTSFrame]
-
-SPLITTER = '__KTS__'
+SPLITTER = "__KTS__"
 
 
 def hash_index(index):
@@ -52,6 +52,9 @@ class ObjectCache:
 obj_cache = ObjectCache()
 
 
+from kts.core.containers import CachedMapping
+
+
 class BaseFrameCache:
     """Should also synchronize on-disk and in-memory copies of objects."""
 
@@ -68,84 +71,6 @@ class BaseFrameCache:
         return name in self.memory
 
 base_frame_cache = BaseFrameCache()
-
-
-class CachedMapping(MutableMapping):
-    def __init__(self, name):
-        self.name = name
-
-    def __create_name__(self, key):
-        return f"M_{self.name}{SPLITTER}{key}"
-
-    def __from_name__(self, name):
-        return name[len(self.__create_name__('')):]
-
-    def __len__(self):
-        return len(self.__keys__())
-
-    def __getitem__(self, key: str):
-        return obj_cache.load(self.__create_name__(key))
-
-    def __setitem__(self, key: str, value: Any):
-        obj_cache.save(value, self.__create_name__(key))
-
-    def __delitem__(self, key: str):
-        obj_cache.remove(self.__create_name__(key))
-
-    def __keys__(self):
-        return [self.__from_name__(i) for i in obj_cache.ls() if i.startswith(self.__create_name__(''))]
-
-    def __iter__(self):
-        return self.__keys__().__iter__()
-
-    def __repr__(self):
-        return "{\n\t" + '\n\t'.join([f"'{key}': {value}" for key, value in self.items()]) + '\n}'
-
-
-class CachedList(MutableSequence):
-    def __init__(self, name):
-        self.name = name
-        self.cm = CachedMapping(f"L_{self.name}")
-
-    @property
-    def idx2key(self):
-        if "idx2key" not in self.cm:
-            self.cm["idx2key"] = list()
-        return self.cm["idx2key"]
-
-    @idx2key.setter
-    def idx2key(self, value):
-        self.cm["idx2key"] = value
-
-    def __len__(self):
-        return len(self.cm) - 1
-
-    def __setitem__(self, key, value):
-        cm_key = self.idx2key[key]
-        self.cm[cm_key] = value
-
-    def __getitem__(self, key):
-        cm_key = self.idx2key[key]
-        return self.cm[cm_key]
-
-    def __new_key__(self):
-        i = 0
-        while i in self.cm:
-            i += 1
-        return i
-
-    def insert(self, key, value):
-        cm_key = self.__new_key__()
-        self.cm[cm_key] = value
-        self.idx2key.insert(key, cm_key)
-
-    def __delitem__(self, key):
-        cm_key = self.idx2key[key]
-        del self.cm[cm_key]
-        del self.idx2key[key]
-
-    def __repr__(self):
-        return '[' + ", ".join([str(i) for i in self]) + ']'
 
 
 class DataFrameAlias:
@@ -261,53 +186,6 @@ class DataFrameAlias:
 
     def __add__(self, other: 'DataFrameAlias') -> 'DataFrameAlias':
         return self.join(other)
-
-
-class RunID:
-    def __init__(self, function_name: str, fold: str, input_frame: Optional[str] = None):
-        self.function_name = function_name
-        self.fold = fold
-        self.input_frame = input_frame
-
-    @staticmethod
-    def from_column_name(column_name: str) -> 'RunID':
-        args = column_name.split(SPLITTER)[1:]
-        return RunID(*args)
-
-    @staticmethod
-    def from_alias_name(alias_name: str) -> 'RunID':
-        args = alias_name.split(SPLITTER)
-        return RunID(*args)
-
-    def get_column_name(self, column_name: str) -> str:
-        return f"{column_name}{SPLITTER}{self.function_name}{SPLITTER}{self.fold}"
-
-    def get_alias_name(self) -> str:
-        return f"{self.function_name}{SPLITTER}{self.fold}{SPLITTER}{self.input_frame}"
-
-    def get_state_name(self) -> str:
-        return f"{self.function_name}{SPLITTER}{self.fold}"
-
-    def get_state_key(self) -> Tuple[str, str]:
-        return self.function_name, self.fold
-
-    @property
-    def state_id(self) -> Tuple[str, str]:
-        return self.get_state_key()
-
-    def __eq__(self, other):
-        return (self.function_name == other.function_name
-                and self.fold == other.fold
-                and self.input_frame == other.input_frame)
-
-    def __hash__(self):
-        return hash(self.get_alias_name())
-
-    def __str__(self):
-        return f"RunID({repr(self.function_name)}, {repr(self.fold)}, {repr(self.input_frame)})"
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class IndexBlock:
