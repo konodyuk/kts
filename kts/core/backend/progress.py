@@ -11,7 +11,7 @@ class AbstractProgressBar:
             return
         self.took = timestamp - self.start
         if step > 0:
-            self.eta = (self.total - self.step) / step * self.took
+            self.eta = (self.total - step) / step * self.took
 
 
 class LocalProgressBar(AbstractProgressBar):
@@ -59,7 +59,7 @@ class ProgressSignal(rs.Signal):
 
 
 class RemoteProgressBar(AbstractProgressBar):
-    _min_interval = 0.2
+    _min_interval = 0.5
 
     def __init__(self, iterable: Iterable, total: Optional[int] = None):
     # def __init__(self, iterable, total=None):
