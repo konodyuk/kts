@@ -2,7 +2,7 @@ from typing import Union, Tuple, List, Any
 
 from ray.experimental import signal as rs
 
-from kts.core.cache import RunID
+from kts.core.run_id import RunID
 
 
 class Sync(rs.Signal):
@@ -27,6 +27,14 @@ class ResourceRequest(rs.Signal):
 
     def get_contents(self):
         return self.key
+
+
+class RunPID(rs.Signal):
+    def __init__(self, pid):
+        self.pid = pid
+
+    def get_contents(self):
+        return self.pid
 
 
 def filter_signals(signals: List[Tuple[Any, rs.Signal]], signal_type: type):
