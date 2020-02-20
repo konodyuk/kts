@@ -63,7 +63,8 @@ setuptools.setup(
         "python-forge",
         "xxhash",
         "pygments",
-        "ipython"
+        "ipython",
+        "psutil"
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
