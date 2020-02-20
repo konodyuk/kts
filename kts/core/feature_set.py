@@ -6,10 +6,10 @@ import pandas as pd
 
 from kts.core import ui
 from kts.core.cache import frame_cache
+from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
+from kts.core.init import run_manager
 from kts.core.lists import feature_list
-from kts.core.runtime import FeatureConstructor
-from kts.core.runtime import run_manager
 from kts.settings import cfg
 from kts.util.hashing import hash_list, hash_fold
 
@@ -92,10 +92,10 @@ class FeatureSet:
         frame.__meta__['fold'] = '0000'
         frame.__meta__['train'] = True
         parallel_cache = [i for i in self.before_split if i.parallel and i.cache]
-        run_manager.run(parallel_cache, frame, remote=True)
-        run_manager.supervise(report)
+        run_manager.run(parallel_cache, frame, remote=True, ret=False, report=report)
+        run_manager.supervise(report, report_handle)
         not_parallel_cache = [i for i in self.before_split if not i.parallel and i.cache]
-        run_manager.run(not_parallel_cache, frame, remote=False)
+        run_manager.run(not_parallel_cache, frame, remote=False, ret=False, report=report)
         run_manager.merge_scheduled()
 
     @property
@@ -182,16 +182,16 @@ class CVFeatureSet:
             return
         for i in range(self.n_folds):
             fold = self.fold(i)
-            fold.compute(fold.train_frame, parallel=True, cache=True, report=True, train=True)
+            fold.compute(fold.train_frame, parallel=True, cache=True, report=report, train=True)
         for i in range(self.n_folds):
             fold = self.fold(i)
-            fold.compute(fold.valid_frame, parallel=True, cache=True, report=True, train=False)
+            fold.compute(fold.valid_frame, parallel=True, cache=True, report=report, train=False)
         for i in range(self.n_folds):
             fold = self.fold(i)
-            fold.compute(fold.train_frame, parallel=False, cache=True, report=True, train=True)
+            fold.compute(fold.train_frame, parallel=False, cache=True, report=report, train=True)
         for i in range(self.n_folds):
             fold = self.fold(i)
-            fold.compute(fold.valid_frame, parallel=False, cache=True, report=True, train=False)
+            fold.compute(fold.valid_frame, parallel=False, cache=True, report=report, train=False)
 
     # def compute_parallel(self, frame, report):
     #     parallel_cache = [i for i in self.after_split if i.parallel and i.cache]
@@ -223,7 +223,7 @@ class Fold:
         self.cv_feature_set = cv_feature_set
         self.fold_idx = fold_idx
 
-    def compute(self, frame, report=None, parallel=None, cache=None, before=False, train=False):
+    def compute(self, frame, parallel=None, cache=None, before=False, train=False, report=None):
         frame = KTSFrame(frame)
         frame.__meta__['fold'] = self.fold_id
         frame.__meta__['train'] = train
