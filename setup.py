@@ -62,7 +62,8 @@ setuptools.setup(
         "click",
         "python-forge",
         "xxhash",
-        "pygments"
+        "pygments",
+        "ipython"
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
