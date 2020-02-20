@@ -19,16 +19,16 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo python -m pip install --upgrade pip
-        sudo python setup.py develop
+        sudo $(which python) -m pip install --upgrade pip
+        sudo $(which python) setup.py develop
     - name: Lint
       run: |
         echo Linter is disabled so far
     - name: Test with pytest and obtain coverage
       run: |
-        sudo pip install pytest
-        sudo pip install pytest-cov
-        sudo pytest
+        sudo $(which pip) install pytest
+        sudo $(which pip) install pytest-cov
+        sudo $(which pytest)
 #    - name: Upload coverage to Codecov
 #      uses: codecov/codecov-action@v1
 #      with:
