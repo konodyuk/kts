@@ -1,33 +1,39 @@
 import inspect
-import warnings
 from copy import copy
 from functools import wraps
-
-import forge
+from inspect import Signature, Parameter
 
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 
 
 class GenericFeatureConstructor:
     def __init__(self, func, kwargs):
-        warnings.warn('Generic feature support is still experimental, so please avoid corner cases.')
         self.func = func
         self.name = func.__name__
         self.source = inspect.getsource(func)
         self.parallel = kwargs.pop('parallel', True)
         self.cache = kwargs.pop('cache', True)
+        self.arg_names = list(kwargs.keys())
         self.kwargs = kwargs
-        self.__call__ = forge.sign(**{arg: forge.arg(arg) for arg in self.kwargs})(self.__call__)
+        parameters = [Parameter(p, kind=Parameter.POSITIONAL_OR_KEYWORD, default=kwargs[p]) for p in self.arg_names]
+        self.__class__.__call__.__signature__ = Signature(
+            parameters=[Parameter('self', kind=Parameter.POSITIONAL_ONLY)] + parameters)
 
-    def __call__(self, **kwargs):
+    def call(self, *args, **kwargs):
         instance_kwargs = copy(self.kwargs)
+        for k, v in zip(self.arg_names, args):
+            instance_kwargs[k] = v
+            if k in kwargs:
+                raise TypeError(f"{self.name}() got multiple values for argument {repr(k)}")
         for k, v in kwargs.items():
             if k not in self.kwargs:
                 raise ValueError(f"Unexpected arg: {k}")
             instance_kwargs[k] = v
-        res = FeatureConstructor(self.modify(self.func, instance_kwargs))
+        res = FeatureConstructor(self.modify(self.func, instance_kwargs), internal=True)
         res.name = f"{self.name}_" + "_".join(map(str, instance_kwargs.values()))
-        res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
+        res.source = f"{self.name}({', '.join(f'{repr(instance_kwargs[k])}' for k in self.arg_names)})"
+        # res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
+        res.dependencies = dict()
         res.parallel = self.parallel
         res.cache = self.cache
         return res
@@ -37,17 +43,28 @@ class GenericFeatureConstructor:
         def new_func(*args, **kwargs):
             g = func.__globals__
             old_values = dict()
+            placeholder = object()
             for k, v in instance_kwargs.items():
-                old_values[k] = g.get(k, None)
+                old_values[k] = g.get(k, placeholder)
                 g[k] = v
 
             try:
                 res = func(*args, **kwargs)
             finally:
                 for k, v in old_values.items():
-                    if v is None:
+                    if v is placeholder:
                         del g[k]
                     else:
                         g[k] = v
             return res
         return new_func
+
+
+def new_call(self, *args, **kwargs):
+    return self.call(*args, **kwargs)
+
+
+def create_generic(func, kwargs):
+    members = dict(__call__=new_call)
+    generic_type = type(f"Generic({func.__name__})", (GenericFeatureConstructor,), members)
+    return generic_type(func, kwargs)
