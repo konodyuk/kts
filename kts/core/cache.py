@@ -44,7 +44,7 @@ class AbstractCache(ABC):
         if self.path is None:
             return self.data[key]
         if key not in self.data or self.timestamps[key] < self.get_timestamp(key):
-            self.data[key] = self.load(key)
+            self.data[key] = self.read(key)
             self.timestamps[key] = self.get_timestamp(key)
         return self.data[key]
 
@@ -68,13 +68,13 @@ class AbstractCache(ABC):
 
     def get_timestamp(self, key):
         for ext in self.extensions:
-            path = self.path / key / ext
+            path = self.path / (key + ext)
             if path.exists():
                 return os.path.getmtime(path)
 
     def remove_file(self, key):
         for ext in self.extensions:
-            path = self.path / key / ext
+            path = self.path / (key + ext)
             if path.exists():
                 return os.remove(path)
 
@@ -109,7 +109,7 @@ class ObjectCache(AbstractCache):
     extensions = ['.dill.obj']
 
     def write(self, key, value):
-        path = self.path / key / '.dill.obj'
+        path = self.path / (key + '.dill.obj')
         try:
             dill.dump(value, open(path, "wb"))
         except dill.PicklingError:
@@ -117,7 +117,7 @@ class ObjectCache(AbstractCache):
                 os.remove(path)
 
     def read(self, key):
-        path = self.path / key / '.dill.obj'
+        path = self.path / (key + '.dill.obj')
         return dill.load(open(path, "rb"))
 
 
@@ -150,21 +150,21 @@ class FrameCache(AbstractCache):
             df.index.name = self.prefix + df.index.name
             df.reset_index(inplace=True)
         try:
-            path = self.path / key / '.fth.frame'
+            path = self.path / (key + '.fth.frame')
             feather.write_dataframe(df, path)
         except:
-            path = self.path / key / '.pq.frame'
+            path = self.path / (key + '.pq.frame')
             df.to_parquet(path)
         self.recover_index(df)
 
     def read(self, key):
-        path = self.path / key / '.fth.frame'
+        path = self.path / (key + '.fth.frame')
         if path.exists():
             df = feather.read_dataframe(path, use_threads=True)
             self.recover_index(df)
             return df
         else:
-            path = self.path / key / '.pq.frame'
+            path = self.path / (key + '.pq.frame')
             df = pd.read_parquet(path)
             self.recover_index(df)
             return df
