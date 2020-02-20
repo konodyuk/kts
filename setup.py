@@ -57,17 +57,13 @@ setuptools.setup(
     ],
     extras_require=extras,
     install_requires=[
-        # "mprop",
+        "ray>=0.8.1",
         "pandas",
         "numpy",
         "scikit-learn",
         "matplotlib",
-        # "seaborn",
         "dill",
         "feather-format",
-        # "swifter",
-        # "texttable",
-        # "fastprogress",
         "click",
         "python-forge",
         "xxhash"
