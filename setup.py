@@ -61,7 +61,8 @@ setuptools.setup(
         "feather-format",
         "click",
         "python-forge",
-        "xxhash"
+        "xxhash",
+        "pygments"
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
