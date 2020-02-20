@@ -2,9 +2,9 @@ from typing import Union, List, Optional
 
 import pandas as pd
 
-from kts.core.cache import DataFrameAlias
+from kts.core.feature_constructor.inline import InlineFeatureConstructor
+from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
-from kts.core.runtime import ParallelFeatureConstructor, InlineFeatureConstructor
 from kts.settings import cfg
 
 
@@ -88,11 +88,6 @@ class Identity(InlineFeatureConstructor):
         if ret:
             return kf
 
-    def get_alias(self, kf: KTSFrame):
-        frame_cache = kf.__meta__['frame_cache']
-        alias_name = frame_cache.save(kf)
-        return frame_cache.load(alias_name, ret_alias=True)
-
 
 class EmptyLike(InlineFeatureConstructor):
     def __init__(self):
@@ -101,11 +96,6 @@ class EmptyLike(InlineFeatureConstructor):
     def compute(self, kf: KTSFrame, ret=True):
         if ret:
             return kf[[]]
-
-    def get_alias(self, kf: KTSFrame):
-        frame_cache = kf.__meta__['frame_cache']
-        alias_name = frame_cache.save(kf[[]])
-        return frame_cache.load(alias_name, ret_alias=True)
 
 
 class Selector(InlineFeatureConstructor):
@@ -117,11 +107,6 @@ class Selector(InlineFeatureConstructor):
         res = self.feature_constructor.compute(kf)
         if ret:
             return res[[self.columns]]
-
-    def get_alias(self, kf: KTSFrame):
-        alias = self.feature_constructor.get_alias(kf)
-        alias = alias & self.columns
-        return alias
 
     @property
     def cache(self):
@@ -142,11 +127,6 @@ class Dropper(InlineFeatureConstructor):
         if ret:
             return res.drop(self.columns, axis=1)
 
-    def get_alias(self, kf: KTSFrame):
-        alias = self.feature_constructor.get_alias(kf)
-        alias = alias - self.columns
-        return alias
-
     @property
     def cache(self):
         return self.feature_constructor.cache
@@ -157,6 +137,8 @@ class Dropper(InlineFeatureConstructor):
 
 
 class Concat(InlineFeatureConstructor):
+    parallel = True
+
     def __init__(self, feature_constructors):
         self.feature_constructors = feature_constructors
 
@@ -167,11 +149,12 @@ class Concat(InlineFeatureConstructor):
         if len(parallels) > 0:
             interim = list()
             for f in parallels:
-                interim.append(f.get_futures())
-            for f, (scheduled, results) in zip(parallels, interim):
-                f.wait(scheduled)
-            for f, (scheduled, results) in zip(parallels, interim):
-                results[f.name] = f.assemble_futures(scheduled, results, kf)
+                interim.append(f.get_futures(kf))
+            self.supervise(kf)
+            for f, (scheduled, dfs) in zip(parallels, interim):
+                f.wait(scheduled.values())
+            for f, (scheduled, dfs) in zip(parallels, interim):
+                results[f.name] = f.assemble_futures(scheduled, dfs, kf)
         if len(not_parallels) > 0:
             for f in not_parallels:
                 results[f.name] = f(kf)
@@ -179,15 +162,3 @@ class Concat(InlineFeatureConstructor):
             return
         results_ordered = [results[f.name] for f in self.feature_constructors]
         return pd.concat(results_ordered, axis=1)
-
-    def get_alias(self, kf: KTSFrame):
-        aliases = [fc.get_alias(kf) for fc in self.feature_constructors]
-        if all(isinstance(i, DataFrameAlias) for i in aliases):
-            res = aliases[0]
-            for alias in aliases[1:]:
-                res = res.join(alias)
-            return res
-        else:
-            frame_cache = kf.__meta__['frame_cache']
-            res = frame_cache.concat(aliases)
-            return res
