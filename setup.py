@@ -3,13 +3,8 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('VERSION', 'r') as f:
-    VERSION = int(f.read().strip())
-
-VERSION += 1
-
-with open('VERSION', 'w') as f:
-    f.write(str(VERSION))
+with open("kts/__version__.py") as fh:
+    version = fh.readlines()[-1].split()[-1].strip("\"'")
 
 extras = {
     'zoo': ['sklearn', 'catboost', 'xgboost', 'lightgbm', 'skorch'],
@@ -24,7 +19,7 @@ extras['all'] = all_deps
 
 setuptools.setup(
     name="kts",
-    version=f"0.3.{VERSION}",
+    version=version,
     author="Nikita Konodyuk",
     author_email="konodyuk@gmail.com",
     description="A framework for fast and interactive conducting machine learning experiments on tabular data",
