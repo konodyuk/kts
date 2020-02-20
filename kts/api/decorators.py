@@ -1,23 +1,33 @@
 from IPython.display import display
 
-from kts.core.runtime import FeatureConstructor, GenericFeatureConstructor, run_manager
-from kts.core.cache import frame_cache
+from kts.core.feature_constructor.base import BaseFeatureConstructor
+from kts.core.feature_constructor.generic import GenericFeatureConstructor, create_generic
+from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
+from kts.core.init import run_manager
 from kts.core.lists import feature_list, helper_list
+from kts.core.ui import FeatureComputingReport
 
 
-def preview(frame, *sizes):
+def preview(frame, *sizes, parallel=True, train=True):
     def _preview(obj):
+        report = FeatureComputingReport(feature_list)
         if isinstance(obj, GenericFeatureConstructor):
             feature_constructor = obj()
-        else:
+        elif not isinstance(obj, BaseFeatureConstructor): # in case of stl preview
             feature_constructor = FeatureConstructor(obj)
-        for size in sizes:
-            ktsframe = KTSFrame(frame.head(size))
-            ktsframe.__meta__['fold'] = 'preview'
-            ktsframe.__meta__['run_manager'] = run_manager
-            ktsframe.__meta__['frame_cache'] = frame_cache
-            display(feature_constructor(ktsframe))
+        else:
+            feature_constructor = obj
+        feature_constructor.parallel = parallel
+        try:
+            for size in sizes:
+                ktsframe = KTSFrame(frame.head(size))
+                ktsframe.__meta__['train'] = train
+                ktsframe.__meta__['fold'] = 'preview'
+                results = run_manager.run([feature_constructor], frame=ktsframe, remote=parallel, ret=True, report=report)
+                display(results[feature_constructor.name])
+        finally:
+            run_manager.merge_scheduled()
     return _preview
 
 
@@ -44,9 +54,11 @@ def helper(function):
 
 def generic(**kwargs):
     def __generic(func):
-        return GenericFeatureConstructor(func, kwargs)
+        return create_generic(func, kwargs)
     return __generic
 
 # TODO
 # def version():
 
+# TODO
+# def parallel():
