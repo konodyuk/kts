@@ -8,6 +8,3 @@ class InlineFeatureConstructor(BaseFeatureConstructor):
 
     def __call__(self, kf: KTSFrame, ret=True):
         return self.compute(kf, ret=ret)
-
-    def get_alias(self, kf: KTSFrame):
-        return self(kf)
