@@ -1,9 +1,16 @@
 import inspect
+import sys
 from pathlib import Path
 
+import ray
+
 from kts.core import ui
+from kts.core.backend.address_manager import get_address_manager, create_address_manager
+from kts.core.backend.run_manager import RunManager
+from kts.core.cache import frame_cache, obj_cache
 from kts.settings import cfg
-from kts.core.runtime import ray, create_address_manager, get_address_manager
+from kts.util.debug import logger
+
 
 def find_scope():
     frame = inspect.currentframe()
@@ -24,15 +31,25 @@ def find_config():
     else:
         return None
 
+address_manager = None
+run_manager = RunManager()
+
 def init():
-    global address_manager
+    global address_manager, run_manager
     cfg.scope = find_scope()
+    cfg.stdout = sys.stdout
     config_path = find_config()
     if config_path is not None:
         cfg.load(config_path)
     ui.init()
-    ray.init(ignore_reinit_error=True)
+    ray.init(ignore_reinit_error=True, logging_level=20 if cfg.debug else 50)
     try:
         address_manager = get_address_manager()
     except:
         address_manager = create_address_manager()
+    run_manager.init()
+    if config_path is not None:
+        frame_cache.path = cfg.storage_path
+        obj_cache.path = cfg.storage_path
+    if not cfg.debug:
+        logger.level = 50
