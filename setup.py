@@ -64,7 +64,8 @@ setuptools.setup(
         "xxhash",
         "pygments",
         "ipython",
-        "psutil"
+        "psutil",
+        "toml",
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
