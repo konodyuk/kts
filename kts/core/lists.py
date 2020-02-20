@@ -1,4 +1,4 @@
-from kts.core.cache import CachedMapping
+from kts.core.containers import CachedMapping
 from kts.settings import cfg
 
 class SyncedList(CachedMapping):
