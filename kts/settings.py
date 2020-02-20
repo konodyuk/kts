@@ -13,6 +13,7 @@ class Config:
         self._highlighting = None
         self._theme_displays = []
         self.preview_mode = True
+        self.debug = False
 
     def load(self, path):
         self.config_path = path
