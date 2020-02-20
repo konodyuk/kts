@@ -26,6 +26,8 @@ jobs:
         export PYTHONPATH=/tmp/ray_installation:$PYTHONPATH
         echo "pythonpath: $PYTHONPATH"
         sudo $(which pip) install --prefix="/tmp/ray_installation" ray
+        sudo echo `ls /tmp/ray_installation`
+        sudo echo `ls /tmp/ray_installation/bin`
         echo "pip freeze before"
         pip freeze
         sudo $(which python) setup.py develop
