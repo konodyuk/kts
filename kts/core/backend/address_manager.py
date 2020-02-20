@@ -30,6 +30,10 @@ class AddressManager:
     def ls(self):
         return list(self.data.keys())
 
+    def clear(self):
+        self.data.clear()
+        self.timestamps.clear()
+
 
 def get_address_manager():
     return get_actor('AddressManager')
