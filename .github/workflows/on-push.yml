@@ -23,7 +23,7 @@ jobs:
         sudo $(which python) -m pip install --upgrade pip
         echo "creating ray_installation"
         sudo mkdir /tmp/ray_installation
-        export PYTHONPATH=/tmp/ray_installation:$PYTHONPATH
+        export PYTHONPATH=/tmp/ray_installation/lib/site-packages:$PYTHONPATH
         echo "pythonpath: $PYTHONPATH"
         sudo $(which pip) install --prefix="/tmp/ray_installation" ray
         sudo echo `ls /tmp/ray_installation`
