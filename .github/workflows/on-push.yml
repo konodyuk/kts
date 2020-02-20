@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6]
 
     steps:
     - uses: actions/checkout@v2
@@ -21,6 +21,8 @@ jobs:
       run: |
         sudo $(which python) -m pip install --upgrade pip
         sudo $(which python) setup.py develop
+    - name: Fix permissions
+        sudo chmod 777 /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages/ray-0.8.1-py3.6-linux-x86_64.egg/ray/core/src/ray/thirdparty/redis/src/redis-server
     - name: Lint
       run: |
         echo Linter is disabled so far
