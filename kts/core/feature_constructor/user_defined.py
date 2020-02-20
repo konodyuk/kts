@@ -1,6 +1,5 @@
 import inspect
 
-from kts.core.cache import RunID
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
 
@@ -9,8 +8,10 @@ class FeatureConstructor(ParallelFeatureConstructor):
     parallel = True
     cache = True
 
-    def __init__(self, func):
+    def __init__(self, func, internal=False):
         self.func = func
+        if internal:
+            return
         self.name = func.__name__
         self.source = inspect.getsource(func)
         self.dependencies = self.extract_dependencies(func)
@@ -28,11 +29,6 @@ class FeatureConstructor(ParallelFeatureConstructor):
         if '__columns' not in kf._state:
             kf._state['__columns'] = list(kf.columns)
         return result
-
-    def get_alias(self, kf: KTSFrame):
-        run_id = RunID(self.name, kf.fold, kf.hash())
-        rm = kf.__meta__['run_manager']
-        return rm.get_run(run_id)
 
     def extract_dependencies(self, func):
         dependencies = dict()
