@@ -1,5 +1,5 @@
 from kts.core import ui
-from kts.core.cache import CachedMapping, CachedList
+from kts.core.containers import CachedMapping
 from kts.validation.experiment import Experiment
 
 experiments = CachedMapping('experiments')
@@ -8,7 +8,7 @@ experiments = CachedMapping('experiments')
 class Leaderboard(ui.HTMLRepr):
     def __init__(self, name='main'):
         self.name = name
-        self.aliases = CachedList(f'lb_{name}')
+        self.aliases = CachedMapping(f'lb_{name}')
 
     def __getitem__(self, key):
         if isinstance(key, str):
