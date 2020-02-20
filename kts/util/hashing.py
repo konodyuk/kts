@@ -46,13 +46,7 @@ def hash_fold(idx_train, idx_valid):
     return h.hexdigest() 
 
 
-hash_frame_cache = dict()
-
-
 def hash_frame(df):
-    if id(df) in hash_frame_cache:
-        return hash_frame_cache[id(df)]
-
     idx_hash = hashlib.sha256(pd.util.hash_pandas_object(
         df.index).values).hexdigest()
 
@@ -69,7 +63,4 @@ def hash_frame(df):
             df.iloc[[-1]][sorted_cols].to_csv().encode("utf-8")).hexdigest()
 
     res = hashlib.sha256(np.array([idx_hash, col_hash, hash_first, hash_last])).hexdigest()
-    hash_frame_cache[id(df)] = res
     return res
-
-
