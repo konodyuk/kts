@@ -1,4 +1,7 @@
+import time
 from collections import defaultdict
+from contextlib import redirect_stdout
+from datetime import datetime
 from typing import Collection, List, Dict, Union
 
 import numpy as np
@@ -126,6 +129,7 @@ CSS_STYLE = """
   padding: 5px 15px;
   margin: 5px;
   font-weight: bold;
+  font-family: monospace;
   color: {accent};
   overflow: auto;
   max-height: 3rem;
@@ -896,7 +900,7 @@ class SingleFoldReport(HTMLRepr):
     
     @property
     def progress_formatting(self):
-        return dict(style="margin-top: 3px; width: 300px;")
+        return dict(style="margin-top: 3px; width: 450px;")
 
 
 class FeatureComputingReport(HTMLRepr):
@@ -904,10 +908,14 @@ class FeatureComputingReport(HTMLRepr):
         self.entries = defaultdict(lambda: dict(value=0, total=0, took=None, eta=None))
         self.outputs = defaultdict(lambda: list())
         self.feature_constructors = feature_constructors
+        self.handle = self.show()
+        self.update_interval = 0.5
+        self.last_update = -1
 
     @property
     def html(self):
-        thumbnails = [i.html_collapsable(**self.thumbnail_formatting) for i in self.active_features]
+        # thumbnails = [i.html_collapsable(**self.thumbnail_formatting) for i in self.active_features]
+        thumbnails = [Field(i, **self.thumbnail_formatting).html for i in self.active_feature_names]
         blocks = self.progress_blocks
         return AlignedColumns([
             [Annotation('feature', **self.thumbnail_annotation_formatting).html] + thumbnails,
@@ -964,7 +972,7 @@ class FeatureComputingReport(HTMLRepr):
         return datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3]
     
     def update(self, run_id, value, total, took=None, eta=None):
-        if self.entries[run_id]['value'] <= value:
+        if self.entries[run_id]['value'] <= value or value == total:
             entry = self.entries[run_id]
             entry['value'] = value
             entry['total'] = total
@@ -972,11 +980,32 @@ class FeatureComputingReport(HTMLRepr):
                 entry['took'] = took
             if eta is not None:
                 entry['eta'] = eta
+        self.refresh()
     
     def update_text(self, run_id, text=None, timestamp=None):
         output = self.outputs[run_id]
         if (timestamp, text) not in output:
             output.append((timestamp, text))
+        self.refresh()
+
+    def completed(self):
+        self.refresh()
+        for entry in self.entries.values():
+            if entry['value'] < entry['total']:
+                return False
+        return True
+
+    def show(self):
+        return display(self, display_id=True)
+
+    def refresh(self, force=False):
+        if self.handle is None:
+            # not in ipython
+            return
+        if force or time.time() - self.last_update >= self.update_interval:
+            with redirect_stdout(cfg.stdout):
+                self.handle.update(self)
+            self.last_update = time.time()
 
 # ========== end of block definition ==========
 
