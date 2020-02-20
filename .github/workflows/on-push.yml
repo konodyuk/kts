@@ -20,10 +20,14 @@ jobs:
     - name: Install dependencies
       run: |
         sudo $(which python) -m pip install --upgrade pip
+        sudo mkdir /tmp/ray_installation
+        export PYTHONPATH=/tmp/ray_installation:$PYTHONPATH
+        sudo $(which pip) install --prefix="/tmp/ray_installation" ray
         sudo $(which python) setup.py develop
     - name: Fix permissions
       run: |
-        sudo chmod 777 /opt/hostedtoolcache/Python/3.6.10/x64/lib/python3.6/site-packages/ray-0.8.1-py3.6-linux-x86_64.egg/ray/core/src/ray/thirdparty/redis/src/redis-server
+        echo $PYTHONPATH
+        sudo chmod -R 777 /tmp/ray_installation
     - name: Lint
       run: |
         echo Linter is disabled so far
