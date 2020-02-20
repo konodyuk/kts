@@ -2,6 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/kts.svg)](https://pypi.org/project/kts/)
 [![Docs](https://img.shields.io/readthedocs/kts)](https://kts.readthedocs.io/)
+![CI](https://github.com/konodyuk/kts/workflows/CI/badge.svg)
+![Codecov](https://img.shields.io/codecov/c/github/konodyuk/kts?label=core%20coverage)
 
 **An ultimate workflow for solving machine learning competitions with tabular data.**
 
