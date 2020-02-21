@@ -1,9 +1,9 @@
 ![KTS logo](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/banner_alpha.png)
 
 [![PyPI version](https://img.shields.io/pypi/v/kts.svg)](https://pypi.org/project/kts/)
-[![Docs](https://img.shields.io/readthedocs/kts)](https://kts.readthedocs.io/)
-![CI](https://github.com/konodyuk/kts/workflows/CI/badge.svg)
-![Codecov](https://img.shields.io/codecov/c/github/konodyuk/kts?label=core%20coverage)
+[![Docs](https://img.shields.io/badge/docs-draft%20version-orange)](https://docs.kts.ai/)
+[![CI](https://github.com/konodyuk/kts/workflows/CI/badge.svg)](https://github.com/konodyuk/kts/actions/)
+[![Codecov](https://img.shields.io/codecov/c/github/konodyuk/kts?label=core%20coverage)](https://codecov.io/gh/konodyuk/kts)
 
 **An ultimate workflow for solving machine learning competitions with tabular data.**
 
