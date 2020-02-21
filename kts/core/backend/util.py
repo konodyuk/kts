@@ -25,5 +25,5 @@ def safe_put(kf: KTSFrame):
         oid = ray.get(address_manager.get.remote(h))
     else:
         oid = ray.put(kf)
-        address_manager.put.remote((h, oid))
+        address_manager.put.remote((h, oid, False))
     return oid

@@ -141,9 +141,11 @@ class RunManager:
         resource = self.get_resource(key)
         address_manager = get_address_manager()
         if isinstance(resource, ObjectID):
-            address_manager.put.remote((key, resource))
+            address_manager.put.remote((key, resource, False))
+            return
+        is_none = resource is None
         address = ray.put(resource)
-        address_manager.put.remote((key, address))
+        address_manager.put.remote((key, address, is_none))
 
     def get_resource(self, key: Union[RunID, Tuple[str, str], str]) -> Any:
         if isinstance(key, RunID):

@@ -8,21 +8,23 @@ from ray.experimental import get_actor
 class AddressManager:
     def __init__(self):
         self.data = dict()
+        self.is_none = dict()
         self.timestamps = dict()
 
     def get(self, key):
         return self.data[key]
 
     def put(self, entry):
-        key, value = entry
+        key, value, is_none = entry
         self.data[key] = value
+        self.is_none[key] = is_none
         self.timestamps[key] = time.time()
 
     def has(self, key):
         return key in self.data
 
     def isnone(self, key):
-        return self.data[key] is None
+        return self.is_none[key]
 
     def timestamp(self, key):
         return self.timestamps[key]
