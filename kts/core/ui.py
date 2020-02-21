@@ -278,7 +278,7 @@ CSS_STYLE = """
 .kts .hbar {{
   position: absolute;
   display: inline-block;
-  background-color: {second};
+  background-color: {third};
   text-align: left;
   height: 100%;
   border-radius: 15px;
@@ -341,14 +341,17 @@ class Theme:
         return CSS_STYLE.format(**kw)
 
 themes = {
-    'blue': Theme("#2e3047", "#43455c", "#707793", "#000", "#3bba9c", ""),
-    'kts':  Theme("#2e3047", "#43455c", "#707793", "#000", "#3bba9c", ""), # red and white and black
-    'light':  Theme("#e7ecee", "#d0d8e3", "#a8b7cc", "#8492ab", "#f5d8d5", "#f5ece6"),
-    'grey':  Theme("#333", "#444", "#888", "#000", "#ddd"),
-    'violet': Theme("#392338", "#523957", "#ff947f", "#000", "#ffcfa4"),
-    'dark':  Theme("#050b28", "#262f58", "#2e4a7a", "#1e96a2", "#4ebbd9d", "#dab236"),
-    'unknown_1': Theme("#333b3e", "#3e555e", "#888b8e", "", "#fff"),
-    'unknown_2': Theme("#a0aec3", "#7c879f", "#cbd3de", "#e5e9dc", "#efd3d1"),
+    'dark': Theme("#2e3047", "#43455c", "#707793", "#000", "#3bba9c", ""),
+    'dark-crazy': Theme("#392338", "#523957", "#ff947f", "#000", "#ffcfa4"),
+    'light': Theme("#eee", "#fafafa", "#ec4e3a", "#fff", "#000"),
+    'light-blue': Theme("#edf1fb", "#f7f8fc", "#5e40d8aa", "#fff", "#000"),
+}
+
+default_highlightings = {
+    'dark': 'kts',
+    'dark-crazy': 'kts',
+    'light': 'tango',
+    'light-blue': 'tango',
 }
 
 class HTMLRepr:
@@ -623,7 +626,7 @@ class Importance(HTMLRepr):
             hbar_style = f'width: {self.zero - self.value}px; left: {self.value}px;'
         return f'''<div class="hbar-container" style="width: {self.vmax}px">
         <div class="hbar" style="{hbar_style}"></div>
-        {f'<div class="hbar-line" style="width: 1px; left: {self.zero}px; height: calc(100% + 4px); top: -2px;"></div>' if self.zero else ''}
+        {f'<div class="hbar-line" style="width: 1px; left: {self.zero}px; height: calc(100% + 8px); top: -4px;"></div>' if self.zero else ''}
         <div class="hbar-line" style="width: {self.vmax - self.vmin}px; left: {self.vmin}px"></div>
         <div class="hbar-line" style="width: 1px; height: 5px; top: calc(50% - 2px); left: {self.vmin}px"></div>
         <div class="hbar-line" style="width: 1px; height: 5px; top: calc(50% - 2px); left: {self.vmax}px"></div>
@@ -1009,7 +1012,7 @@ class FeatureComputingReport(HTMLRepr):
 
 # ========== end of block definition ==========
 
-ct = CurrentTheme(Highlighter(), themes['blue'])
+ct = CurrentTheme(Highlighter(), themes['dark'])
 
 def init():
     update_handles(ct)
@@ -1024,12 +1027,18 @@ def set_highlighting(name: str):
     ct.hl.set_style(name)
     update_handles(ct)
 
+theme_names = ', '.join(themes.keys())
+
 def set_theme(name: str):
+    """One of: %s"""
     if name in themes:
         ct.set_theme(themes[name])
+        ct.hl.set_style(default_highlightings[name])
         update_handles(ct)
     else:
-        raise UserWarning(f"Theme should be one of [{', '.join(themes.keys())}]")
+        raise UserWarning(f"Theme should be one of [{theme_names}]")
+
+set_theme.__doc__ %= theme_names
 
 def set_animation(value: bool):
     if value:
