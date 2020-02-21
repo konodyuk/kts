@@ -29,6 +29,9 @@ class AddressManager:
     def timestamp(self, key):
         return self.timestamps[key]
 
+    def confirm(self, key):
+        self.timestamps[key] = time.time()
+
     def ls(self):
         return list(self.data.keys())
 

@@ -102,6 +102,8 @@ class RunManager:
                     if ray.get(address_manager.has.remote(key)):
                         if ray.get(address_manager.isnone.remote(key)):
                             self.put_resource(key)
+                        else:
+                            address_manager.confirm.remote(key)
                     else:
                         self.put_resource(key)
 
