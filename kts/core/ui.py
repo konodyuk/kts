@@ -911,7 +911,7 @@ class SingleFoldReport(HTMLRepr):
 
 
 class FeatureComputingReport(HTMLRepr):
-    def __init__(self, feature_constructors):
+    def __init__(self, feature_constructors=None):
         self.entries = defaultdict(lambda: dict(value=0, total=0, took=None, eta=None))
         self.outputs = defaultdict(lambda: list())
         self.feature_constructors = feature_constructors
@@ -965,7 +965,7 @@ class FeatureComputingReport(HTMLRepr):
     
     @property
     def thumbnail_formatting(self):
-        return dict(style='padding: 0px 5px; text-align: right;', bg=False)
+        return dict(style='padding: 0px 5px; text-align: right; margin: 2px;', bg=False)
     
     @property
     def thumbnail_annotation_formatting(self):
