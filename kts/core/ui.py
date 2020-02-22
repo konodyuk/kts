@@ -256,17 +256,20 @@ CSS_STYLE = """
   padding: 3px;
   width: calc(100% - 10px);
   height: 1rem;
+  box-sizing: content-box;
 }}
 
 .kts progress[value]::-webkit-progress-bar {{
   background-color: {second};
   border-radius: 15px;
   padding: 3px;
+  box-sizing: border-box;
 }}
 
 .kts progress[value]::-webkit-progress-value {{
   background-color: {third};
   border-radius: 15px; 
+  box-sizing: border-box;
 }}
 
 .kts .hbar-container {{
