@@ -168,8 +168,11 @@ class RunManager:
 
     def merge_scheduled(self):
         for run_id, run in self.scheduled.items():
-            res_df, res_state, stats = ray.get([run.res_df, run.res_state, run.stats])
-            self.sync(run_id, res_df, res_state, stats)
+            try:
+                res_df, res_state, stats = ray.get([run.res_df, run.res_state, run.stats])
+                self.sync(run_id, res_df, res_state, stats)
+            except:  # in case of failed task
+                pass
         self.scheduled.clear()
 
     def sync(self, run_id: RunID, res_df: Union[AnyFrame, ObjectID], res_state: Union[Dict, ObjectID], stats: Union[Dict, ObjectID]):
