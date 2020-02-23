@@ -1017,6 +1017,19 @@ class FeatureComputingReport(HTMLRepr):
                 self.handle.update(self)
             self.last_update = time.time()
 
+class SilentFeatureComputingReport:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def update(self, *args, **kwargs):
+        pass
+
+    def update_text(self, *args, **kwargs):
+        pass
+
+    def refresh(self, *args, **kwargs):
+        pass
+
 # ========== end of block definition ==========
 
 ct = CurrentTheme(Highlighter(), themes['dark'])

@@ -18,6 +18,7 @@ from kts.core.containers import CachedMapping
 from kts.core.frame import KTSFrame
 from kts.core.run_id import RunID
 from kts.core.types import AnyFrame
+from kts.core.ui import SilentFeatureComputingReport
 
 
 class Run:
@@ -81,7 +82,9 @@ class RunManager:
     def __init__(self):
         self.scheduled = defaultdict(Run)
 
-    def run(self, feature_constructors, frame: KTSFrame, remote=False, ret=False, report=None) -> Optional[Dict[str, AnyFrame]]:
+    def run(self, feature_constructors, frame: KTSFrame, ret=False, report=None) -> Optional[Dict[str, AnyFrame]]:
+        if report is None:
+            report = SilentFeatureComputingReport()
         frame.__meta__['run_manager'] = self
         frame.__meta__['report'] = report
         results = dict()
@@ -117,6 +120,8 @@ class RunManager:
         return {self.find_run_id(o): s for o, s in signals if isinstance(s, signal_type)}
 
     def supervise(self, report=None):
+        if report is None:
+            report = SilentFeatureComputingReport()
         try:
             extra_iterations = 0
             while True:
