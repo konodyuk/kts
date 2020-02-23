@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import time
 
 from kts.core.cache import ObjectCache, FrameCache
 
@@ -13,6 +14,7 @@ def test_object_cache_timestamp_sync(tmp_path, val_1, val_2):
     c2 = ObjectCache(tmp_path)
     c1['kek'] = val_1
     assert (c2['kek'] == val_1)
+    time.sleep(0.01)
     del c2['kek']
     assert 'kek' not in c1
     c2['kek'] = val_2
@@ -29,6 +31,7 @@ def test_frame_cache_timestamp_sync(tmp_path, val_1, val_2):
     c2 = FrameCache(tmp_path)
     c1['kek'] = val_1
     pd.testing.assert_frame_equal(c2['kek'], val_1)
+    time.sleep(0.01)
     del c2['kek']
     assert 'kek' not in c1
     c2['kek'] = val_2
