@@ -33,8 +33,8 @@ class FeatureConstructor(ParallelFeatureConstructor):
     def extract_dependencies(self, func):
         dependencies = dict()
         for k, v in inspect.signature(func).parameters.items():
-            if isinstance(v.default, str) or isinstance(v.default, int) or isinstance(v.default, bool):
+            if isinstance(v.default, str):
                 dependencies[k] = v.default
             elif v.default != inspect._empty:
-                raise UserWarning(f"Unknown argument: {k}={repr(v.default)}.")
+                raise UserWarning(f"Unsupported argument type: {k}={type(v.default)}. String values expected.")
         return dependencies
