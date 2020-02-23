@@ -55,7 +55,7 @@ class AbstractCache(ABC):
         if self.path is None:
             return
         self.write(key, value)
-        self.timestamps[key] = value
+        self.timestamps[key] = self.get_timestamp(key)
 
     def __delitem__(self, key):
         if key in self.data:
@@ -153,6 +153,7 @@ class FrameCache(AbstractCache):
             path = self.path / (key + '.fth.frame')
             feather.write_dataframe(df, path)
         except:
+            os.remove(path)
             path = self.path / (key + '.pq.frame')
             df.to_parquet(path)
         self.recover_index(df)
