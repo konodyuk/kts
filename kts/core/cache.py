@@ -8,6 +8,8 @@ import dill
 import feather
 import pandas as pd
 
+from kts.core.run_id import RunID
+
 
 class AlreadyStored(Exception):
     pass
@@ -28,17 +30,17 @@ class AbstractCache(ABC):
             self.path = None
 
     @abstractmethod
-    def write(self, key, value):
+    def write(self, key: str, value):
         raise NotImplemented
 
     @abstractmethod
-    def read(self, key):
+    def read(self, key: str):
         raise NotImplemented
 
-    def __contains__(self, key):
+    def __contains__(self, key: str):
         return key in self.ls()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         if key not in self:
             raise KeyError(key)
         if self.path is None:
@@ -48,7 +50,7 @@ class AbstractCache(ABC):
             self.timestamps[key] = self.get_timestamp(key)
         return self.data[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value):
         if key in self:
             raise AlreadyStored(key)
         self.data[key] = value
@@ -57,7 +59,7 @@ class AbstractCache(ABC):
         self.write(key, value)
         self.timestamps[key] = self.get_timestamp(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str):
         if key in self.data:
             del self.data[key]
         if self.path is None:
@@ -66,13 +68,13 @@ class AbstractCache(ABC):
             del self.timestamps[key]
         self.remove_file(key)
 
-    def get_timestamp(self, key):
+    def get_timestamp(self, key: str):
         for ext in self.extensions:
             path = self.path / (key + ext)
             if path.exists():
                 return os.path.getmtime(path)
 
-    def remove_file(self, key):
+    def remove_file(self, key: str):
         for ext in self.extensions:
             path = self.path / (key + ext)
             if path.exists():
@@ -92,15 +94,15 @@ class AbstractCache(ABC):
         names = [name for name in names if name is not None]
         return names
 
-    def save(self, value, key):
+    def save(self, value, key: str):
         """backwards compatibility"""
         self[key] = value
 
-    def load(self, key):
+    def load(self, key: str):
         """backwards compatibility"""
         return self[key]
 
-    def remove(self, key):
+    def remove(self, key: str):
         """backwards compatibility"""
         del self[key]
 
@@ -108,7 +110,7 @@ class AbstractCache(ABC):
 class ObjectCache(AbstractCache):
     extensions = ['.dill.obj']
 
-    def write(self, key, value):
+    def write(self, key: str, value):
         path = self.path / (key + '.dill.obj')
         try:
             dill.dump(value, open(path, "wb"))
@@ -116,7 +118,7 @@ class ObjectCache(AbstractCache):
             if path.exists():
                 os.remove(path)
 
-    def read(self, key):
+    def read(self, key: str):
         path = self.path / (key + '.dill.obj')
         return dill.load(open(path, "rb"))
 
@@ -126,14 +128,14 @@ class FrameCache(AbstractCache):
     prefix = '_KTS_'
 
     @staticmethod
-    def has_default_index(df):
+    def has_default_index(df: pd.DataFrame):
         if not isinstance(df.index, pd.RangeIndex):
             return False
         if not (df.index.start == 0 and df.index.stop == df.shape[0]):
             return False
         return True
 
-    def recover_index(self, df):
+    def recover_index(self, df: pd.DataFrame):
         for col in df.columns:
             if col.startswith(self.prefix):
                 df.set_index(col, inplace=True)
@@ -142,7 +144,7 @@ class FrameCache(AbstractCache):
                     df.index.name = None
                 return
 
-    def write(self, key, df):
+    def write(self, key: str, df: pd.DataFrame):
         had_default_index = self.has_default_index(df)
         if not had_default_index:
             if df.index.name is None:
@@ -158,7 +160,7 @@ class FrameCache(AbstractCache):
             df.to_parquet(path)
         self.recover_index(df)
 
-    def read(self, key):
+    def read(self, key: str):
         path = self.path / (key + '.fth.frame')
         if path.exists():
             df = feather.read_dataframe(path, use_threads=True)
@@ -170,11 +172,14 @@ class FrameCache(AbstractCache):
             self.recover_index(df)
             return df
 
-    def save_run(self, value, run_id):
+    def save_run(self, value: pd.DataFrame, run_id: RunID):
         self[run_id.get_alias_name()] = value
 
-    def load_run(self, run_id):
+    def load_run(self, run_id: RunID):
         return self[run_id.get_alias_name()]
+
+    def has_run(self, run_id: RunID):
+        return run_id.get_alias_name() in self
 
 
 obj_cache = ObjectCache()
