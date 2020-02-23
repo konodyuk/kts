@@ -4,6 +4,7 @@ from collections import defaultdict
 from copy import copy
 from typing import Optional, Dict, Union, Tuple, Any
 
+import pandas as pd
 import ray
 from ray._raylet import ObjectID
 from ray.experimental import signal as rs
@@ -29,25 +30,55 @@ class Run:
 
 class RunCache:
     def __init__(self):
-        pass
+        self.states = CachedMapping('states')
+        self.columns = CachedMapping('columns')
+        self.stats = CachedMapping('stats')
 
-    def __contains__(self, key: RunID):
-        return key.get_alias_name() in frame_cache
+    def get_state(self, run_id: RunID):
+        return self.states[run_id.get_state_name()]
 
-    def __setitem__(self, key: RunID, value: AnyFrame):
-        frame_cache.save_run(value, key)
+    def get_result(self, run_id: RunID):
+        return frame_cache.load_run(run_id)
 
-    def __getitem__(self, key: RunID):
-        return frame_cache.load_run(key)
+    def get_columns(self, name: str):
+        """Returns unordered list of columns"""
+        result = set()
+        for state_name in self.columns:
+            if RunID.from_state_name(state_name).function_name == name:
+                result |= set(self.columns[state_name])
+        return list(result)
 
+    def get_raw_stats(self, name: str):
+        result = dict()
+        for alias_name in self.stats:
+            run_id = RunID.from_alias_name(alias_name)
+            if run_id.function_name == name:
+                result[run_id] = self.stats[alias_name]
+        return result
+
+    def put_state(self, run_id: RunID, value):
+        assert not self.has_state(run_id)
+        self.states[run_id.get_state_name()] = value
+        self.columns[run_id.get_state_name()] = value['__columns']
+
+    def put_result(self, run_id: RunID, value: pd.DataFrame):
+        assert not self.has_result(run_id)
+        frame_cache.save_run(value, run_id)
+
+    def put_stats(self, run_id: RunID, stats):
+        assert run_id.get_alias_name() not in self.stats
+        self.stats[run_id.get_state_name()] = stats
+
+    def has_state(self, run_id: RunID):
+        return run_id.get_state_name() in self.states
+
+    def has_result(self, run_id: RunID):
+        return frame_cache.has_run(run_id)
+
+run_cache = RunCache()
 
 class RunManager:
     def __init__(self):
-        pass
-
-    def init(self):
-        self.states = CachedMapping('states')
-        self.runs = RunCache()
         self.scheduled = defaultdict(Run)
 
     def run(self, feature_constructors, frame: KTSFrame, remote=False, ret=False, report=None) -> Optional[Dict[str, AnyFrame]]:
@@ -151,13 +182,14 @@ class RunManager:
 
     def get_resource(self, key: Union[RunID, Tuple[str, str], str]) -> Any:
         if isinstance(key, RunID):
-            if key in self.runs:
-                return self.runs[key] # df
+            if run_cache.has_result(key):
+                return run_cache.get_result(key) # df
             if key in self.scheduled:
                 return self.scheduled[key].res_df # oid
         elif isinstance(key, tuple):
-            if str(key) in self.states:
-                return self.states[str(key)] # df
+            run_id = RunID(*key)
+            if run_cache.has_state(run_id):
+                return run_cache.get_state(run_id) # df
             if key in [i.state_id for i in self.scheduled.keys()]:
                 return [v.res_state for k, v in self.scheduled.items() if k.state_id == key][0] # oid
         elif isinstance(key, str):
@@ -186,6 +218,10 @@ class RunManager:
             if run_id.fold == "preview":
                 return
             if res_df is not None:
-                self.runs[run_id] = res_df
+                run_cache.put_result(run_id, res_df)
             if res_state is not None:
-                self.states[str(run_id.state_id)] = res_state
+                run_cache.put_state(run_id, res_state)
+            if stats is not None:
+                run_cache.put_stats(run_id, stats)
+
+run_manager = RunManager()
