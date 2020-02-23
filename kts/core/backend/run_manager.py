@@ -67,7 +67,7 @@ class RunCache:
 
     def put_stats(self, run_id: RunID, stats):
         assert run_id.get_alias_name() not in self.stats
-        self.stats[run_id.get_state_name()] = stats
+        self.stats[run_id.get_alias_name()] = stats
 
     def has_state(self, run_id: RunID):
         return run_id.get_state_name() in self.states
