@@ -24,7 +24,7 @@ def preview(frame, *sizes, parallel=True, train=True):
                 ktsframe = KTSFrame(frame.head(size))
                 ktsframe.__meta__['train'] = train
                 ktsframe.__meta__['fold'] = 'preview'
-                results = run_manager.run([feature_constructor], frame=ktsframe, remote=parallel, ret=True, report=report)
+                results = run_manager.run([feature_constructor], frame=ktsframe, ret=True, report=report)
                 display(results[feature_constructor.name])
         finally:
             run_manager.merge_scheduled()
