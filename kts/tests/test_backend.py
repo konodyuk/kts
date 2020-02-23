@@ -31,7 +31,6 @@ def ktsframe(frame):
 @pytest.fixture
 def run_manager():
     res = RunManager()
-    res.init()
     return res
 
 @pytest.fixture
