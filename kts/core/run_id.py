@@ -20,6 +20,11 @@ class RunID:
         args = alias_name.split(SPLITTER)
         return RunID(*args)
 
+    @staticmethod
+    def from_state_name(state_name: str) -> 'RunID':
+        args = state_name.split(SPLITTER)
+        return RunID(*args)
+
     def get_column_name(self, column_name: str) -> str:
         return f"{column_name}{SPLITTER}{self.function_name}{SPLITTER}{self.fold}"
 
