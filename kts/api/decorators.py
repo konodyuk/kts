@@ -1,10 +1,10 @@
 from IPython.display import display
 
+from kts.core.backend.run_manager import run_manager
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.feature_constructor.generic import GenericFeatureConstructor, create_generic
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
-from kts.core.init import run_manager
 from kts.core.lists import feature_list, helper_list
 from kts.core.ui import FeatureComputingReport
 
