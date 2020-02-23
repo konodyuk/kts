@@ -1,5 +1,6 @@
 import inspect
 
+from kts.core.backend.run_manager import run_cache
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
 
@@ -27,7 +28,7 @@ class FeatureConstructor(ParallelFeatureConstructor):
                 result[col] = None
             return result[fixed_columns]
         if '__columns' not in kf._state:
-            kf._state['__columns'] = list(kf.columns)
+            kf._state['__columns'] = list(result.columns)
         return result
 
     def extract_dependencies(self, func):
@@ -38,3 +39,7 @@ class FeatureConstructor(ParallelFeatureConstructor):
             elif v.default != inspect._empty:
                 raise UserWarning(f"Unsupported argument type: {k}={type(v.default)}. String values expected.")
         return dependencies
+
+    @property
+    def columns(self):
+        return run_cache.get_columns(self.name)
