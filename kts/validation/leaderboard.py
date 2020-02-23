@@ -1,3 +1,5 @@
+import kts.ui.components
+import kts.ui.leaderboard
 from kts.core import ui
 from kts.core.containers import CachedMapping
 from kts.validation.experiment import Experiment
@@ -5,7 +7,7 @@ from kts.validation.experiment import Experiment
 experiments = CachedMapping('experiments')
 
 
-class Leaderboard(ui.HTMLRepr):
+class Leaderboard(kts.ui.components.HTMLRepr):
     def __init__(self, name='main'):
         self.name = name
         self.aliases = CachedMapping(f'lb_{name}')
@@ -44,7 +46,7 @@ class Leaderboard(ui.HTMLRepr):
     
     @property
     def html(self):
-        return ui.Leaderboard(self.sorted_aliases).html
+        return kts.ui.leaderboard.Leaderboard(self.sorted_aliases).html
 
 leaderboard = Leaderboard('main')  # TODO: sync with lbs
 

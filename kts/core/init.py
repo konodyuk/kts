@@ -4,6 +4,7 @@ from pathlib import Path
 
 import ray
 
+import kts.ui.settings
 from kts.core import ui
 from kts.core.backend.address_manager import get_address_manager, create_address_manager
 from kts.core.cache import frame_cache, obj_cache
@@ -40,7 +41,7 @@ def init():
     config_path = find_config()
     if config_path is not None:
         cfg.load(config_path)
-    ui.init()
+    kts.ui.settings.init()
     ray.init(ignore_reinit_error=True, logging_level=20 if cfg.debug else 50)
     try:
         address_manager = get_address_manager()

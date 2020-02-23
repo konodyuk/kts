@@ -11,7 +11,7 @@ from kts.core.backend.run_manager import RunManager
 from kts.core.cache import obj_cache, frame_cache
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
-from kts.core.ui import FeatureComputingReport
+from kts.ui.feature_computing_report import FeatureComputingReport
 
 ray.init(logging_level=0)
 try:

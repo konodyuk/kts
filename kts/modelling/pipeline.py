@@ -7,7 +7,7 @@ from functools import partial
 import numpy as np
 from IPython.display import display
 
-from kts.core.ui import *
+from kts.ui.fitting_report import CVFittingReport
 
 avg = partial(np.mean, axis=0)
 

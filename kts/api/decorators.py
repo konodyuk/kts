@@ -6,7 +6,7 @@ from kts.core.feature_constructor.generic import GenericFeatureConstructor, crea
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.lists import feature_list, helper_list
-from kts.core.ui import FeatureComputingReport
+from kts.ui.feature_computing_report import FeatureComputingReport
 
 
 def preview(frame, *sizes, parallel=True, train=True):

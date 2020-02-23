@@ -47,7 +47,7 @@ class Config:
 
     @theme.setter
     def theme(self, value):
-        from kts.core.ui import set_theme
+        from kts.ui.settings import set_theme
         set_theme(value)
         self._theme = value
 
@@ -57,7 +57,7 @@ class Config:
 
     @highlighting.setter
     def highlighting(self, value):
-        from kts.core.ui import set_highlighting
+        from kts.ui.settings import set_highlighting
         set_highlighting(value)
         self._highlighting = value
 

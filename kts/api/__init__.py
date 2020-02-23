@@ -8,7 +8,7 @@ from kts.modelling.custom_model import CustomModel
 # from kts.modelling.stacking import stack
 from kts.validation.leaderboard import leaderboard, leaderboard_list
 from kts.validation.validator import Validator
-from kts.core.ui import set_theme, set_highlighting, set_animation
+from kts.ui.settings import set_highlighting, set_theme, set_animation
 
 lb = leaderboard
 lbs = leaderboard_list

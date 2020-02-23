@@ -2,6 +2,7 @@ import time
 
 import numpy as np
 
+import kts.ui.components
 from kts.core import ui
 from kts.util.hashing import hash_str
 
@@ -61,40 +62,40 @@ class Experiment:
     @property
     def _html_elements(self):
         elements = [
-            ui.Annotation('ID'),
-            ui.Field(self.id),
-            ui.Annotation('score'),
-            ui.Field(self.score),
-            ui.Annotation('description'),
-            ui.Field(self.description),
-            ui.Annotation('model'),
-            ui.Field(self.model.__class__),
-            ui.Annotation('params'),
-            ui.Field(self.model.get_params()),
-            ui.Annotation('features'),
+            kts.ui.components.Annotation('ID'),
+            kts.ui.components.Field(self.id),
+            kts.ui.components.Annotation('score'),
+            kts.ui.components.Field(self.score),
+            kts.ui.components.Annotation('description'),
+            kts.ui.components.Field(self.description),
+            kts.ui.components.Annotation('model'),
+            kts.ui.components.Field(self.model.__class__),
+            kts.ui.components.Annotation('params'),
+            kts.ui.components.Field(self.model.get_params()),
+            kts.ui.components.Annotation('features'),
             self.feature_set.feature_pool,
-            ui.Annotation('details'),
-            ui.Pool([
-                ui.Raw(self.feature_set.html_collapsible),
-                ui.Raw(self.model.html_collapsible),
-                ui.Raw(self.validator.html_collapsible)
+            kts.ui.components.Annotation('details'),
+            kts.ui.components.Pool([
+                kts.ui.components.Raw(self.feature_set.html_collapsible),
+                kts.ui.components.Raw(self.model.html_collapsible),
+                kts.ui.components.Raw(self.validator.html_collapsible)
             ])
         ]
         return elements
     
     @property
     def html(self):
-        return ui.Column([ui.Title('experiment')] + self._html_elements).html
+        return kts.ui.components.Column([kts.ui.components.Title('experiment')] + self._html_elements).html
     
     def html_collapsible(self, thumbnail=None, border=False):
         cssid = np.random.randint(1000000000)
         if thumbnail is None:
-            thumbnail = ui.ThumbnailField(f"{self.id}", cssid)
+            thumbnail = kts.ui.components.ThumbnailField(f"{self.id}", cssid)
         else:
             thumbnail.cssid = cssid
-        elements = [ui.TitleWithCross('experiment', cssid)]
+        elements = [kts.ui.components.TitleWithCross('experiment', cssid)]
         elements += self._html_elements
-        return ui.CollapsibleColumn(elements, thumbnail, cssid, outer=True, border=border).html
+        return kts.ui.components.CollapsibleColumn(elements, thumbnail, cssid, outer=True, border=border).html
     
 
 
@@ -109,14 +110,14 @@ class ExperimentAlias:
 
     @property
     def html(self):
-        return ui.Column([ui.Title('experiment')] + self._html_elements).html
+        return kts.ui.components.Column([kts.ui.components.Title('experiment')] + self._html_elements).html
     
     def html_collapsible(self, thumbnail=None, border=False):
         cssid = np.random.randint(1000000000)
         if thumbnail is None:
-            thumbnail = ui.ThumbnailField(f"{self.id}", cssid)
+            thumbnail = kts.ui.components.ThumbnailField(f"{self.id}", cssid)
         else:
             thumbnail.cssid = cssid
-        elements = [ui.TitleWithCross('experiment', cssid)]
+        elements = [kts.ui.components.TitleWithCross('experiment', cssid)]
         elements += self._html_elements
-        return ui.CollapsibleColumn(elements, thumbnail, cssid, outer=True, border=border).html
+        return kts.ui.components.CollapsibleColumn(elements, thumbnail, cssid, outer=True, border=border).html

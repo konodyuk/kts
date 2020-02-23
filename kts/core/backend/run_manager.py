@@ -18,7 +18,7 @@ from kts.core.containers import CachedMapping
 from kts.core.frame import KTSFrame
 from kts.core.run_id import RunID
 from kts.core.types import AnyFrame
-from kts.core.ui import SilentFeatureComputingReport
+from kts.ui.feature_computing_report import SilentFeatureComputingReport
 
 
 class Run:
