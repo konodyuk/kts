@@ -4,13 +4,14 @@ from typing import Union, List, Tuple, Optional, Collection
 import numpy as np
 import pandas as pd
 
-from kts.core import ui
-from kts.core.cache import frame_cache
+import kts.ui.components as ui
+from kts.core.backend.run_manager import run_manager
+from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
-from kts.core.init import run_manager
 from kts.core.lists import feature_list
 from kts.settings import cfg
+from kts.ui.feature_computing_report import SilentFeatureComputingReport
 from kts.util.hashing import hash_list, hash_fold
 
 AnyFrame = Union[pd.DataFrame, KTSFrame]
@@ -62,45 +63,63 @@ class FeatureSet:
                  targets: Optional[Union[List[str], str]] = None,
                  auxiliary: Optional[Union[List[str], str]] = None,
                  description: Optional[str] = None):
-        self.before_split = before_split
-        self.after_split = after_split
-        if not bool(self.before_split):
-            self.before_split = []
-        if not bool(self.after_split):
-            self.after_split = []
-        # self.overfitted = overfitted
-        self.train_frame = frame_cache.save(train_frame)
-        if test_frame is not None:
-            self.test_frame = frame_cache.save(test_frame)
-        if isinstance(targets, str):
-            targets = [targets]
-        self.targets = targets
-        if isinstance(auxiliary, str):
-            auxiliary = [auxiliary]
-        self.auxiliary = auxiliary
+        self.before_split, self.after_split = self.check_features(before_split, after_split)
+        self.train_frame = train_frame
+        self.test_frame = test_frame
+        self.targets = self.check_columns(targets)
+        self.auxiliary = self.check_columns(auxiliary)
         self.description = description
+
+    def check_features(self, before, after):
+        if before is None:
+            before = []
+        if after is None:
+            after = []
+        for feature in before + after:
+            assert isinstance(feature, BaseFeatureConstructor), f"{feature.name} is not a FeatureConstructor"
+            assert not (feature.parallel and not feature.cache), f"{feature.name} cannot be parallel but not cached"
+        for i, feature in enumerate(before):
+            if not feature.cache:
+                after.append(before.pop(i))
+        return before, after
+
+    def check_columns(self, columns):
+        if columns is None:
+            return []
+        if not isinstance(columns, list):
+            columns = [columns]
+        for column in columns:
+            assert isinstance(column, str), f"Column names should be of type str"
+        return columns
 
     def split(self, folds):
         return CVFeatureSet(self, folds)
 
     def compute(self, frame=None, report=None):
         if report is None:
-            report = ui.FeatureComputingReport(feature_list)
+            report = SilentFeatureComputingReport()
         if frame is None:
-            frame = frame_cache.load(self.train_frame)
-        frame = KTSFrame(frame)
-        frame.__meta__['fold'] = '0000'
-        frame.__meta__['train'] = True
-        parallel_cache = [i for i in self.before_split if i.parallel and i.cache]
-        run_manager.run(parallel_cache, frame, remote=True, ret=False, report=report)
-        run_manager.supervise(report, report_handle)
-        not_parallel_cache = [i for i in self.before_split if not i.parallel and i.cache]
-        run_manager.run(not_parallel_cache, frame, remote=False, ret=False, report=report)
+            frame = self.train_frame
+            train = True
+        else:
+            train = False
+        parallel = [i for i in self.before_split if i.parallel]
+        run_manager.run(parallel, frame, train=train, ret=False, report=report)
+        run_manager.supervise(report)
+        not_parallel = [i for i in self.before_split if not i.parallel]
+        run_manager.run(not_parallel, frame, train=train, ret=False, report=report)
         run_manager.merge_scheduled()
 
     @property
     def target(self) -> Union[PreviewDataFrame, AnyFrame]:
-        res = frame_cache.load(self.train_frame, columns=self.targets)
+        frame = self.train_frame
+        self.compute()
+        target_fcs = [fc for fc in self.before_split if len(set(self.targets) & set(fc.columns))]
+        results = list(run_manager.run(target_fcs, frame, train=True, ret=True).values())
+        results.append(frame)
+        for i, frame in enumerate(results):
+            results[i] = frame[frame.columns.intersection(self.targets)]
+        res = concat(results)
         if cfg.preview_mode:
             return PreviewDataFrame(res)
         else:
@@ -108,7 +127,14 @@ class FeatureSet:
 
     @property
     def aux(self) -> Union[PreviewDataFrame, AnyFrame]:
-        res = frame_cache.load(self.train_frame, columns=self.auxiliary)
+        frame = self.train_frame
+        self.compute()
+        aux_fcs = [fc for fc in self.before_split if len(set(self.auxiliary) & set(fc.columns))]
+        results = list(run_manager.run(aux_fcs, frame, train=True, ret=True).values())
+        results.append(frame)
+        for i, frame in enumerate(results):
+            results[i] = frame[frame.columns.intersection(self.auxiliary)]
+        res = concat(results)
         if cfg.preview_mode:
             return PreviewDataFrame(res)
         else:
@@ -129,7 +155,7 @@ class FeatureSet:
     @property
     def feature_pool(self):
         return ui.Pool([ui.Raw(i.html_collapsible()) for i in self.features])
-    
+
     def _html_elements(self, include_features=True):
         elements = [ui.Annotation('name'), ui.Field(self.name)]
         if self.description is not None:
@@ -138,11 +164,11 @@ class FeatureSet:
             elements += [ui.Annotation('features'), self.feature_pool]
         elements += [ui.Annotation('source'), ui.Code(self.source)]
         return elements
-    
+
     @property
     def html(self):
         return ui.Column([ui.Title('feature set')] + self._html_elements()).html
-    
+
     @property
     def html_collapsible(self):
         cssid = np.random.randint(1000000000)
@@ -169,38 +195,13 @@ class CVFeatureSet:
         self.folds = folds
 
     def compute(self, frame: AnyFrame = None, report=None):
-        self.feature_set.compute()
         if report is None:
-            report = ui.FeatureComputingReport(feature_list)
-        if frame is not None:
-            for i in range(self.n_folds):
-                fold = self.fold(i)
-                fold.compute(frame, parallel=True, cache=True, report=report)
-            for i in range(self.n_folds):
-                fold = self.fold(i)
-                fold.compute(frame, parallel=False, cache=True, report=report)
-            return
+            report = SilentFeatureComputingReport(feature_list)
+        self.feature_set.compute(frame=frame, report=report)
         for i in range(self.n_folds):
-            fold = self.fold(i)
-            fold.compute(fold.train_frame, parallel=True, cache=True, report=report, train=True)
-        for i in range(self.n_folds):
-            fold = self.fold(i)
-            fold.compute(fold.valid_frame, parallel=True, cache=True, report=report, train=False)
-        for i in range(self.n_folds):
-            fold = self.fold(i)
-            fold.compute(fold.train_frame, parallel=False, cache=True, report=report, train=True)
-        for i in range(self.n_folds):
-            fold = self.fold(i)
-            fold.compute(fold.valid_frame, parallel=False, cache=True, report=report, train=False)
-
-    # def compute_parallel(self, frame, report):
-    #     parallel_cache = [i for i in self.after_split if i.parallel and i.cache]
-    #     run_manager.run(parallel_cache, frame, remote=True)
-    #     run_manager.supervise(report)
-
-    # def compute_not_parallel(self, frame, report):
-    #     not_parallel_cache = [i for i in self.after_split if not i.parallel and i.cache]
-    #     run_manager.run(not_parallel_cache, frame, remote=False)
+            self.fold(i).compute(frame=frame, report=report, train=True)
+            self.fold(i).compute(frame=frame, report=report, train=False)
+        run_manager.merge_scheduled()
 
     @property
     def computed(self) -> bool:
@@ -223,84 +224,57 @@ class Fold:
         self.cv_feature_set = cv_feature_set
         self.fold_idx = fold_idx
 
-    def compute(self, frame, parallel=None, cache=None, before=False, train=False, report=None):
-        frame = KTSFrame(frame)
-        frame.__meta__['fold'] = self.fold_id
-        frame.__meta__['train'] = train
-        if before:
-            feature_constructors = self.before_split
+    def compute(self, frame=None, report=None, train=None):
+        if report is None:
+            report = SilentFeatureComputingReport()
+        if frame is None:
+            assert train is not None
+            if train:
+                frame = self.train_frame
+            else:
+                frame = self.valid_frame
         else:
-            feature_constructors = self.after_split
-        queue = [i for i in feature_constructors if i.parallel == parallel and i.cache == cache]
-        return run_manager.run(queue, frame, remote=parallel, ret=(not cache), report=report)
-        
+            train = False
+        cached = [i for i in self.after_split if i.cache]
+        parallel = [i for i in cached if i.parallel]
+        run_manager.run(parallel, frame, train=train, fold=self.fold_id, ret=False, report=report)
+        run_manager.supervise(report)
+        not_parallel = [i for i in cached if not i.parallel]
+        run_manager.run(not_parallel, frame, train=train, fold=self.fold_id, ret=False, report=report)
+
     @property
     def train(self) -> np.ndarray:
-        self.cv_feature_set.compute()
-        frames = dict()
-        frames.update(self.aliases_before(self.train_frame, train=True))
-        frames.update(self.aliases_after(self.train_frame, train=True))
-        frames.update(self.compute(self.train_frame, report=self.report, parallel=True, cache=False, before=True, train=True))
-        frames.update(self.compute(self.train_frame, report=self.report, parallel=True, cache=False, before=False, train=True))
-        frames.update(self.compute(self.train_frame, report=self.report, parallel=False, cache=False, before=True, train=True))
-        frames.update(self.compute(self.train_frame, report=self.report, parallel=False, cache=False, before=False, train=True))
-        frames_sorted = [frames[fc.name] for fc in self.before_split + self.after_split]
-        return frame_cache.concat(frames_sorted)
+        results = dict()
+        frame = self.feature_set.train_frame
+        results.update(run_manager.run(self.before_split, frame, train=True, ret=True))
+        frame = self.train_frame
+        results.update(run_manager.run(self.after_split, frame, train=True, fold=self.fold_id, ret=True))
+        results.update({'_': self.train_frame[[]]})
+        return concat(results.values()).values
 
     @property
     def valid(self) -> np.ndarray:
-        self.cv_feature_set.compute()
-        frames = dict()
-        frames.update(self.aliases_before(self.valid_frame))
-        frames.update(self.aliases_after(self.valid_frame))
-        frames.update(self.compute(self.valid_frame, report=self.report, parallel=True, cache=False, before=True))
-        frames.update(self.compute(self.valid_frame, report=self.report, parallel=True, cache=False, before=False))
-        frames.update(self.compute(self.valid_frame, report=self.report, parallel=False, cache=False, before=True))
-        frames.update(self.compute(self.valid_frame, report=self.report, parallel=False, cache=False, before=False))
-        frames_sorted = [frames[fc.name] for fc in self.before_split + self.after_split]
-        return frame_cache.concat(frames_sorted)
+        results = dict()
+        frame = self.feature_set.train_frame
+        results.update(run_manager.run(self.before_split, frame, train=True, ret=True))
+        frame = self.valid_frame
+        results.update(run_manager.run(self.after_split, frame, train=False, fold=self.fold_id, ret=True))
+        results.update({'_': self.valid_frame[[]]})
+        return concat(results.values()).values
 
     def __call__(self, frame: AnyFrame) -> np.ndarray:
-        self.cv_feature_set.compute()
-        frames = dict()
-        frames.update(self.aliases_before(frame))
-        frames.update(self.aliases_after(frame))
-        frames.update(self.compute(frame, report=self.report, parallel=True, cache=False, before=True))
-        frames.update(self.compute(frame, report=self.report, parallel=True, cache=False, before=False))
-        frames.update(self.compute(frame, report=self.report, parallel=False, cache=False, before=True))
-        frames.update(self.compute(frame, report=self.report, parallel=False, cache=False, before=False))
-        frames_sorted = [frames[fc.name] for fc in self.before_split + self.after_split]
-        return frame_cache.concat(frames_sorted)
+        results = dict()
+        results.update(run_manager.run(self.before_split, frame, train=False, ret=True))
+        results.update(run_manager.run(self.after_split, frame, train=False, fold=self.fold_id, ret=True))
+        return concat(results.values()).values
 
     @property
     def train_target(self) -> np.ndarray:
-        self.cv_feature_set.compute()
-        return self.alias_before(train=True) & self.targets
+        return self.feature_set.target.iloc[self.idx_train].values
 
     @property
     def valid_target(self) -> np.ndarray:
-        self.cv_feature_set.compute()
-        return self.alias_before(train=False) & self.targets
-
-    def aliases_before(self, frame: AnyFrame, train=False):
-        frame = KTSFrame(frame)
-        frame.__meta__['fold'] = self.fold_id
-        frame.__meta__['train'] = train
-        return [i.get_alias(frame) for i in self.before_split if i.cache]
-
-    def alias_before(self, train=False):
-        frame = self.train_frame if train else self.valid_frame
-        aliases = self.aliases_before(frame, train=train)
-        res_alias = aliases[0]
-        for alias in aliases[1:]:
-            res_alias = res_alias.join(alias)
-        return res_alias
-
-    def aliases_after(self, frame: AnyFrame, train=False):
-        frame = KTSFrame(frame)
-        frame.__meta__['fold'] = self.fold_id
-        frame.__meta__['train'] = train
-        return [i.get_alias(frame) for i in self.after_split if i.cache]
+        return self.feature_set.target.iloc[self.idx_valid].values
     
     @property
     def before_split(self):
@@ -311,18 +285,20 @@ class Fold:
         return self.feature_set.after_split
 
     @property
+    def features(self):
+        return self.before_split + self.after_split
+
+    @property
     def feature_set(self):
         return self.cv_feature_set.feature_set
     
     @property
     def train_frame(self):
-        name = self.feature_set.train_frame
-        return frame_cache.load(name, index=self.idx_train)
+        return self.feature_set.train_frame.iloc[self.idx_train]
 
     @property
     def valid_frame(self):
-        name = self.feature_set.train_frame
-        return frame_cache.load(name, index=self.idx_train)
+        return self.feature_set.train_frame.iloc[self.idx_valid]
 
     @property
     def idx_train(self):
@@ -335,11 +311,18 @@ class Fold:
     @property
     def fold_id(self):
         return self.cv_feature_set.fold_ids[self.fold_idx]
-    
-    @property
-    def report(self):
-        return self.cv_feature_set.report if 'report' in dir(self.cv_feature_set) else None
 
     @property
     def targets(self):
         return self.feature_set.targets
+
+
+def concat(frames: List[pd.DataFrame]):
+    frames = list(frames)
+    common_index = frames[0].index
+    for frame in frames:
+        common_index = common_index.intersection(frame.index)
+    for i, frame in enumerate(frames):
+        if len(frame.index) != len(common_index) or not all(frame.index == common_index):
+            frames[i] = frame.loc[common_index]
+    return pd.concat(frames, axis=1)
