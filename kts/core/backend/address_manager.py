@@ -1,7 +1,10 @@
 import time
 
 import ray
-from ray.experimental import get_actor
+try:
+    from ray.experimental import get_actor  # ray<=0.8.1
+except ImportError:
+    from ray.util import get_actor          # ray>=0.8.2
 
 
 @ray.remote
