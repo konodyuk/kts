@@ -4,7 +4,6 @@ from kts.core.backend.run_manager import run_manager
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.feature_constructor.generic import GenericFeatureConstructor, create_generic
 from kts.core.feature_constructor.user_defined import FeatureConstructor
-from kts.core.frame import KTSFrame
 from kts.core.lists import feature_list, helper_list
 from kts.ui.feature_computing_report import FeatureComputingReport
 
@@ -21,10 +20,12 @@ def preview(frame, *sizes, parallel=True, train=True):
         feature_constructor.parallel = parallel
         try:
             for size in sizes:
-                ktsframe = KTSFrame(frame.head(size))
-                ktsframe.__meta__['train'] = train
-                ktsframe.__meta__['fold'] = 'preview'
-                results = run_manager.run([feature_constructor], frame=ktsframe, ret=True, report=report)
+                results = run_manager.run([feature_constructor],
+                                          frame=frame.head(size),
+                                          train=train,
+                                          fold='preview',
+                                          ret=True,
+                                          report=report)
                 display(results[feature_constructor.name])
         finally:
             run_manager.merge_scheduled()

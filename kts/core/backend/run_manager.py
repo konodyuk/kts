@@ -2,7 +2,7 @@ import os
 import time
 from collections import defaultdict
 from copy import copy
-from typing import Optional, Dict, Union, Tuple, Any
+from typing import Optional, Dict, Union, Tuple, Any, List
 
 import pandas as pd
 import ray
@@ -15,6 +15,7 @@ from kts.core.backend.progress import pbar, ProgressSignal
 from kts.core.backend.signals import filter_signals, Sync, ResourceRequest, RunPID
 from kts.core.cache import frame_cache
 from kts.core.containers import CachedMapping
+from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.run_id import RunID
 from kts.core.types import AnyFrame
@@ -82,9 +83,19 @@ class RunManager:
     def __init__(self):
         self.scheduled = defaultdict(Run)
 
-    def run(self, feature_constructors, frame: KTSFrame, ret=False, report=None) -> Optional[Dict[str, AnyFrame]]:
+    def run(self,
+            feature_constructors: List[BaseFeatureConstructor],
+            frame: AnyFrame,
+            *,
+            train: bool,
+            fold: str = 'default',
+            ret: bool = False,
+            report=None) -> Optional[Dict[str, AnyFrame]]:
         if report is None:
             report = SilentFeatureComputingReport()
+        frame = KTSFrame(frame)
+        frame.__meta__['train'] = train
+        frame.__meta__['fold'] = fold
         frame.__meta__['run_manager'] = self
         frame.__meta__['report'] = report
         results = dict()
