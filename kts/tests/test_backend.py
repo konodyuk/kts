@@ -8,7 +8,6 @@ import ray
 
 from kts.core.backend.address_manager import create_address_manager, get_address_manager
 from kts.core.feature_constructor.user_defined import FeatureConstructor
-from kts.tests.fixtures import clear_caches, int_frame, other_int_frame, run_manager, report
 
 
 ray.init(logging_level=0)
