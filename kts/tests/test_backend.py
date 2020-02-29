@@ -8,7 +8,7 @@ import ray
 
 from kts.core.backend.address_manager import create_address_manager, get_address_manager
 from kts.core.feature_constructor.user_defined import FeatureConstructor
-
+from kts.core.backend.progress import pbar
 
 ray.init(logging_level=0, ignore_reinit_error=True)
 try:
@@ -131,6 +131,28 @@ def test_nested_apply():
 @pytest.mark.skip
 def test_nested_generic():
     pass
+
+@pytest.mark.parametrize('remote_1,remote_2', product([True, False], repeat=2))
+def test_nested_progressbar(clear_caches, int_frame, run_manager, report, remote_1, remote_2):
+    am.clear.remote()
+    def func_1(df):
+        for _ in pbar(range(10)):
+            time.sleep(0.1)
+        return df + 1
+    func_1 = FeatureConstructor(func_1)
+    func_1.parallel = remote_1
+    def func_2(df):
+        for _ in pbar(range(10), title='test'):
+            time.sleep(0.1)
+        return func_1(df) ** 2
+    func_2 = FeatureConstructor(func_2)
+    func_2.parallel = remote_2
+    assert len(run_manager.scheduled) == 0
+    res = run_manager.run([func_2], frame=int_frame, train=True, fold='preview', ret=True, report=report)
+    res_frame = res['func_2']
+    run_manager.merge_scheduled()
+    assert all(res_frame == (int_frame + 1) ** 2)
+
 
 @pytest.mark.parametrize('remote_1', [True, False])
 def test_run_cache_columns(clear_caches, int_frame, other_int_frame, run_manager, report, remote_1):
