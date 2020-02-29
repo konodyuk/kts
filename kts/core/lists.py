@@ -11,18 +11,19 @@ class SyncedList(CachedMapping):
 
 class FeatureList(SyncedList):
     def __init__(self):
-        self.name = 'features'
+        super().__init__('features')
 
     def register(self, feature_constructor):
         if feature_constructor.name in self:
             if feature_constructor.source != self[feature_constructor.name].source:
                 raise UserWarning(f"Source code mismatch. ")
+            return
         self[feature_constructor.name] = feature_constructor
 
 
 class HelperList(SyncedList):
     def __init__(self):
-        self.name = 'helpers'
+        super().__init__('helpers')
 
     def register(self, helper):
         self[helper.name] = helper
