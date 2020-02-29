@@ -10,7 +10,7 @@ from kts.core.backend.address_manager import create_address_manager, get_address
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 
 
-ray.init(logging_level=0)
+ray.init(logging_level=0, ignore_reinit_error=True)
 try:
     am = get_address_manager()
 except:

@@ -30,7 +30,6 @@ def other_int_frame():
 
 @pytest.fixture
 def frame():
-    size = 10000
     return pd.DataFrame({
         'int': range(SIZE),
         'str': [f"s_{i % 13}" for i in range(SIZE)],
