@@ -3,7 +3,6 @@ import pytest
 
 from kts.core.backend.run_manager import RunManager
 from kts.core.cache import obj_cache, frame_cache
-from kts.core.frame import KTSFrame
 from kts.ui.feature_computing_report import FeatureComputingReport
 
 
@@ -16,21 +15,13 @@ def clear_caches():
 
 
 @pytest.fixture
-def ktsframe():
-    res = KTSFrame(pd.DataFrame({'a': range(10000)}))
-    return res
+def int_frame():
+    return pd.DataFrame({'a': range(5000)})
 
 
 @pytest.fixture
-def ktsframe_1():
-    res = KTSFrame(pd.DataFrame({'a': range(5000)}))
-    return res
-
-
-@pytest.fixture
-def ktsframe_2():
-    res = KTSFrame(pd.DataFrame({'a': range(5000, 10000)}))
-    return res
+def other_int_frame():
+    return pd.DataFrame({'a': range(5000, 10000)})
 
 
 @pytest.fixture
