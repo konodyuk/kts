@@ -128,60 +128,6 @@ class EmptyLike(InlineFeatureConstructor):
             return kf[[]]
 
 
-class Selector(InlineFeatureConstructor):
-    def __init__(self, feature_constructor, columns):
-        self.feature_constructor = feature_constructor
-        self.selected_columns = columns
-        self.name = f"{feature_constructor.name}_select_" + '_'.join(columns)
-
-    def compute(self, kf: KTSFrame, ret=True):
-        res = self.feature_constructor.compute(kf)
-        if ret:
-            return res[[self.selected_columns]]
-
-    @property
-    def cache(self):
-        return self.feature_constructor.cache
-
-    @property
-    def parallel(self):
-        return self.feature_constructor.parallel
-
-    @property
-    def source(self):
-        column_intersection = set(self.selected_columns)
-        column_intersection &= set(self.feature_constructor.columns)
-        column_intersection = list(column_intersection)
-        return f"{repr(self.feature_constructor)} & {column_intersection}"
-    
-
-class Dropper(InlineFeatureConstructor):
-    def __init__(self, feature_constructor, columns):
-        self.feature_constructor = feature_constructor
-        self.dropped_columns = columns
-        self.name = f"{feature_constructor.name}_drop_" + '_'.join(columns)
-
-    def compute(self, kf: KTSFrame, ret=True):
-        res = self.feature_constructor.compute(kf)
-        if ret:
-            return res.drop(self.dropped_columns, axis=1)
-
-    @property
-    def cache(self):
-        return self.feature_constructor.cache
-
-    @property
-    def parallel(self):
-        return self.feature_constructor.parallel
-
-    @property
-    def source(self):
-        column_intersection = set(self.dropped_columns)
-        column_intersection &= set(self.feature_constructor.columns)
-        column_intersection = list(column_intersection)
-        return f"{repr(self.feature_constructor)} - {column_intersection}"
-
-
 class Concat(InlineFeatureConstructor):
     """
     Possible optimizations:

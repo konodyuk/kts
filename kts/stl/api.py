@@ -10,8 +10,8 @@ from category_encoders import (
     TargetEncoder,
 )
 
-from kts.core.feature_constructor.base import BaseFeatureConstructor
-from kts.stl.backend import EmptyLike, Identity, Concat, Applier, Selector, Dropper, CategoryEncoder
+from kts.core.feature_constructor.base import BaseFeatureConstructor, Selector, Dropper
+from kts.stl.backend import EmptyLike, Identity, Concat, Applier, CategoryEncoder
 
 empty_like = EmptyLike()
 identity = Identity()
