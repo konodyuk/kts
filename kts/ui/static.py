@@ -113,7 +113,7 @@ CSS_STYLE = """
 }}
 .kts .cross-before,
 .kts .cross-after {{
-  background-color: {first};
+  background-color: {third};
   content: '';
   position: absolute;
   width: 0.75rem;
