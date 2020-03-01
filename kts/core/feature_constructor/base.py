@@ -153,3 +153,11 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         elements += self._html_elements()
         thumbnail = ui.ThumbnailField(name, css_id, style=style, **kw)
         return ui.CollapsibleColumn(elements, thumbnail, css_id, border=border).html
+
+
+class InlineFeatureConstructor(BaseFeatureConstructor):
+    parallel = False
+    cache = False
+
+    def __call__(self, kf: KTSFrame, ret=True):
+        return self.compute(kf, ret=ret)

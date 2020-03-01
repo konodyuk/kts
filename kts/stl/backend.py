@@ -2,7 +2,7 @@ from typing import Union, List, Optional
 
 import pandas as pd
 
-from kts.core.feature_constructor.inline import InlineFeatureConstructor
+from kts.core.feature_constructor.base import InlineFeatureConstructor
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.settings import cfg
