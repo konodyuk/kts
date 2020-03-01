@@ -3,13 +3,15 @@ from copy import copy
 from functools import wraps
 from inspect import Signature, Parameter
 
+import kts.ui.components as ui
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 
 
-class GenericFeatureConstructor:
+class GenericFeatureConstructor(ui.HTMLRepr):
     def __init__(self, func, kwargs):
         self.func = func
         self.name = func.__name__
+        self.description = func.__doc__
         self.source = inspect.getsource(func)
         self.parallel = kwargs.pop('parallel', True)
         self.cache = kwargs.pop('cache', True)
@@ -31,6 +33,7 @@ class GenericFeatureConstructor:
             instance_kwargs[k] = v
         res = FeatureConstructor(self.modify(self.func, instance_kwargs), internal=True)
         res.name = f"{self.name}_" + "_".join(map(str, instance_kwargs.values()))
+        res.description = f"An instance of generic feature constructor <tt>{self.name}</tt>"
         res.source = f"{self.name}({', '.join(f'{repr(instance_kwargs[k])}' for k in self.arg_names)})"
         # res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
         res.dependencies = dict()
@@ -58,6 +61,20 @@ class GenericFeatureConstructor:
                         g[k] = v
             return res
         return new_func
+
+
+    def _html_elements(self):
+        elements = [ui.Annotation('name'), ui.Field(self.name)]
+        if self.description is not None:
+            elements += [ui.Annotation('description'), ui.Field(self.description)]
+        elements += [ui.Annotation('source'), ui.Code(self.source)]
+        return elements
+
+    @property
+    def html(self):
+        elements = [ui.Title('generic feature')]
+        elements += self._html_elements()
+        return ui.Column(elements).html
 
 
 def new_call(self, *args, **kwargs):
