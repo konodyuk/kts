@@ -4,10 +4,12 @@ from contextlib import redirect_stdout, contextmanager, redirect_stderr
 from io import StringIO
 from typing import Tuple, Union, Dict
 
+import numpy as np
 import ray
 from ray._raylet import ObjectID
 from ray.experimental import signal as rs
 
+import kts.ui.components as ui
 from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import RemoteTextIO, LocalTextIO
 from kts.core.backend.progress import pbar
@@ -21,11 +23,14 @@ from kts.core.run_id import RunID
 from kts.core.types import AnyFrame
 
 
-class BaseFeatureConstructor(ABC):
+class BaseFeatureConstructor(ABC, ui.HTMLRepr):
     parallel = False
     cache = False
     worker = None
     registered = False
+    source = None
+    description = None
+    columns = None
 
     def request_resource(self, key, df):
         if in_worker():
@@ -122,3 +127,29 @@ class BaseFeatureConstructor(ABC):
             return self.name
         else:
             return self.source
+
+    def _html_elements(self):
+        elements = [ui.Annotation('name'), ui.Field(repr(self))]
+        if self.description is not None:
+            elements += [ui.Annotation('description'), ui.Field(self.description)]
+        elements += [ui.Annotation('source'), ui.Code(self.source)]
+        if self.columns:
+            elements += [ui.Annotation('columns'), ui.Field('<tt>' + ', '.join(self.columns) + '</tt>')]
+        # if self.preview_df is not None:
+        #     elements += [ui.Annotation('preview'), ui.DF(self.preview_df)]
+        return elements
+
+    @property
+    def html(self):
+        elements = [ui.Title('feature constructor')]
+        elements += self._html_elements()
+        return ui.Column(elements).html
+
+    def html_collapsible(self, name=None, style="", border=False, **kw):
+        if name is None:
+            name = repr(self)
+        css_id = np.random.randint(1000000000)
+        elements = [ui.TitleWithCross('feature constructor', css_id)]
+        elements += self._html_elements()
+        thumbnail = ui.ThumbnailField(name, css_id, style=style, **kw)
+        return ui.CollapsibleColumn(elements, thumbnail, css_id, border=border).html
