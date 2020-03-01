@@ -2,7 +2,7 @@ import time
 from abc import ABC
 from contextlib import redirect_stdout, contextmanager, redirect_stderr
 from io import StringIO
-from typing import Tuple, Union, Dict
+from typing import Tuple, Union, Dict, List
 
 import numpy as np
 import ray
@@ -154,6 +154,12 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         thumbnail = ui.ThumbnailField(name, css_id, style=style, **kw)
         return ui.CollapsibleColumn(elements, thumbnail, css_id, border=border).html
 
+    def __and__(self, columns: List[str]):
+        return Selector(self, columns=columns)
+
+    def __sub__(self, columns: List[str]):
+        return Dropper(self, columns=columns)
+
 
 class InlineFeatureConstructor(BaseFeatureConstructor):
     parallel = False
@@ -170,7 +176,7 @@ class Selector(InlineFeatureConstructor):
         self.name = f"{feature_constructor.name}_select_" + '_'.join(columns)
 
     def compute(self, kf: KTSFrame, ret=True):
-        res = self.feature_constructor.compute(kf)
+        res = self.feature_constructor(kf, ret=ret)
         if ret:
             return res[[self.selected_columns]]
 
@@ -189,6 +195,10 @@ class Selector(InlineFeatureConstructor):
         column_intersection = list(column_intersection)
         return f"{repr(self.feature_constructor)} & {column_intersection}"
 
+    @property
+    def columns(self):
+        return self.selected_columns
+
 
 class Dropper(InlineFeatureConstructor):
     def __init__(self, feature_constructor, columns):
@@ -197,7 +207,7 @@ class Dropper(InlineFeatureConstructor):
         self.name = f"{feature_constructor.name}_drop_" + '_'.join(columns)
 
     def compute(self, kf: KTSFrame, ret=True):
-        res = self.feature_constructor.compute(kf)
+        res = self.feature_constructor(kf, ret=ret)
         if ret:
             return res.drop(self.dropped_columns, axis=1)
 
@@ -215,3 +225,7 @@ class Dropper(InlineFeatureConstructor):
         column_intersection &= set(self.feature_constructor.columns)
         column_intersection = list(column_intersection)
         return f"{repr(self.feature_constructor)} - {column_intersection}"
+
+    @property
+    def columns(self):
+        return list(set(self.feature_constructor.columns) - set(self.dropped_columns))
