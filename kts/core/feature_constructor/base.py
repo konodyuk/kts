@@ -25,6 +25,7 @@ class BaseFeatureConstructor(ABC):
     parallel = False
     cache = False
     worker = None
+    registered = False
 
     def request_resource(self, key, df):
         if in_worker():
@@ -115,3 +116,9 @@ class BaseFeatureConstructor(ABC):
             rm = kf.__meta__['run_manager']
             report = kf.__meta__['report']
             rm.supervise(report=report)
+
+    def __repr__(self):
+        if self.registered:
+            return self.name
+        else:
+            return self.source

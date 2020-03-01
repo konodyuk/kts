@@ -20,6 +20,7 @@ class FeatureConstructor(ParallelFeatureConstructor, ui.HTMLRepr):
         self.description = func.__doc__
         self.source = inspect.getsource(func)
         self.dependencies = self.extract_dependencies(func)
+        self.registered = True
 
     def compute(self, kf: KTSFrame):
         kwargs = {key: self.request_resource(value, kf) for key, value in self.dependencies}
