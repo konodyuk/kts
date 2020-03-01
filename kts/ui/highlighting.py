@@ -17,6 +17,7 @@ class KTSStyle(Style):
         pt.String: '#4dff4d',
         pt.Number: '#ce93d8',
         pt.Operator: 'bold #fffd54',
+        pt.Punctuation: 'bold #ffffff',
     }
 
 
