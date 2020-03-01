@@ -178,7 +178,7 @@ class Selector(InlineFeatureConstructor):
     def compute(self, kf: KTSFrame, ret=True):
         res = self.feature_constructor(kf, ret=ret)
         if ret:
-            return res[[self.selected_columns]]
+            return res[self.selected_columns]
 
     @property
     def cache(self):
@@ -191,7 +191,8 @@ class Selector(InlineFeatureConstructor):
     @property
     def source(self):
         column_intersection = set(self.selected_columns)
-        column_intersection &= set(self.feature_constructor.columns)
+        if self.feature_constructor.columns is not None:
+            column_intersection &= set(self.feature_constructor.columns)
         column_intersection = list(column_intersection)
         return f"{repr(self.feature_constructor)} & {column_intersection}"
 
@@ -222,10 +223,14 @@ class Dropper(InlineFeatureConstructor):
     @property
     def source(self):
         column_intersection = set(self.dropped_columns)
-        column_intersection &= set(self.feature_constructor.columns)
+        if self.feature_constructor.columns is not None:
+            column_intersection &= set(self.feature_constructor.columns)
         column_intersection = list(column_intersection)
         return f"{repr(self.feature_constructor)} - {column_intersection}"
 
     @property
     def columns(self):
-        return list(set(self.feature_constructor.columns) - set(self.dropped_columns))
+        if self.feature_constructor.columns is not None:
+            return list(set(self.feature_constructor.columns) - set(self.dropped_columns))
+        else:
+            return list()
