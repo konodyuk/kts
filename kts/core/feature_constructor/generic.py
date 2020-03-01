@@ -77,11 +77,9 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         return ui.Column(elements).html
 
 
-def new_call(self, *args, **kwargs):
-    return self.call(*args, **kwargs)
-
-
 def create_generic(func, kwargs):
+    def new_call(self, *args, **kwargs):
+        return self.call(*args, **kwargs)
     members = dict(__call__=new_call)
     generic_type = type(f"Generic({func.__name__})", (GenericFeatureConstructor,), members)
     return generic_type(func, kwargs)
