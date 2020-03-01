@@ -145,10 +145,14 @@ class FeatureSet(ui.HTMLRepr):
 
     @property
     def source(self):
-        return f"FeatureSet({pprint.pformat([i.name for i in self.before_split])},\n" \
-               f"           {pprint.pformat([i.name for i in self.after_split])})\n" \
-               f"           targets={pprint.pformat(self.targets)})\n" \
-               f"           auxiliary={pprint.pformat(self.auxiliary)})\n"
+        res =  "FeatureSet("
+        shift = ' ' * len(res)
+        res += '[' + (',\n' + shift + ' ').join([repr(i) for i in self.before_split]) + '],\n'
+        res += shift
+        res += '[' + (',\n' + shift + ' ').join([repr(i) for i in self.after_split]) + '],\n'
+        res += f"{shift}targets={pprint.pformat(self.targets)},\n"
+        res += f"{shift}auxiliary={pprint.pformat(self.auxiliary)})"
+        return res
 
     @property
     def features(self):
