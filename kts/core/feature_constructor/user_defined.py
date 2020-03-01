@@ -1,11 +1,14 @@
 import inspect
 
+import numpy as np
+
+import kts.ui.components as ui
 from kts.core.backend.run_manager import run_cache
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
 
 
-class FeatureConstructor(ParallelFeatureConstructor):
+class FeatureConstructor(ParallelFeatureConstructor, ui.HTMLRepr):
     parallel = True
     cache = True
 
@@ -14,6 +17,7 @@ class FeatureConstructor(ParallelFeatureConstructor):
         if internal:
             return
         self.name = func.__name__
+        self.description = func.__doc__
         self.source = inspect.getsource(func)
         self.dependencies = self.extract_dependencies(func)
 
@@ -43,3 +47,29 @@ class FeatureConstructor(ParallelFeatureConstructor):
     @property
     def columns(self):
         return run_cache.get_columns(self.name)
+
+    def _html_elements(self):
+        elements = [ui.Annotation('name'), ui.Field(self.name)]
+        if self.description is not None:
+            elements += [ui.Annotation('description'), ui.Field(self.description)]
+        elements += [ui.Annotation('source'), ui.Code(self.source)]
+        if self.columns:
+            elements += [ui.Annotation('columns'), ui.Field(', '.join(self.columns))]
+        # if self.preview_df is not None:
+        #     elements += [ui.Annotation('preview'), ui.DF(self.preview_df)]
+        return elements
+
+    @property
+    def html(self):
+        elements = [ui.Title('feature constructor')]
+        elements += self._html_elements()
+        return ui.Column(elements).html
+
+    def html_collapsible(self, name=None, style="", border=False, **kw):
+        if name is None:
+            name = self.name
+        css_id = np.random.randint(1000000000)
+        elements = [ui.TitleWithCross('feature constructor', css_id)]
+        elements += self._html_elements()
+        thumbnail = ui.ThumbnailField(name, css_id, style=style, **kw)
+        return ui.CollapsibleColumn(elements, thumbnail, css_id, border=border).html
