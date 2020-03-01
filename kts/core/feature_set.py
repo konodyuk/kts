@@ -53,7 +53,7 @@ class PreviewDataFrame:
         return self.repr_plaintext
 
 
-class FeatureSet:
+class FeatureSet(ui.HTMLRepr):
     def __init__(self,
                  before_split: List[FeatureConstructor],
                  after_split: Optional[List[FeatureConstructor]] = None,
@@ -145,8 +145,10 @@ class FeatureSet:
 
     @property
     def source(self):
-        return f"FeatureSet({pprint.pformat([i.name for i in self.before_split])},\n " \
-               f"{pprint.pformat([i.name for i in self.after_split])})"
+        return f"FeatureSet({pprint.pformat([i.name for i in self.before_split])},\n" \
+               f"           {pprint.pformat([i.name for i in self.after_split])})\n" \
+               f"           targets={pprint.pformat(self.targets)})\n" \
+               f"           auxiliary={pprint.pformat(self.auxiliary)})\n"
 
     @property
     def features(self):
@@ -171,10 +173,10 @@ class FeatureSet:
 
     @property
     def html_collapsible(self):
-        cssid = np.random.randint(1000000000)
-        elements = [ui.TitleWithCross('feature set', cssid)]
+        css_id = np.random.randint(1000000000)
+        elements = [ui.TitleWithCross('feature set', css_id)]
         elements += self._html_elements(include_features=False)
-        return ui.CollapsibleColumn(elements, ui.ThumbnailField('feature set', cssid), cssid).html
+        return ui.CollapsibleColumn(elements, ui.ThumbnailField('feature set', css_id), css_id).html
 
     @property
     def name(self):
