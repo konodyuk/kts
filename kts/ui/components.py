@@ -74,16 +74,16 @@ class Title(HTMLRepr):
 
 
 class TitleWithCross(HTMLRepr):
-    def __init__(self, string, cssid):
+    def __init__(self, string, css_id):
         self.string = string
-        self.cssid = cssid
+        self.css_id = css_id
 
     @property
     def html(self):
         return f"""<div class="title-with-cross">
             <div></div>
             <div class="title">{self.string.upper()}</div>
-            <label class="cross-circle" for="{self.cssid}">
+            <label class="cross-circle" for="{self.css_id}">
                 <div class="cross-before"></div>
                 <div class="cross-after"></div>
             </label>
@@ -101,10 +101,10 @@ class Code(HTMLRepr):
 
 
 class CollapsibleColumn(HTMLRepr):
-    def __init__(self, elements, thumbnail, cssid, outer=False, border=False):
+    def __init__(self, elements, thumbnail, css_id, outer=False, border=False):
         self.elements = elements
         self.thumbnail = thumbnail
-        self.cssid = cssid
+        self.css_id = css_id
         self.outer = outer
         self.border = border
 
@@ -118,7 +118,7 @@ class CollapsibleColumn(HTMLRepr):
         column_class = ""
         if self.border:
             column_class += 'wrapper-border'
-        return f"""<input type="checkbox" class="{check_class}" id="{self.cssid}"/>
+        return f"""<input type="checkbox" class="{check_class}" id="{self.css_id}"/>
             <div class="wrapper {column_class}" id="collapsible">{self.thumbnail.html}<div class="inner-wrapper" id="hidden">{stacked}</div>
         </div>"""
 
@@ -174,9 +174,9 @@ class Output(HTMLRepr):
 
 
 class ThumbnailField(HTMLRepr):
-    def __init__(self, string, cssid, bold=True, accent=True, first=True, bg=True, style=""):
+    def __init__(self, string, css_id, bold=True, accent=True, first=True, bg=True, style=""):
         self.string = string
-        self.cssid = cssid
+        self.css_id = css_id
         self.bold = bold
         self.accent = accent
         self.bg = bg
@@ -198,7 +198,7 @@ class ThumbnailField(HTMLRepr):
             css_class += " thumbnail-first"
         else:
             css_class += " thumbnail-second"
-        return f"""<label class="{css_class} thumbnail" style="{self.style}" for="{self.cssid}">{self.string}</label>"""
+        return f"""<label class="{css_class} thumbnail" style="{self.style}" for="{self.css_id}">{self.string}</label>"""
 
 
 class Progress(HTMLRepr):
