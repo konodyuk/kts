@@ -32,7 +32,7 @@ def preview(frame, *sizes, parallel=True, train=True):
     return _preview
 
 
-def feature(*args, cache=True, parallel=True):
+def feature(*args, cache=True, parallel=True, verbose=True):
     def register(function):
         if not isinstance(function, GenericFeatureConstructor):
             feature_constructor = FeatureConstructor(function)
@@ -40,6 +40,7 @@ def feature(*args, cache=True, parallel=True):
             feature_constructor = function
         feature_constructor.cache = cache
         feature_constructor.parallel = parallel
+        feature_constructor.verbose = verbose
         feature_list.register(feature_constructor)
         return feature_constructor
     if args:

@@ -15,6 +15,7 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         self.source = inspect.getsource(func)
         self.parallel = kwargs.pop('parallel', True)
         self.cache = kwargs.pop('cache', True)
+        self.verbose = kwargs.pop('verbose', True)
         self.arg_names = list(kwargs.keys())
         self.kwargs = kwargs
         parameters = [Parameter(p, kind=Parameter.POSITIONAL_OR_KEYWORD, default=kwargs[p]) for p in self.arg_names]
@@ -39,6 +40,7 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         res.dependencies = dict()
         res.parallel = self.parallel
         res.cache = self.cache
+        res.verbose = self.verbose
         return res
 
     def modify(self, func, instance_kwargs):

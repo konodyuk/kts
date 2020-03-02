@@ -42,3 +42,14 @@ class LocalTextIO:
         if self.buf:
             self.report.update_text(self.run_id, timestamp=time.time(), text=self.buf)
         self.buf = ""
+
+
+class SuppressIO:
+    def __init__(self):
+        pass
+
+    def write(self, b):
+        pass
+
+    def flush(self):
+        pass

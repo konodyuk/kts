@@ -18,18 +18,21 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
     kf = KTSFrame(df, meta=meta)
     kf.__meta__['remote'] = True
     had_state = bool(kf.state)
-
-    rs.send(ProgressSignal(0, 1, None, None, None))
+    if self.verbose:
+        rs.send(ProgressSignal(0, 1, None, None, None))
+        io = self.remote_io()
+    else:
+        io = self.suppress_io()
     rs.send(RunPID(os.getpid()))
 
     stats = Stats(df)
-    with stats, self.remote_io(), self.suppress_stderr():
+    with stats, io, self.suppress_stderr():
         res_kf = self.compute(*args, kf)
 
     if had_state:
         res_state = None
     else:
         res_state = kf._state
-
-    rs.send(ProgressSignal(1, 1, None, None, None))
+    if self.verbose:
+        rs.send(ProgressSignal(1, 1, None, None, None))
     return res_kf, res_state, stats.data

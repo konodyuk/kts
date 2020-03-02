@@ -8,6 +8,7 @@ from kts.core.frame import KTSFrame
 class FeatureConstructor(ParallelFeatureConstructor):
     parallel = True
     cache = True
+    verbose = True
 
     def __init__(self, func, internal=False):
         self.func = func
