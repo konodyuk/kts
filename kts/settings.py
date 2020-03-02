@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import psutil
@@ -14,6 +15,7 @@ class Config:
         self._theme_displays = []
         self.preview_mode = True
         self.debug = False
+        self.stdout = sys.stdout
 
     def load(self, path):
         self.config_path = path
