@@ -142,7 +142,8 @@ class FeatureComputingReport(HTMLRepr):
             return
         self.changed = False
         if self.handle is None:
-            self.handle = self.show()
+            with redirect_stdout(cfg.stdout):
+                self.handle = self.show()
         if self.handle is None:
             # not in ipython
             return
