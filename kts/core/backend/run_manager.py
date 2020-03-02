@@ -162,15 +162,19 @@ class RunManager:
                 for rid, ps in progress_signals.items():
                     payload = ps.get_contents()
                     title = payload.pop('title')
+                    rid = payload.pop('run_id', rid)
                     if title is not None:
                         rid = copy(rid)
                         rid.function_name += f" [{title}]"
-                    report.update(**payload, run_id=rid)
+                    report.update(**payload, run_id=rid, autorefresh=False)
 
                 text_chunks = self.filter_map_id(signals, TextChunk)
                 for rid, tc in text_chunks.items():
-                    report.update_text(rid, **tc.get_contents())
+                    payload = tc.get_contents()
+                    rid = payload.pop('run_id', rid)
+                    report.update_text(rid, **payload, autorefresh=False)
 
+                report.refresh()
                 time.sleep(0.01)
                 extra_iterations -= self.completed()
                 if extra_iterations < 0:
