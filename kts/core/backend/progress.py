@@ -53,18 +53,22 @@ class LocalProgressBar(AbstractProgressBar):
 
 
 class ProgressSignal(rs.Signal):
-    def __init__(self, value, total, took, eta, title=None):
+    def __init__(self, value, total, took, eta, title=None, run_id=None):
         self.value = value
         self.total = total
         self.took = took
         self.eta = eta
         self.title = title
+        self.run_id = run_id
 
     def get_percentage(self):
         return self.value / self.total * 100
 
     def get_contents(self):
-        return {'value': self.value, 'total': self.total, 'took': self.took, 'eta': self.eta, 'title': self.title}
+        res = {'value': self.value, 'total': self.total, 'took': self.took, 'eta': self.eta, 'title': self.title}
+        if self.run_id is not None:
+            res['run_id'] = self.run_id
+        return res
 
 
 class RemoteProgressBar(AbstractProgressBar):
