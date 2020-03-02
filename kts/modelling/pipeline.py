@@ -7,6 +7,7 @@ from functools import partial
 import numpy as np
 from IPython.display import display
 
+from kts.settings import cfg
 from kts.ui.fitting_report import CVFittingReport
 
 avg = partial(np.mean, axis=0)
@@ -38,7 +39,7 @@ class ProgressParser:
         self.buf = ""
         cur_time = time.time()
         if force or cur_time - self.last_update >= self.min_interval:
-            with redirect_stdout(cfg.builtin_stdout):
+            with redirect_stdout(cfg.stdout):
                 self.handle.update(self.report)
             self.last_update = cur_time
 
@@ -91,6 +92,10 @@ class CVPipeline:
             y_valid = fold.valid_target
             model.enable_verbosity()
             with redirect_stdout(ProgressParser(handle, self.model.progress_callback, cvr)):
+                if y_train.shape[1] == 1:
+                    y_train = y_train.flatten()
+                if y_valid.shape[1] == 1:
+                    y_valid = y_valid.flatten()
                 try:
                     model.preprocess_fit(x_train, y_train, eval_set=[(x_valid, y_valid)], **kwargs)
                 except:
