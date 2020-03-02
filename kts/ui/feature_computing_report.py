@@ -42,9 +42,10 @@ class FeatureComputingReport(HTMLRepr):
         self.entries = defaultdict(lambda: dict(value=0, total=0, took=None, eta=None))
         self.outputs = defaultdict(lambda: list())
         self.feature_constructors = feature_constructors
-        self.handle = self.show()
+        self.handle = None
         self.update_interval = 0.5
         self.last_update = -1
+        self.changed = False
 
     @property
     def html(self):
@@ -105,7 +106,8 @@ class FeatureComputingReport(HTMLRepr):
     def format_timestamp(self, timestamp):
         return datetime.fromtimestamp(timestamp).strftime("%H:%M:%S.%f")[:-3]
 
-    def update(self, run_id, value, total, took=None, eta=None):
+    def update(self, run_id, value, total, took=None, eta=None, autorefresh=True):
+        self.changed = True
         if self.entries[run_id]['value'] <= value or value == total:
             entry = self.entries[run_id]
             entry['value'] = value
@@ -114,13 +116,16 @@ class FeatureComputingReport(HTMLRepr):
                 entry['took'] = took
             if eta is not None:
                 entry['eta'] = eta
-        self.refresh()
+        if autorefresh:
+            self.refresh()
 
-    def update_text(self, run_id, text=None, timestamp=None):
+    def update_text(self, run_id, text=None, timestamp=None, autorefresh=True):
+        self.changed = True
         output = self.outputs[run_id]
         if (timestamp, text) not in output:
             output.append((timestamp, text))
-        self.refresh()
+        if autorefresh:
+            self.refresh()
 
     def completed(self):
         self.refresh()
@@ -133,6 +138,11 @@ class FeatureComputingReport(HTMLRepr):
         return display(self, display_id=True)
 
     def refresh(self, force=False):
+        if not self.changed:
+            return
+        self.changed = False
+        if self.handle is None:
+            self.handle = self.show()
         if self.handle is None:
             # not in ipython
             return
