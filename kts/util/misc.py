@@ -2,6 +2,9 @@ import inspect
 from abc import ABCMeta
 
 
+IGNORED_ATTRIBUTES = ['html', 'html_collapsible', '_html_elements']
+
+
 class BadSignatureException(Exception):
     pass
 
@@ -10,7 +13,7 @@ def _create_source(class_name, base_classes, methods):
     base_class_names = ", ".join([bc.__name__ for bc in base_classes])
     res = f"""class {class_name}({base_class_names}):\n"""
     for name, meth in methods.items():
-        if name not in ["__module__", "__qualname__", "__doc__"]:
+        if name not in ["__module__", "__qualname__", "__doc__"] + IGNORED_ATTRIBUTES:
             try:
                 res += inspect.getsource(meth) + "\n"
             except TypeError:
@@ -42,7 +45,7 @@ class SourceMetaClass(ABCMeta):
         cls.check_methods(dict_of_methods)
         _check_signatures(class_name, base_classes, dict_of_methods)
         dict_of_methods["class_source"] = _create_source(class_name, base_classes, dict_of_methods)
-        return type.__new__(cls, class_name, base_classes, dict_of_methods)
+        return ABCMeta.__new__(cls, class_name, base_classes, dict_of_methods)
 
     def check_methods(methods):
         pass
