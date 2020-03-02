@@ -11,7 +11,8 @@ from ray.experimental import signal as rs
 
 import kts.ui.components as ui
 from kts.core.backend.address_manager import get_address_manager
-from kts.core.backend.io import RemoteTextIO, LocalTextIO
+from kts.core.backend.io import RemoteTextIO, LocalTextIO, SuppressIO
+from kts.core.backend.progress import ProgressSignal
 from kts.core.backend.progress import pbar
 from kts.core.backend.signals import ResourceRequest, Sync
 from kts.core.backend.stats import Stats
@@ -31,6 +32,7 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
     source = None
     description = None
     columns = None
+    verbose = False
 
     def request_resource(self, key, df):
         if in_worker():
@@ -67,11 +69,14 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
     def __call__(self, df, ret=True):
         raise NotImplemented
 
-    def remote_io(self):
-        return redirect_stdout(RemoteTextIO())
+    def remote_io(self, run_id=None):
+        return redirect_stdout(RemoteTextIO(run_id))
 
     def local_io(self, report, run_id):
         return redirect_stdout(LocalTextIO(report, run_id))
+
+    def suppress_io(self):
+        return redirect_stdout(SuppressIO())
 
     def suppress_stderr(self):
         return redirect_stderr(StringIO())
@@ -87,20 +92,26 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         run_id = RunID(kf._scope, kf._fold, kf.hash())
         had_state = bool(kf.state)
         stats = Stats(kf)
-        if in_worker():
+        if in_worker() and self.verbose:
             report = None
-            io = self.remote_io()
-        else:
+            io = self.remote_io(run_id)
+            rs.send(ProgressSignal(0, 1, None, None, None, run_id))
+        elif not in_worker() and self.verbose:
             report = kf.__meta__['report']
             io = self.local_io(report, run_id)
             report.update(run_id, 0, 1)
+        else:
+            report = None
+            io = self.suppress_io()
         with stats, io, self.suppress_stderr(), pbar.local_mode(report, run_id):
             res_kf = self.compute(*args, kf)
         if had_state:
             res_state = None
         else:
             res_state = kf._state
-        if not in_worker():
+        if in_worker() and self.verbose:
+            rs.send(ProgressSignal(1, 1, None, None, None, run_id))
+        elif not in_worker() and self.verbose:
             report = kf.__meta__['report']
             report.update(run_id, 1, 1)
         return res_kf, res_state, stats.data
