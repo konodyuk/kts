@@ -160,7 +160,13 @@ class FeatureSet(ui.HTMLRepr):
 
     @property
     def feature_pool(self):
-        return ui.Pool([ui.Raw(i.html_collapsible()) for i in self.features])
+        elements = list()
+        for i in self.features:
+            name = repr(i)
+            if '(' in name:
+                name = name[:name.find('(')]
+            elements.append(ui.Raw(i.html_collapsible(name=name)))
+        return ui.Pool(elements)
 
     def _html_elements(self, include_features=True):
         elements = [ui.Annotation('name'), ui.Field(self.name)]
