@@ -1,5 +1,7 @@
 import inspect
 
+import pandas as pd
+
 from kts.core.backend.run_manager import run_cache
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
@@ -23,6 +25,13 @@ class FeatureConstructor(ParallelFeatureConstructor):
     def compute(self, kf: KTSFrame):
         kwargs = {key: self.request_resource(value, kf) for key, value in self.dependencies}
         result = self.func(kf, **kwargs)
+        assert result.shape[0] == kf.shape[0]
+        if isinstance(result, pd.DataFrame):
+            assert all(result.index == kf.index)
+        else:
+            result = pd.DataFrame(data=result,
+                                  index=kf.index,
+                                  columns=[f"{self.name}_{i}" for i in range(result.shape[1])])
         if (not kf.train and '__columns' in kf._state
             and not (len(result.columns) == len(kf._state['__columns'])
                      and all(result.columns == kf._state['__columns']))):
