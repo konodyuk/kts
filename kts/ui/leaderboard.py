@@ -1,6 +1,16 @@
+import time
+
 from kts.ui.components import HTMLRepr, Column, Field, Title, ThumbnailField, Raw
 from kts.util.formatting import format_value
-import time
+
+
+def format_experiment_date(date):
+    delta = time.time() - date
+    if delta < 60 * 60 * 24:
+        return format_value(delta, time=True) + ' ago'
+    else:
+        return format_value(date, time=True)
+
 
 class Leaderboard(HTMLRepr):
     """Needs refactoring, very sketchy"""
@@ -15,7 +25,7 @@ class Leaderboard(HTMLRepr):
                 format_value(e.score),
                 e.model_class,
                 e.n_features,
-                format_value(time.time() - e.date, time=True) + ' ago',
+                format_experiment_date(e.date),
                 format_value(e.took, time=True)
             )
             for i, e in enumerate(experiments)
