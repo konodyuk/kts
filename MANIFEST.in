@@ -1,0 +1,2 @@
+include kts/cli/default_config.toml
+recursive-include kts/tutorials *
