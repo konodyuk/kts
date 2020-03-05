@@ -5,6 +5,7 @@ from kts.util.hashing import hash_dict, hash_str
 
 
 class TrackingMixin:
+    """@DynamicAttrs"""
     @property
     def params(self):
         try:
@@ -110,3 +111,19 @@ class MultiClassifierMixin(Model):
 
 class RegressorMixin(Model):
     pass
+
+
+class NormalizeFillNAMixin(PreprocessingMixin):
+    def preprocess(self, X, y=None):
+        if y is not None:
+            mean = np.nanmean(X, axis=0)
+            std = np.nanstd(X, axis=0)
+            X = (X - mean) / std
+            self._preprocessing_state = mean, std
+        else:
+            mean, std = self._preprocessing_state
+            X = (X - mean) / std
+
+        nan_idx = np.where(np.isnan(X) | np.isinf(X))
+        X[nan_idx] = np.take(mean, nan_idx[1])
+        return X, y
