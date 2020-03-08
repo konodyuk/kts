@@ -1,7 +1,6 @@
 from typing import Union, Tuple, List, Any
 
-from ray.experimental import signal as rs
-
+import kts.core.backend.signal as rs
 from kts.core.run_id import RunID
 
 

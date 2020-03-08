@@ -5,8 +5,8 @@ from pathlib import Path
 import ray
 
 import kts.ui.settings
-from kts.core import ui
 from kts.core.backend.address_manager import get_address_manager, create_address_manager
+from kts.core.backend.signal import get_signal_manager, create_signal_manager
 from kts.core.cache import frame_cache, obj_cache
 from kts.settings import cfg
 from kts.util.debug import logger
@@ -32,10 +32,10 @@ def find_config():
         return None
 
 address_manager = None
-
+signal_manager = None
 
 def init():
-    global address_manager
+    global address_manager, signal_manager
     cfg.scope = find_scope()
     cfg.stdout = sys.stdout
     config_path = find_config()
@@ -47,6 +47,10 @@ def init():
         address_manager = get_address_manager()
     except:
         address_manager = create_address_manager()
+    try:
+        signal_manager = get_signal_manager()
+    except:
+        signal_manager = create_signal_manager()
     if config_path is not None:
         frame_cache.path = cfg.storage_path
         obj_cache.path = cfg.storage_path
