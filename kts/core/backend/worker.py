@@ -1,10 +1,11 @@
 import os
+import traceback
 from typing import Dict
 
 import pandas as pd
 import ray
-import ray.experimental.signal as rs
 
+import kts.core.backend.signal as rs
 from kts.core.backend.progress import ProgressSignal
 from kts.core.backend.signals import RunPID
 from kts.core.backend.stats import Stats
@@ -27,7 +28,11 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
 
     stats = Stats(df)
     with stats, io, self.suppress_stderr():
-        res_kf = self.compute(*args, kf)
+        try:
+            res_kf = self.compute(*args, kf)
+        except:
+            rs.send(rs.ErrorSignal(traceback.format_exc()))
+            return None, None, None
 
     if had_state:
         res_state = None

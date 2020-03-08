@@ -7,8 +7,8 @@ from typing import Optional, Dict, Union, Tuple, Any, List
 import pandas as pd
 import ray
 from ray._raylet import ObjectID
-from ray.experimental import signal as rs
 
+import kts.core.backend.signal as rs
 from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import TextChunk
 from kts.core.backend.progress import pbar, ProgressSignal
@@ -128,16 +128,15 @@ class RunManager:
                 return k
 
     def filter_map_id(self, signals, signal_type):
-        return {self.find_run_id(o): s for o, s in signals if isinstance(s, signal_type)}
+        return [(self.find_run_id(o), s) for o, s in signals if isinstance(s, signal_type)]
 
     def supervise(self, report=None):
         if report is None:
             report = SilentFeatureComputingReport()
         try:
-            extra_iterations = 0
+            extra_iterations = 1
             while True:
                 signals = self.new_signals()
-
                 syncs = filter_signals(signals, Sync)
                 for sync in syncs:
                     self.sync(**sync.get_contents())
@@ -155,24 +154,30 @@ class RunManager:
                         self.put_resource(key)
 
                 pid_signals = self.filter_map_id(signals, RunPID)
-                for rid, pid_signal in pid_signals.items():
+                for rid, pid_signal in pid_signals:
                     self.scheduled[rid].pid = pid_signal.get_contents()
 
                 progress_signals = self.filter_map_id(signals, ProgressSignal)
-                for rid, ps in progress_signals.items():
+                for rid, ps in progress_signals:
                     payload = ps.get_contents()
                     title = payload.pop('title')
                     rid = payload.pop('run_id', rid)
                     if title is not None:
                         rid = copy(rid)
-                        rid.function_name += f" [{title}]"
+                        rid.function_name += f" - {title}"
                     report.update(**payload, run_id=rid, autorefresh=False)
 
                 text_chunks = self.filter_map_id(signals, TextChunk)
-                for rid, tc in text_chunks.items():
+                for rid, tc in text_chunks:
                     payload = tc.get_contents()
                     rid = payload.pop('run_id', rid)
                     report.update_text(rid, **payload, autorefresh=False)
+
+                errors = self.filter_map_id(signals, rs.ErrorSignal)
+                for rid, err in errors:
+                    report.update_text(rid, text='task failed', timestamp=time.time(), autorefresh=False)
+                    report.update_text(rid, text=err.error.strip().split('\n')[-1], timestamp=time.time(), autorefresh=False)
+                    report.refresh(force=True)
 
                 report.refresh()
                 time.sleep(0.01)
