@@ -1,13 +1,14 @@
 from typing import List, Dict, Union
 
 from kts.ui.components import HTMLRepr, Field, Annotation, AlignedColumns
+from kts.util.formatting import format_value
 
 
 class Importance(HTMLRepr):
     def __init__(self, value, vmin, vmax, zero):
         self.value = value
-        self.vmin = vmin - 1
-        self.vmax = vmax - 1
+        self.vmin = vmin
+        self.vmax = vmax
         self.zero = zero
 
     @property
@@ -35,6 +36,8 @@ class FeatureImportances(HTMLRepr):
         self.zero_position = 0
         if self.min_importance < 0:
             self.zero_position = self.to_px(0)
+        else:
+            self.min_importance = 0
 
     def to_px(self, value):
         return self.width * ((value - self.min_importance) / (self.max_importance - self.min_importance))
@@ -44,8 +47,9 @@ class FeatureImportances(HTMLRepr):
         name_annotation = Annotation('feature', style="text-align: right; margin-bottom: 3px; margin-right: 5px;")
         mean_annotation = Annotation('mean', style="margin-left: 7px; margin-bottom: 3px;")
         hbar_annotation = Annotation('importance', style="margin-left: 5px; margin-bottom: 3px;")
-        names = [i['feature_constructor'].html_collapsable(name=i['name'], style='padding: 0px 5px; text-align: right;', bg=False, border=True) for i in self.features]
-        means = [Field(i['mean'], style='max-height: 1.5rem; margin: 2px;', bg=False).html for i in self.features]
+        # names = [i['feature_constructor'].html_collapsible(name=i['name'], style='padding: 0px 5px; text-align: right;', bg=False, border=True) for i in self.features]
+        names = [Field(i['name'], style='padding: 0px 5px; text-align: right;', bg=False).html for i in self.features]
+        means = [Field(format_value(i['mean']), style='padding: 0px 5px; max-height: 1.5rem; margin: 2px;', bg=False).html for i in self.features]
         hbars = [Importance(self.to_px(i['mean']), self.to_px(i['min']), self.to_px(i['max']), self.zero_position).html for i in self.features]
         return AlignedColumns([
             [name_annotation.html] + names,
