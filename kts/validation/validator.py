@@ -40,9 +40,10 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
         cfg.preview_mode = False
         if leaderboard in leaderboard_list and experiment_id(model, feature_set) in leaderboard_list[leaderboard]:
             raise UserWarning(f'Duplicate experiment: {experiment_id(model, feature_set)}')
+        report = FeatureComputingReport()
+        feature_set.compute(report=report)
         folds = self.create_folds(feature_set, self.splitter)
         folds = list(folds)
-        report = FeatureComputingReport()
         cv_feature_set = feature_set.split(folds)
         cv_feature_set.compute(report=report)
         cv_pipeline = CVPipeline(cv_feature_set, model)
