@@ -1,6 +1,6 @@
 import time
 
-from ray.experimental import signal as rs
+import kts.core.backend.signal as rs
 
 
 class TextChunk(rs.Signal):
@@ -23,12 +23,14 @@ class RemoteTextIO:
 
     def write(self, b):
         self.buf += b
-        if b.find('\n') != -1:
+        if self.buf.find('\n') != -1:
             self.flush()
 
     def flush(self):
         if self.buf:
-            rs.send(TextChunk(time.time(), self.buf, self.run_id))
+            for line in self.buf.split('\n'):
+                if line:
+                    rs.send(TextChunk(time.time(), line + '\n', self.run_id))
         self.buf = ""
 
 

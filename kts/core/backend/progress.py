@@ -3,8 +3,7 @@ from contextlib import contextmanager
 from copy import copy
 from typing import Iterable, Optional
 
-from ray.experimental import signal as rs
-
+import kts.core.backend.signal as rs
 from kts.core.backend.util import in_worker
 
 
@@ -36,7 +35,7 @@ class LocalProgressBar(AbstractProgressBar):
         self.eta = None
         self.start = None
         if title is not None:
-            self.run_id.function_name += f" [{title}]"
+            self.run_id.function_name += f" - {title}"
 
     def __iter__(self):
         last_update = 0.
@@ -69,6 +68,9 @@ class ProgressSignal(rs.Signal):
         if self.run_id is not None:
             res['run_id'] = self.run_id
         return res
+
+    def __repr__(self):
+        return f"ProgressSignal({self.value}/{self.total}, took={self.took}, eta={self.eta})"
 
 
 class RemoteProgressBar(AbstractProgressBar):

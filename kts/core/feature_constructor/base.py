@@ -7,8 +7,8 @@ from typing import Tuple, Union, Dict, List
 import numpy as np
 import ray
 from ray._raylet import ObjectID
-from ray.experimental import signal as rs
 
+import kts.core.backend.signal as rs
 import kts.ui.components as ui
 from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import RemoteTextIO, LocalTextIO, SuppressIO
