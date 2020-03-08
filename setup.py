@@ -52,7 +52,7 @@ setuptools.setup(
     ],
     extras_require=extras,
     install_requires=[
-        "ray==0.8.1",
+        "ray>=0.8.1",
         "pandas",
         "numpy",
         "scikit-learn",
