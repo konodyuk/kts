@@ -48,7 +48,7 @@ class FeatureImportances(HTMLRepr):
         mean_annotation = Annotation('mean', style="margin-left: 7px; margin-bottom: 3px;")
         hbar_annotation = Annotation('importance', style="margin-left: 5px; margin-bottom: 3px;")
         # names = [i['feature_constructor'].html_collapsible(name=i['name'], style='padding: 0px 5px; text-align: right;', bg=False, border=True) for i in self.features]
-        names = [Field(i['name'], style='padding: 0px 5px; text-align: right;', bg=False).html for i in self.features]
+        names = [Field(i['name'], style='padding: 0px 5px; text-align: right; margin: 2px;', bg=False).html for i in self.features]
         means = [Field(format_value(i['mean']), style='padding: 0px 5px; max-height: 1.5rem; margin: 2px;', bg=False).html for i in self.features]
         hbars = [Importance(self.to_px(i['mean']), self.to_px(i['min']), self.to_px(i['max']), self.zero_position).html for i in self.features]
         return AlignedColumns([
