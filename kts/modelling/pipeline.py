@@ -8,7 +8,8 @@ import numpy as np
 from IPython.display import display
 
 from kts.settings import cfg
-from kts.ui.fitting_report import CVFittingReport
+from kts.ui.feature_computing_report import FeatureComputingReport
+from kts.ui.fitting_report import CVFittingReport, InferenceReport
 
 avg = partial(np.mean, axis=0)
 
@@ -34,8 +35,7 @@ class ProgressParser:
                 valid_score = float(res['valid_score']) if res['valid_score'] is not None else None
                 self.report.update(step=int(res['step']), 
                                    train_score=train_score, 
-                                   valid_score=valid_score, 
-                                   timestamp=time.time())
+                                   valid_score=valid_score)
         self.buf = ""
         cur_time = time.time()
         if force or cur_time - self.last_update >= self.min_interval:
@@ -65,17 +65,20 @@ class CVPipeline:
         return self.cv_feature_set.feature_set
     
     def predict(self, frame):
-        self.cv_feature_set.compute(frame)
-        # ifr = InferenceReport(self.n_folds)  # TODO
+        self.cv_feature_set.compute(frame, report=FeatureComputingReport())
+        ifr = InferenceReport(self.n_folds)
+        handle = display(ifr, display_id=True)
         predictions = []
         for i in range(self.n_folds):
-            # ifr.set_fold(i)
+            ifr.update(i)
+            handle.update(ifr)
             model = self.models[i]
             fold = self.cv_feature_set.fold(i)
             x = fold(frame)
             y_pred = model.preprocess_predict(x)
             predictions.append(y_pred)
-            # ifr.finish()
+        ifr.finish()
+        handle.update(ifr)
         return self.blend(predictions) 
 
     def fit(self, score_fun, **kwargs):
