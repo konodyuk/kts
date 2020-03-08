@@ -1,8 +1,12 @@
 import time
+from typing import Union
 
 import numpy as np
+import pandas as pd
 
 import kts.ui.components as ui
+from kts.feature_selection import Builtin
+from kts.ui.feature_importances import FeatureImportances
 from kts.util.hashing import hash_str
 
 
@@ -52,8 +56,23 @@ class Experiment(ui.HTMLRepr):
     def predict(self, frame):
         return self.cv_pipeline.predict(frame)
 
-    def feature_importances(self, plot=True):
-        raise NotImplemented
+    def feature_importances(self, plot=True, estimator=Builtin(), sort_by='max', head=None) -> Union[pd.DataFrame, FeatureImportances]:
+        importances_by_fold = pd.DataFrame()
+        cv_feature_set = self.cv_pipeline.cv_feature_set
+        for i in range(cv_feature_set.n_folds):
+            fold = cv_feature_set.fold(i)
+            model = self.cv_pipeline.models[i]
+            importances_by_fold = importances_by_fold.append(estimator.estimate(fold, model), ignore_index=True)
+        if not plot:
+            return importances_by_fold
+        payload = list(importances_by_fold
+                       .agg(['name', 'min', 'max', 'mean'])
+                       .sort_values(axis=1, by=sort_by, ascending=False)
+                       .to_dict()
+                       .values())
+        if head:
+            payload = payload[:head]
+        return FeatureImportances(payload)
 
     def move_to(self, lb_name: str):
         raise NotImplemented
