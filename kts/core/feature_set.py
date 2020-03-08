@@ -1,4 +1,5 @@
 import pprint
+from collections import defaultdict
 from typing import Union, List, Tuple, Optional, Collection
 
 import numpy as np
@@ -205,6 +206,7 @@ class CVFeatureSet:
             "Train and valid sets should either not intersect or be equal"
             self.fold_ids.append(hash_fold(idx_train, idx_valid))
         self.folds = folds
+        self.columns_by_fold = defaultdict(lambda: None)
 
     def compute(self, frame: AnyFrame = None, report=None):
         if report is None:
@@ -262,7 +264,12 @@ class Fold:
         frame = self.train_frame
         results.update(run_manager.run(self.after_split, frame, train=True, fold=self.fold_id, ret=True))
         results.update({'_': self.train_frame[[]]})
-        return concat(results.values()).values
+        result_frame = concat(results.values())
+        if self.columns is None:
+            self.columns = list(result_frame.columns)
+        else:
+            assert all(self.columns == result_frame.columns)
+        return result_frame.values
 
     @property
     def valid(self) -> np.ndarray:
@@ -272,13 +279,23 @@ class Fold:
         frame = self.valid_frame
         results.update(run_manager.run(self.after_split, frame, train=False, fold=self.fold_id, ret=True))
         results.update({'_': self.valid_frame[[]]})
-        return concat(results.values()).values
+        result_frame = concat(results.values())
+        if self.columns is None:
+            raise UserWarning(".train should be called before .valid")
+        else:
+            assert all(self.columns == result_frame.columns)
+        return result_frame.values
 
     def __call__(self, frame: AnyFrame) -> np.ndarray:
         results = dict()
         results.update(run_manager.run(self.before_split, frame, train=False, ret=True))
         results.update(run_manager.run(self.after_split, frame, train=False, fold=self.fold_id, ret=True))
-        return concat(results.values()).values
+        result_frame = concat(results.values())
+        if self.columns is None:
+            raise UserWarning(".train should be called before inference")
+        else:
+            assert all(self.columns == result_frame.columns)
+        return result_frame.values
 
     @property
     def train_target(self) -> np.ndarray:
@@ -327,6 +344,14 @@ class Fold:
     @property
     def targets(self):
         return self.feature_set.targets
+
+    @property
+    def columns(self):
+        return self.cv_feature_set.columns_by_fold[self.fold_idx]
+
+    @columns.setter
+    def columns(self, value):
+        self.cv_feature_set.columns_by_fold[self.fold_idx] = value
 
 
 def concat(frames: List[pd.DataFrame]):
