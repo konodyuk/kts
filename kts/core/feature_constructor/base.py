@@ -14,7 +14,7 @@ from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import RemoteTextIO, LocalTextIO, SuppressIO
 from kts.core.backend.progress import ProgressSignal
 from kts.core.backend.progress import pbar
-from kts.core.backend.signals import ResourceRequest, Sync
+from kts.core.backend.signal import Sync, ResourceRequest
 from kts.core.backend.stats import Stats
 from kts.core.backend.util import in_worker
 from kts.core.backend.util import safe_put

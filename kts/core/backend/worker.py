@@ -7,7 +7,7 @@ import ray
 
 import kts.core.backend.signal as rs
 from kts.core.backend.progress import ProgressSignal
-from kts.core.backend.signals import RunPID
+from kts.core.backend.signal import RunPID
 from kts.core.backend.stats import Stats
 from kts.core.frame import KTSFrame
 
