@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from kts.ui.components import HTMLRepr, Column, Field, Annotation, Title, InnerColumn, Row, Progress, Raw
@@ -20,12 +22,12 @@ class SingleModelFittingReport:
         self.took = None
         self.eta = None
 
-    def update(self, step, train_score=None, valid_score=None, timestamp=None):
+    def update(self, step, train_score=None, valid_score=None):
         self.step = max(step, self.step)
         if self.start is None:
-            self.start = timestamp
+            self.start = time.time()
         else:
-            self.took = timestamp - self.start
+            self.took = time.time() - self.start
             self.eta = (self.n_steps - self.step) / (self.step) * self.took
         if train_score is not None:
             self.train_scores.append((step, train_score))
@@ -128,8 +130,8 @@ class CVFittingReport(HTMLRepr):
         self.active.clear()
         self.active.add(value)
 
-    def update(self, step, train_score=None, valid_score=None, timestamp=None):
-        self.reports[self.current_fold].update(step, train_score, valid_score, timestamp)
+    def update(self, step, train_score=None, valid_score=None):
+        self.reports[self.current_fold].update(step, train_score, valid_score)
 
     def set_metric(self, value):
         self.reports[self.current_fold].set_metric_value(value)
@@ -138,3 +140,33 @@ class CVFittingReport(HTMLRepr):
     @property
     def html(self):
         return Column([Title('fitting')] + [Raw(report.html(active=(i in self.active), annotations=(i == 0))) for i, report in enumerate(self.reports)]).html
+
+
+class InferenceReport(HTMLRepr):
+    def __init__(self, n_folds=5):
+        self.n_folds = n_folds
+        self.fold = 0
+        self.start = None
+        self.took = None
+        self.eta = None
+
+    def update(self, fold):
+        self.fold = max(fold, self.fold)
+        if self.start is None:
+            self.start = time.time()
+        else:
+            self.took = time.time() - self.start
+            self.eta = (self.n_folds - self.fold) / (self.fold) * self.took
+
+    def finish(self):
+        self.update(self.n_folds)
+        self.eta = None
+
+    @property
+    def html(self):
+        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
+        return Column([Title('inference'), Row([
+            InnerColumn([Annotation('progress')] + [Progress(self.fold, self.n_folds, style='width: 400px; margin-top: 7px;')]),
+            InnerColumn([Annotation('took')] + [Field(format_value(self.took, True), **ind_kw)]),
+            InnerColumn([Annotation('eta')] + [Field(format_value(self.eta, True), **ind_kw)]),
+        ])]).html
