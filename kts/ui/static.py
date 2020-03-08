@@ -156,7 +156,7 @@ CSS_STYLE = """
   transition: max-height {anim_height}, padding {anim_padding};  
   
   padding: 0;
-  border: 2px solid {second};
+  margin: 2px;
   align-self: flex-start;
   max-height: 100px;
   overflow: hidden;
