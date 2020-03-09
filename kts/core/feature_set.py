@@ -12,7 +12,7 @@ from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.lists import feature_list
 from kts.settings import cfg
-from kts.ui.feature_computing_report import SilentFeatureComputingReport
+from kts.ui.feature_computing_report import FeatureComputingReport, SilentFeatureComputingReport
 from kts.util.hashing import hash_list, hash_fold
 
 AnyFrame = Union[pd.DataFrame, KTSFrame]
@@ -142,7 +142,12 @@ class FeatureSet(ui.HTMLRepr):
             return res
 
     def __getitem__(self, key) -> PreviewDataFrame:
-        raise NotImplemented
+        report = FeatureComputingReport()
+        frame = self.train_frame[key]
+        results = run_manager.run(self.features, frame, train=True, fold='preview', ret=True, report=report)
+        result_frame = concat(results.values())
+        run_manager.merge_scheduled()
+        return result_frame
 
     @property
     def source(self):
