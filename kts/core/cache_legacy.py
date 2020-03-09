@@ -51,8 +51,7 @@ class ObjectCache:
 
 obj_cache = ObjectCache()
 
-
-from kts.core.containers import CachedMapping
+from kts.core.cache import CachedMapping
 
 
 class BaseFrameCache:

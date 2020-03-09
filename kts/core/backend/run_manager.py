@@ -13,8 +13,7 @@ from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import TextChunk
 from kts.core.backend.progress import pbar, ProgressSignal
 from kts.core.backend.signal import Sync, ResourceRequest, RunPID, filter_signals
-from kts.core.cache import frame_cache
-from kts.core.containers import CachedMapping
+from kts.core.cache import frame_cache, CachedMapping
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.run_id import RunID

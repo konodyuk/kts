@@ -1,6 +1,6 @@
 import kts.ui.components as ui
 import kts.ui.leaderboard
-from kts.core.containers import CachedMapping
+from kts.core.cache import CachedMapping
 from kts.validation.experiment import Experiment
 
 experiments = CachedMapping('experiments')

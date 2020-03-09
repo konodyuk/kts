@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from kts.core.cache_legacy import frame_cache, base_frame_cache, obj_cache
-from kts.core.containers import CachedMapping
+from kts.core.cache import CachedMapping
 from kts.core.run_id import RunID
 
 
