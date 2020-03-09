@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from kts.core.cache_legacy import frame_cache, base_frame_cache, obj_cache
-from kts.core.cache import CachedMapping
 from kts.core.run_id import RunID
 
 
@@ -13,24 +12,6 @@ from kts.core.run_id import RunID
 def empty_ram_cache():
     obj_cache.memory.clear()
     base_frame_cache.memory.clear()
-
-
-def test_cached_mapping():
-    cm = CachedMapping('cm_test')
-    cm.clear()
-    assert repr(cm) == "{\n\t\n}"
-    for i in range(5):
-        cm[i * 12] = i * 12
-    assert repr(cm) == "{\n\t'0': 0\n\t'12': 12\n\t'24': 24\n\t'36': 36\n\t'48': 48\n}"
-    del cm[24]
-    assert repr(cm) == "{\n\t'0': 0\n\t'12': 12\n\t'36': 36\n\t'48': 48\n}"
-    cm[4] = [15]
-    assert repr(cm) == "{\n\t'0': 0\n\t'12': 12\n\t'36': 36\n\t'48': 48\n\t'4': [15]\n}"
-    del cm
-    cm = CachedMapping('cm_test')
-    assert repr(cm) == "{\n\t'0': 0\n\t'12': 12\n\t'36': 36\n\t'48': 48\n\t'4': [15]\n}"
-    cm.clear()
-    assert repr(cm) == '{\n\t\n}'
 
 
 def test_frame_cache():
