@@ -189,8 +189,9 @@ frame_cache = FrameCache()
 
 
 class CachedMapping(MutableMapping):
-    def __init__(self, name):
+    def __init__(self, name: str, cache: AbstractCache = obj_cache):
         self.name = name
+        self.cache = cache
 
     def __create_name__(self, key):
         return f"M.{self.name}.{key}"
@@ -202,19 +203,47 @@ class CachedMapping(MutableMapping):
         return len(self.__keys__())
 
     def __getitem__(self, key: str):
-        return obj_cache.load(self.__create_name__(key))
+        return self.cache.load(self.__create_name__(key))
 
     def __setitem__(self, key: str, value: Any):
-        obj_cache.save(value, self.__create_name__(key))
+        self.cache.save(value, self.__create_name__(key))
 
     def __delitem__(self, key: str):
-        obj_cache.remove(self.__create_name__(key))
+        self.cache.remove(self.__create_name__(key))
 
     def __keys__(self):
-        return [self.__from_name__(i) for i in obj_cache.ls() if i.startswith(self.__create_name__(''))]
+        return [self.__from_name__(i) for i in self.cache.ls() if i.startswith(self.__create_name__(''))]
 
     def __iter__(self):
         return self.__keys__().__iter__()
 
     def __repr__(self):
         return "{\n\t" + '\n\t'.join([f"'{key}': {value}" for key, value in self.items()]) + '\n}'
+
+
+user_cache_frame = CachedMapping('user_cache_frame', frame_cache)
+user_cache_obj = CachedMapping('user_cache_obj', obj_cache)
+
+def save(value, key: str):
+    assert key not in user_cache_frame, f'{key} is already saved. Load it with kts.load("{key}") or remove with kts.rm("{key}")'
+    assert key not in user_cache_obj, f'{key} is already saved. Load it with kts.load("{key}") or remove with kts.rm("{key}")'
+    if isinstance(value, pd.DataFrame):
+        user_cache_frame[key] = value
+    else:
+        user_cache_obj[key] = value
+
+def load(key: str):
+    if key in user_cache_frame:
+        return user_cache_frame[key]
+    if key in user_cache_obj:
+        return user_cache_obj[key]
+    raise KeyError
+
+def rm(key: str):
+    if key in user_cache_frame:
+        del user_cache_frame[key]
+    if key in user_cache_obj:
+        del user_cache_obj[key]
+
+def ls():
+    return list(user_cache_obj) + list(user_cache_frame)
