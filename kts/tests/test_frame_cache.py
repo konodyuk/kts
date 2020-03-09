@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from kts.core.cache_legacy import frame_cache, base_frame_cache, obj_cache
-from kts.core.containers import CachedList, CachedMapping
+from kts.core.containers import CachedMapping
 from kts.core.run_id import RunID
 
 
@@ -31,30 +31,6 @@ def test_cached_mapping():
     assert repr(cm) == "{\n\t'0': 0\n\t'12': 12\n\t'36': 36\n\t'48': 48\n\t'4': [15]\n}"
     cm.clear()
     assert repr(cm) == '{\n\t\n}'
-
-
-@pytest.mark.xfail
-def test_cached_list():
-    cl = CachedList('cl_test')
-    cl.clear()
-    assert repr(cl) == "[]"
-    for i in range(5):
-        cl.append(i * 12)
-    assert repr(cl) == "[0, 12, 24, 36, 48]"
-    del cl[1]
-    assert repr(cl) == "[0, 24, 36, 48]"
-    for i in range(5):
-        cl.append(i * 12)
-    assert repr(cl) == "[0, 24, 36, 48, 0, 12, 24, 36, 48]"
-    cl[4] = [15]
-    assert repr(cl) == "[0, 24, 36, 48, [15], 12, 24, 36, 48]"
-    cl.pop()
-    assert repr(cl) == "[0, 24, 36, 48, [15], 12, 24, 36]"
-    del cl
-    cl = CachedList('cl_test')
-    assert repr(cl) == "[0, 24, 36, 48, [15], 12, 24, 36]"
-    cl.clear()
-    assert repr(cl) == "[]"
 
 
 def test_frame_cache():
