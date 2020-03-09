@@ -5,7 +5,7 @@ from kts.ui.components import CurrentTheme
 from kts.ui.highlighting import Highlighter
 from kts.ui.theme import themes, default_highlightings
 
-ct = CurrentTheme(Highlighter('tango'), themes['light'])
+ct = CurrentTheme(Highlighter('tango'), themes['light-orange'])
 
 
 def init():
