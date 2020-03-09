@@ -99,12 +99,12 @@ class Model(NamingMixin, SourceMixin, PreprocessingMixin, ProgressMixin, HTMLRep
     pass
 
 
-class BinaryClassifierMixin(Model):
+class BinaryMixin(Model):
     def predict(self, X, **kwargs):
         return self.predict_proba(X, **kwargs)[:, 1]
 
 
-class MultiClassifierMixin(Model):
+class MulticlassMixin(Model):
     def predict(self, X, **kwargs):
         return self.predict_proba(X, **kwargs)
 
