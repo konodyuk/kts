@@ -7,9 +7,7 @@ with open("kts/__version__.py") as fh:
     version = fh.readlines()[-1].split()[-1].strip("\"'")
 
 extras = {
-    'zoo': ['sklearn', 'catboost', 'xgboost', 'lightgbm', 'skorch'],
-    'selection': ['eli5'],
-    'ray': ["ray[tune]"],
+    'models': ['catboost', 'xgboost', 'lightgbm', 'skorch'],
 }
 
 all_deps = []
@@ -40,10 +38,9 @@ setuptools.setup(
 
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
 
-        "Operating System :: OS Independent",
+        "Operating System :: MacOS",
+        "Operating System :: POSIX :: Linux",
     ],
     keywords=[
         "Machine Learning",
