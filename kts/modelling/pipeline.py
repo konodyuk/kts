@@ -13,6 +13,7 @@ from kts.ui.fitting_report import CVFittingReport, InferenceReport
 
 avg = partial(np.mean, axis=0)
 
+
 class ProgressParser:
     def __init__(self, handle, parser, report, min_interval=0.2):
         self.handle = handle
@@ -42,6 +43,7 @@ class ProgressParser:
             with redirect_stdout(cfg.stdout):
                 self.handle.update(self.report)
             self.last_update = cur_time
+
 
 class CVPipeline:
     def __init__(self, cv_feature_set, model):
@@ -87,6 +89,7 @@ class CVPipeline:
         start = time.time()
         for i in range(self.n_folds):
             cvr.set_fold(i)
+            cvr.update(step=0)
             model = self.models[i]
             fold = self.cv_feature_set.fold(i)
             x_train = fold.train
@@ -109,6 +112,7 @@ class CVPipeline:
                 score = score_fun(y_valid, y_pred, fold)
                 self.scores.append(score)
 
+                cvr.update(step=1)
                 cvr.set_metric(score)
                 sys.stdout.flush(force=True)
         self.took = time.time() - start
