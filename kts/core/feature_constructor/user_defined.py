@@ -23,7 +23,7 @@ class FeatureConstructor(ParallelFeatureConstructor):
         self.registered = True
 
     def compute(self, kf: KTSFrame):
-        kwargs = {key: self.request_resource(value, kf) for key, value in self.dependencies}
+        kwargs = {key: self.request_resource(value, kf) for key, value in self.dependencies.items()}
         result = self.func(kf, **kwargs)
         assert result.shape[0] == kf.shape[0]
         if isinstance(result, pd.DataFrame):
