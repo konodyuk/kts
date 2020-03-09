@@ -10,6 +10,7 @@ import dill
 import feather
 import pandas as pd
 
+from kts.core.backend.address_manager import get_address_manager
 from kts.core.run_id import RunID
 
 
@@ -244,6 +245,8 @@ def rm(key: str):
         del user_cache_frame[key]
     if key in user_cache_obj:
         del user_cache_obj[key]
+    am = get_address_manager()
+    am.delete.remote(key)
 
 def ls():
     return list(user_cache_obj) + list(user_cache_frame)

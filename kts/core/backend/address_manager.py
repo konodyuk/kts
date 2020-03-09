@@ -42,6 +42,8 @@ class AddressManager:
         self.data.clear()
         self.timestamps.clear()
 
+    def delete(self, key):
+        self.is_none[key] = True
 
 def get_address_manager():
     return get_actor('AddressManager')
