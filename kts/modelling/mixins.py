@@ -9,12 +9,12 @@ class TrackingMixin:
     @property
     def params(self):
         try:
-            tracked_params = self.tracked_params
+            ignored_params = self.ignored_params
         except:
-            tracked_params = self.get_tracked_params()
+            ignored_params = self.get_ignored_params()
         params = {
             key: self.get_params()[key]
-            for key in tracked_params if key in self.get_params()
+            for key in self.get_params() if key not in ignored_params
         }
         return params
 
@@ -117,7 +117,7 @@ class NormalizeFillNAMixin(PreprocessingMixin):
     def preprocess(self, X, y=None):
         if y is not None:
             mean = np.nanmean(X, axis=0)
-            std = np.nanstd(X, axis=0)
+            std = np.nanstd(X, axis=0) + 1e-9
             X = (X - mean) / std
             self._preprocessing_state = mean, std
         else:
@@ -127,3 +127,8 @@ class NormalizeFillNAMixin(PreprocessingMixin):
         nan_idx = np.where(np.isnan(X) | np.isinf(X))
         X[nan_idx] = np.take(mean, nan_idx[1])
         return X, y
+
+
+class Placeholder:
+    def __init__(self):
+        raise ImportError(f'{self.__class__} is not available. Please install corresponding packages')
