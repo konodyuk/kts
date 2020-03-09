@@ -1,5 +1,5 @@
 from kts.modelling.mixins import BinaryClassifierMixin, NormalizeFillNAMixin
-from kts.zoo.common import XGBMixin, LGBMMixin, CatBoostMixin, all_estimators, BLACKLISTED_PARAMS
+from kts.models.common import XGBMixin, LGBMMixin, CatBoostMixin, all_estimators, BLACKLISTED_PARAMS
 
 __all__ = []
 
