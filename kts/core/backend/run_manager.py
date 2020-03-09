@@ -13,7 +13,7 @@ from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import TextChunk
 from kts.core.backend.progress import pbar, ProgressSignal
 from kts.core.backend.signal import Sync, ResourceRequest, RunPID, filter_signals
-from kts.core.cache import frame_cache, CachedMapping
+from kts.core.cache import frame_cache, CachedMapping, user_cache_frame
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.run_id import RunID
@@ -175,7 +175,7 @@ class RunManager:
                 errors = self.filter_map_id(signals, rs.ErrorSignal)
                 for rid, err in errors:
                     report.update_text(rid, text='task failed', timestamp=time.time(), autorefresh=False)
-                    report.update_text(rid, text=err.error.strip().split('\n')[-1], timestamp=time.time(), autorefresh=False)
+                    report.update_text(rid, text=err.error.strip(), timestamp=time.time(), autorefresh=False)
                     report.refresh(force=True)
 
                 report.refresh()
@@ -217,8 +217,8 @@ class RunManager:
             if key in [i.state_id for i in self.scheduled.keys()]:
                 return [v.res_state for k, v in self.scheduled.items() if k.state_id == key][0] # oid
         elif isinstance(key, str):
-            if key in frame_cache:
-                return frame_cache.load(key) # df
+            if key in user_cache_frame:
+                return user_cache_frame[key] # df
         else:
             raise TypeError(f"Unsupported key type: {type(key)}")
 
