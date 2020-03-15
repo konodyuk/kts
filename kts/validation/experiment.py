@@ -28,6 +28,10 @@ class Experiment(ui.HTMLRepr):
         self.validator = validator
         self.id = experiment_id(self.model, self.feature_set)
         self.date = time.time()
+        if oof.shape[1] == 1:
+            self.oof.columns = [self.id]
+        else:
+            self.oof.columns = [f"{self.id}_{i}" for i in range(oof.shape[1])]
 
     @property
     def model(self):

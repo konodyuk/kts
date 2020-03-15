@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 import kts.ui.components as ui
 from kts.core.feature_set import FeatureSet
@@ -21,17 +22,25 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
         for idx_train, idx_test in splitter.split(y, y):
             yield idx_train, idx_test
 
-    def create_oof(self, predictions, folds):
-        max_idx = 0
-        for idx_train, idx_val in folds:
-            max_idx = max(max_idx, np.max(idx_train), np.max(idx_val))
-        max_idx += 1
-        res = np.zeros((max_idx,))
-        weights = np.zeros((max_idx,))
+    def create_oof(self, predictions, folds, feature_set):
+        input_frame = feature_set.train_frame
+        height = input_frame.shape[0]
+        pred_sample = predictions[0]
+        if len(pred_sample.shape) == 1 or pred_sample.shape[1] == 1:
+            width = 1
+        else:
+            width = pred_sample.shape[1]
+        res = np.zeros((height, width))
+        weights = np.zeros((height, 1))
         for pred, (idx_train, idx_val) in zip(predictions, folds):
+            if len(pred.shape) == 1:
+                pred = pred.reshape((-1, 1))
             res[idx_val] += pred
             weights[idx_val] += 1
-        return res / weights
+        res = res / weights
+        res = pd.DataFrame(res, index=input_frame.index)
+        res = res[weights > 0]
+        return res
 
     def evaluate(self, y_true, y_pred, fold_feature_set):
         return self.metric(y_true, y_pred)
@@ -49,7 +58,7 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
         cv_pipeline = CVPipeline(cv_feature_set, model)
         cv_pipeline.fit(score_fun=self.evaluate, **kwargs)
         raw_oof = cv_pipeline.raw_oof
-        oof = self.create_oof(raw_oof, folds)
+        oof = self.create_oof(raw_oof, folds, feature_set)
         cv_pipeline.raw_oof = None
         experiment = Experiment(
             cv_pipeline=cv_pipeline,
