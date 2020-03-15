@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 import numpy as np
 
 import kts.ui.components as ui
@@ -7,7 +9,7 @@ from kts.util.hashing import hash_dict, hash_str
 class TrackingMixin:
     """@DynamicAttrs"""
     @property
-    def params(self):
+    def params(self) -> Dict[str, Any]:
         try:
             ignored_params = self.ignored_params
         except:
@@ -17,6 +19,16 @@ class TrackingMixin:
             for key in self.get_params() if key not in ignored_params
         }
         return params
+
+    def format_params(self, prettify=False) -> str:
+        if not prettify:
+            return ', '.join(f"{k}={repr(v)}" for k, v in self.params.items())
+        max_length = max(len(i) for i in self.params.keys())
+        res = ""
+        for key, value in self.params.items():
+            res += key.rjust(max_length, ' ')
+            res += f" = {repr(value)}\n"
+        return res
 
 
 class NamingMixin(TrackingMixin):
@@ -32,11 +44,7 @@ class NamingMixin(TrackingMixin):
 class SourceMixin(TrackingMixin):
     @property
     def source(self):
-        args = []
-        for key, value in self.params.items():
-            args.append(f"{key}={repr(value)}")
-        res = ", ".join(args)
-        return f"{self.__class__.__name__}({res})"
+        return f"{self.__class__.__name__}({self.format_params()})"
 
 
 class PreprocessingMixin:
@@ -72,7 +80,7 @@ class HTMLReprMixin(ui.HTMLRepr, TrackingMixin):
             ui.Annotation('model'),
             ui.Field(self.__class__.__name__),
             ui.Annotation('params'),
-            ui.Field(str(self.params)),
+            ui.Code(self.format_params(prettify=True)),
             ui.Annotation('source'),
             ui.Code(self.source)
         ]

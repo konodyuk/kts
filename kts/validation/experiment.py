@@ -93,7 +93,7 @@ class Experiment(ui.HTMLRepr):
             ui.Annotation('model'),
             ui.Field(self.model_class),
             ui.Annotation('params'),
-            ui.Field(str(self.model.params).replace("'", "")[1:-1]),
+            ui.Code(self.model.format_params(prettify=True)),
             ui.Annotation('features'),
             self.feature_set.feature_pool,
             ui.Annotation('details'),
