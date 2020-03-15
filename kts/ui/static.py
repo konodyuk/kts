@@ -13,7 +13,7 @@ CSS_STYLE = """
   display: flex;
   flex-wrap: wrap;
   background-color: {second};
-  padding: 10px;
+  padding: 5px;
   border-radius: 20px;
   margin: 5px;
 }}
