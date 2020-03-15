@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 from weakref import WeakValueDictionary
 
-import dill
+import cloudpickle
 import feather
 import pandas as pd
 
@@ -111,19 +111,19 @@ class AbstractCache(ABC):
 
 
 class ObjectCache(AbstractCache):
-    extensions = ['.dill.obj']
+    extensions = ['.cpkl.obj']
 
     def write(self, key: str, value):
-        path = self.path / (key + '.dill.obj')
+        path = self.path / (key + '.cpkl.obj')
         try:
-            dill.dump(value, open(path, "wb"))
-        except dill.PicklingError:
+            cloudpickle.dump(value, open(path, "wb"))
+        except:  # don't need to handle this anymore, but leave for safety purposes, TODO: remove
             if path.exists():
                 os.remove(path)
 
     def read(self, key: str):
-        path = self.path / (key + '.dill.obj')
-        return dill.load(open(path, "rb"))
+        path = self.path / (key + '.cpkl.obj')
+        return cloudpickle.load(open(path, "rb"))
 
 
 class FrameCache(AbstractCache):

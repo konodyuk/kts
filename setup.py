@@ -54,7 +54,7 @@ setuptools.setup(
         "numpy",
         "scikit-learn",
         "matplotlib",
-        "dill",
+        "cloudpickle",
         "feather-format",
         "click",
         "python-forge",
