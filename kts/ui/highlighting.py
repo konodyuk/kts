@@ -26,7 +26,7 @@ custom_styles = {'kts': KTSStyle}
 
 class Highlighter:
     def __init__(self, style='tango'):
-        self.lexer = get_lexer_by_name("python", stripall=True)
+        self.lexer = get_lexer_by_name("python")
         self.set_style(style)
 
     def highlight(self, code):
