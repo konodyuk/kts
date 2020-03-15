@@ -5,6 +5,7 @@ import pandas as pd
 from kts.core.backend.run_manager import run_cache
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
+from kts.util.misc import extract_requirements, validate_source
 
 
 class FeatureConstructor(ParallelFeatureConstructor):
@@ -19,6 +20,8 @@ class FeatureConstructor(ParallelFeatureConstructor):
         self.name = func.__name__
         self.description = func.__doc__
         self.source = inspect.getsource(func)
+        validate_source(self.source)
+        self.requirements = extract_requirements(func)
         self.dependencies = self.extract_dependencies(func)
         self.registered = True
 

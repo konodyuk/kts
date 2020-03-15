@@ -30,6 +30,7 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
     worker = None
     registered = False
     source = None
+    requirements = None
     description = None
     columns = None
     verbose = False
@@ -146,6 +147,8 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         elements += [ui.Annotation('source'), ui.Code(self.source)]
         if self.columns:
             elements += [ui.Annotation('columns'), ui.Field('<tt>' + ', '.join(self.columns) + '</tt>')]
+        if self.requirements:
+            elements += [ui.Annotation('requirements'), ui.Field('<tt>' + ', '.join(self.requirements) + '</tt>')]
         # if self.preview_df is not None:
         #     elements += [ui.Annotation('preview'), ui.DF(self.preview_df)]
         return elements

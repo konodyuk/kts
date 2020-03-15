@@ -5,6 +5,7 @@ from inspect import Signature, Parameter
 
 import kts.ui.components as ui
 from kts.core.feature_constructor.user_defined import FeatureConstructor
+from kts.util.misc import extract_requirements, validate_source
 
 
 class GenericFeatureConstructor(ui.HTMLRepr):
@@ -13,6 +14,8 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         self.name = func.__name__
         self.description = func.__doc__
         self.source = inspect.getsource(func)
+        validate_source(self.source)
+        self.requirements = extract_requirements(func)
         self.parallel = kwargs.pop('parallel', True)
         self.cache = kwargs.pop('cache', True)
         self.verbose = kwargs.pop('verbose', True)
@@ -37,6 +40,7 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         res.description = f"An instance of generic feature constructor <tt>{self.name}</tt>"
         res.source = f"{self.name}({', '.join(f'{repr(instance_kwargs[k])}' for k in self.arg_names)})"
         # res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
+        res.requirements = self.requirements
         res.dependencies = dict()
         res.parallel = self.parallel
         res.cache = self.cache
