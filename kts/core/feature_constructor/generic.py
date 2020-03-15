@@ -74,6 +74,8 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         if self.description is not None:
             elements += [ui.Annotation('description'), ui.Field(self.description)]
         elements += [ui.Annotation('source'), ui.Code(self.source)]
+        if self.requirements:
+            elements += [ui.Annotation('requirements'), ui.Field('<tt>' + ', '.join(self.requirements) + '</tt>')]
         return elements
 
     @property
