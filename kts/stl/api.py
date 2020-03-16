@@ -11,7 +11,7 @@ from category_encoders import (
 )
 
 from kts.core.feature_constructor.base import BaseFeatureConstructor, Selector, Dropper
-from kts.stl.backend import EmptyLike, Identity, Concat, Applier, CategoryEncoder
+from kts.stl.backend import EmptyLike, Identity, Concat, Applier, CategoryEncoder, Stacker
 
 empty_like = EmptyLike()
 identity = Identity()
@@ -52,3 +52,6 @@ def discretize_quantile():
 
 def standardize():
     raise NotImplemented
+
+def stack(experiment_id):
+    return Stacker(experiment_id)

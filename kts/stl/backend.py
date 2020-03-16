@@ -2,6 +2,7 @@ from typing import Union, List, Optional
 
 import pandas as pd
 
+from kts.core.backend.util import in_worker
 from kts.core.feature_constructor.base import InlineFeatureConstructor
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.frame import KTSFrame
@@ -160,3 +161,32 @@ class Concat(InlineFeatureConstructor):
             return
         results_ordered = [results[f.name] for f in self.feature_constructors]
         return pd.concat(results_ordered, axis=1)
+
+
+class Stacker(ParallelFeatureConstructor):
+    parallel = False
+    cache = True
+
+    def __init__(self, id):
+        from kts.validation.leaderboard import experiments
+        assert id in experiments, "No such experiment found"
+        self.id = id
+        self.experiment = experiments[self.id]
+        self.oof = self.experiment.oof
+        self.name = "stack_" + self.id
+        self.source = f"stl.stack({repr(self.id)})"
+        self.columns = list(self.oof.columns)
+
+    def compute(self, kf: KTSFrame):
+        assert not in_worker()
+        result = pd.DataFrame(index=kf.index, columns=self.columns)
+        known_index = kf.index.intersection(self.oof.index)
+        unknown_index = kf.index.difference(self.oof.index)
+        if len(known_index) > 0:
+            result.loc[known_index] = self.oof.loc[known_index]
+        if len(unknown_index) > 0:
+            pred = self.experiment.predict(kf.loc[unknown_index])
+            if len(pred.shape) == 1:
+                pred = pred.reshape((-1, 1))
+            result.loc[unknown_index] = pred
+        return result
