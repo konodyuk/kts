@@ -115,4 +115,13 @@ class CatBoostMixin(_CatBoostClassifier, ProgressMixin):
         return {'step': step, 'train_score': train_score, 'valid_score': valid_score, 'success': True}
 
     def get_n_steps(self):
-        return self.get_params().get('iterations', 1000)
+        result = self.get_param('iterations')
+        if result is None:
+            result = self.get_param('n_estimators')
+        if result is None:
+            result = self.get_param('num_trees')
+        if result is None:
+            result = self.get_param('num_boost_round')
+        if result is None:
+            result = 1000
+        return result
