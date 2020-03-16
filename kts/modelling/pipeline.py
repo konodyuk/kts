@@ -41,7 +41,7 @@ class ProgressParser:
         cur_time = time.time()
         if force or cur_time - self.last_update >= self.min_interval:
             with redirect_stdout(cfg.stdout):
-                self.handle.update(self.report)
+                if self.handle: self.handle.update(self.report)
             self.last_update = cur_time
 
 
@@ -73,14 +73,14 @@ class CVPipeline:
         predictions = []
         for i in range(self.n_folds):
             ifr.update(i)
-            handle.update(ifr)
+            if handle: handle.update(ifr)
             model = self.models[i]
             fold = self.cv_feature_set.fold(i)
             x = fold(frame)
             y_pred = model.preprocess_predict(x)
             predictions.append(y_pred)
         ifr.finish()
-        handle.update(ifr)
+        if handle: handle.update(ifr)
         return self.blend(predictions) 
 
     def fit(self, score_fun, **kwargs):
