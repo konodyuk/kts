@@ -129,8 +129,7 @@ class FeatureSet(ui.HTMLRepr):
         res = concat(results)
         if cfg.preview_mode:
             return PreviewDataFrame(res)
-        else:
-            return res
+        return res
 
     @property
     def aux(self) -> Union[PreviewDataFrame, AnyFrame]:
@@ -144,8 +143,7 @@ class FeatureSet(ui.HTMLRepr):
         res = concat(results)
         if cfg.preview_mode:
             return PreviewDataFrame(res)
-        else:
-            return res
+        return res
 
     def __getitem__(self, key) -> PreviewDataFrame:
         report = FeatureComputingReport()
@@ -293,8 +291,7 @@ class Fold:
         result_frame = concat(results.values())
         if self.columns is None:
             raise UserWarning(".train should be called before .valid")
-        else:
-            assert all(self.columns == result_frame.columns)
+        assert all(self.columns == result_frame.columns)
         return result_frame.values
 
     def __call__(self, frame: AnyFrame) -> np.ndarray:
@@ -304,8 +301,7 @@ class Fold:
         result_frame = concat(results.values())
         if self.columns is None:
             raise UserWarning(".train should be called before inference")
-        else:
-            assert all(self.columns == result_frame.columns)
+        assert all(self.columns == result_frame.columns)
         return result_frame.values
 
     @property
