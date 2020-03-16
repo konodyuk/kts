@@ -14,6 +14,7 @@ from kts.core.lists import feature_list
 from kts.settings import cfg
 from kts.ui.feature_computing_report import FeatureComputingReport, SilentFeatureComputingReport
 from kts.util.hashing import hash_list, hash_fold
+from kts.stl.backend import Stacker
 
 AnyFrame = Union[pd.DataFrame, KTSFrame]
 
@@ -82,6 +83,9 @@ class FeatureSet(ui.HTMLRepr):
         for i, feature in enumerate(before):
             if not feature.cache:
                 after.append(before.pop(i))
+        for i, feature in enumerate(after):
+            if isinstance(feature, Stacker):
+                before.append(after.pop(i))
         return before, after
 
     def check_columns(self, columns):
@@ -104,6 +108,8 @@ class FeatureSet(ui.HTMLRepr):
             train = True
         else:
             train = False
+        stackings = [i for i in self.before_split if isinstance(i, Stacker)]
+        run_manager.run(stackings, frame, train=train, ret=False, report=report)
         parallel = [i for i in self.before_split if i.parallel]
         run_manager.run(parallel, frame, train=train, ret=False, report=report)
         run_manager.supervise(report)
