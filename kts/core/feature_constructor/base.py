@@ -91,7 +91,7 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
 
     def local_worker(self, *args, kf: KTSFrame):
         run_id = RunID(kf._scope, kf._fold, kf.hash())
-        had_state = bool(kf.state)
+        return_state = kf._train
         stats = Stats(kf)
         if in_worker() and self.verbose:
             report = None
@@ -106,10 +106,10 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
             io = self.suppress_io()
         with stats, io, self.suppress_stderr(), pbar.local_mode(report, run_id):
             res_kf = self.compute(*args, kf)
-        if had_state:
-            res_state = None
-        else:
+        if return_state:
             res_state = kf._state
+        else:
+            res_state = None
         if in_worker() and self.verbose:
             rs.send(ProgressSignal(1, 1, None, None, None, run_id))
         elif not in_worker() and self.verbose:
