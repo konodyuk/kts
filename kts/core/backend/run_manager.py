@@ -7,6 +7,7 @@ from typing import Optional, Dict, Union, Tuple, Any, List
 import pandas as pd
 import ray
 from ray._raylet import ObjectID
+from ray.exceptions import RayError
 
 import kts.core.backend.signal as rs
 from kts.core.backend.address_manager import get_address_manager
@@ -60,7 +61,8 @@ class RunCache:
     def put_state(self, run_id: RunID, value):
         assert not self.has_state(run_id)
         self.states[run_id.get_state_name()] = value
-        self.columns[run_id.get_state_name()] = value['__columns']
+        if '__columns' in value:
+            self.columns[run_id.get_state_name()] = value['__columns']
 
     def put_result(self, run_id: RunID, value: pd.DataFrame):
         assert not self.has_result(run_id)
@@ -93,12 +95,12 @@ class RunManager:
         if report is None:
             report = SilentFeatureComputingReport()
         frame = KTSFrame(frame)
-        frame.__meta__['train'] = train
-        frame.__meta__['fold'] = fold
-        frame.__meta__['run_manager'] = self
-        frame.__meta__['report'] = report
         results = dict()
         for feature_constructor in feature_constructors:
+            frame.__meta__['train'] = train
+            frame.__meta__['fold'] = fold
+            frame.__meta__['run_manager'] = self
+            frame.__meta__['report'] = report
             run_id = RunID(feature_constructor.name, frame._fold, frame.hash())
             with pbar.local_mode(report, run_id):
                 results[feature_constructor.name] = feature_constructor(frame, ret=ret)
@@ -227,7 +229,7 @@ class RunManager:
             try:
                 res_df, res_state, stats = ray.get([run.res_df, run.res_state, run.stats])
                 self.sync(run_id, res_df, res_state, stats)
-            except:  # in case of failed task
+            except RayError:  # in case of failed task
                 pass
         self.scheduled.clear()
 
