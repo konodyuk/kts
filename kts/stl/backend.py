@@ -176,6 +176,7 @@ class Stacker(ParallelFeatureConstructor):
         self.name = "stack_" + self.id
         self.source = f"stl.stack({repr(self.id)})"
         self.columns = list(self.oof.columns)
+        self.requirements = self.experiment.requirements
 
     def compute(self, kf: KTSFrame):
         assert not in_worker()
