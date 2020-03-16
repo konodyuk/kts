@@ -28,7 +28,7 @@ class SingleModelFittingReport:
             self.start = time.time()
         else:
             self.took = time.time() - self.start
-            self.eta = (self.n_steps - self.step) / (self.step) * self.took
+            self.eta = (self.n_steps - self.step) / max(self.step, 1) * self.took
         if train_score is not None:
             self.train_scores.append((step, train_score))
             self.train_scores = sorted(self.train_scores, key=lambda x: x[0])
