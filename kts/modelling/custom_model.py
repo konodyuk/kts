@@ -30,7 +30,7 @@ class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
 
 
 def custom_model(ModelClass: type, tracked_params: List[str], name: str = None):
-    raise NotImplemented
+    raise NotImplementedError
     if name is None:
         name = ModelClass.__name__
     return type(name, (ModelClass, CustomModel), {'get_tracked_params': lambda self: tracked_params})

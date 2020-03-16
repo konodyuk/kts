@@ -34,11 +34,11 @@ class AbstractCache(ABC):
 
     @abstractmethod
     def write(self, key: str, value):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def read(self, key: str):
-        raise NotImplemented
+        raise NotImplementedError
 
     def __contains__(self, key: str):
         return key in self.ls()

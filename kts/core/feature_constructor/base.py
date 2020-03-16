@@ -68,7 +68,7 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
             rm.sync(run_id, res_df, res_state, stats)
 
     def __call__(self, df, ret=True):
-        raise NotImplemented
+        raise NotImplementedError
 
     def remote_io(self, run_id=None):
         return redirect_stdout(RemoteTextIO(run_id))

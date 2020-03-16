@@ -71,7 +71,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         yield ()
 
     def compute(self, *args, kf: KTSFrame):
-        raise NotImplemented
+        raise NotImplementedError
 
     def reduce(self, results: List[AnyFrame]) -> AnyFrame:
         return results[0]

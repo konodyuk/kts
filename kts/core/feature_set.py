@@ -228,7 +228,7 @@ class CVFeatureSet:
 
     @property
     def computed(self) -> bool:
-        raise NotImplemented
+        raise NotImplementedError
 
     @property
     def train_frame(self):
