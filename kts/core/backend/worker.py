@@ -14,9 +14,6 @@ from kts.core.frame import KTSFrame
 
 @ray.remote(num_return_vals=3, max_retries=0)
 def worker(self, *args, df: pd.DataFrame, meta: Dict):
-    import coverage
-    cov = coverage.Coverage(data_suffix=os.getpid(), include="*core/*")
-    cov.start()
     assert 'run_manager' not in meta
     assert 'report' not in meta
     kf = KTSFrame(df, meta=meta)
@@ -43,5 +40,4 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
         res_state = kf._state
     if self.verbose:
         rs.send(ProgressSignal(1, 1, None, None, None))
-    cov.save()
     return res_kf, res_state, stats.data

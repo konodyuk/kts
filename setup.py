@@ -63,7 +63,6 @@ setuptools.setup(
         "ipython",
         "psutil",
         "toml",
-        "coverage",
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
