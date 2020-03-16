@@ -107,6 +107,8 @@ class Experiment(ui.HTMLRepr):
                 ui.Raw(self.validator.html_collapsible)
             ])
         ]
+        if self.requirements:
+            elements += [ui.Annotation('requirements'), ui.Field('<tt>' + ', '.join(self.requirements) + '</tt>')]
         return elements
     
     @property
@@ -122,7 +124,10 @@ class Experiment(ui.HTMLRepr):
         elements = [ui.TitleWithCross('experiment', css_id)]
         elements += self._html_elements
         return ui.CollapsibleColumn(elements, thumbnail, css_id, outer=True, border=border).html
-    
+
+    @property
+    def requirements(self):
+        return self.feature_set.requirements
 
 
 class ExperimentAlias(ui.HTMLRepr):

@@ -1,6 +1,6 @@
 import pprint
 from collections import defaultdict
-from typing import Union, List, Tuple, Optional, Collection
+from typing import Union, List, Tuple, Optional, Collection, Set
 
 import numpy as np
 import pandas as pd
@@ -185,6 +185,8 @@ class FeatureSet(ui.HTMLRepr):
         if include_features:
             elements += [ui.Annotation('features'), self.feature_pool]
         elements += [ui.Annotation('source'), ui.Code(self.source)]
+        if self.requirements:
+            elements += [ui.Annotation('requirements'), ui.Field('<tt>' + ', '.join(self.requirements) + '</tt>')]
         return elements
 
     @property
@@ -203,6 +205,14 @@ class FeatureSet(ui.HTMLRepr):
         sources_before = [i.source for i in self.before_split]
         sources_after = [i.source for i in self.after_split]
         return f"FS{hash_list(sources_before, 2)}{hash_list(sources_after, 2)}"
+
+    @property
+    def requirements(self) -> Set[str]:
+        result = set()
+        for feature in self.features:
+            if feature.requirements:
+                result |= feature.requirements
+        return result
     
 
 
