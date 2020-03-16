@@ -1,6 +1,7 @@
 import inspect
 import sys
 from abc import ABCMeta
+from typing import Set
 
 import importlib_metadata
 from cloudpickle import dumps, loads
@@ -73,7 +74,7 @@ def getversion(module):
         return None
 
 
-def extract_requirements(func):
+def extract_requirements(func) -> Set[str]:
     """TODO: extract PyPI name instead"""
     res = list()
     clean_namespace = loads(dumps(func)).__globals__
@@ -85,12 +86,12 @@ def extract_requirements(func):
         else:
             pkg_name = None
             pkg_version = None
-        if pkg_name in [None, '__main__', 'kts']:
+        if pkg_name in [None, '__main__', 'kts', 'numpy', 'pandas']:
             continue
         if pkg_version is not None:
             pkg_name += f"=={pkg_version}"
         res.append(pkg_name)
-    return res
+    return set(res)
 
 
 def validate_source(source):
