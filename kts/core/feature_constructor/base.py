@@ -135,10 +135,9 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
             rm.supervise(report=report)
 
     def __repr__(self):
-        if self.registered:
-            return self.name
-        else:
+        if not self.registered:
             return self.source
+        return self.name
 
     def _html_elements(self):
         elements = [ui.Annotation('name'), ui.Field(repr(self))]
@@ -244,7 +243,6 @@ class Dropper(InlineFeatureConstructor):
 
     @property
     def columns(self):
-        if self.feature_constructor.columns is not None:
-            return list(set(self.feature_constructor.columns) - set(self.dropped_columns))
-        else:
+        if self.feature_constructor.columns is None:
             return list()
+        return list(set(self.feature_constructor.columns) - set(self.dropped_columns))
