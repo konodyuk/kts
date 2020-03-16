@@ -63,6 +63,7 @@ setuptools.setup(
         "ipython",
         "psutil",
         "toml",
+        "category_encoders",
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
