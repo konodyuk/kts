@@ -221,6 +221,10 @@ class CachedMapping(MutableMapping):
     def __repr__(self):
         return "{\n\t" + '\n\t'.join([f"'{key}': {value}" for key, value in self.items()]) + '\n}'
 
+    def __reduce__(self):
+        """This does not consider case of using frame_cache as backend, as user_cache_frame is the only case"""
+        return (self.__class__, (self.name,))
+
 
 user_cache_frame = CachedMapping('user_cache_frame', frame_cache)
 user_cache_obj = CachedMapping('user_cache_obj', obj_cache)
