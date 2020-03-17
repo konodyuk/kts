@@ -7,10 +7,10 @@ experiments = CachedMapping('experiments')
 
 
 class Leaderboard(ui.HTMLRepr):
-    def __init__(self, name='main'):
+    def __init__(self, name='main', maximize=True):
         self.name = name
         self.aliases = CachedMapping(f'lb_{name}')
-        self.maximize = True
+        self.maximize = maximize
 
     def __getitem__(self, key):
         if isinstance(key, str):
@@ -55,7 +55,9 @@ class Leaderboard(ui.HTMLRepr):
     def html(self):
         return kts.ui.leaderboard.Leaderboard(self.sorted_aliases).html
 
-leaderboard = Leaderboard('main')  # TODO: sync with lbs
+    def __reduce__(self):
+        return (self.__class__, (self.name, self.maximize,))
+
 
 class LeaderboardList:
     def __init__(self):
@@ -76,6 +78,10 @@ class LeaderboardList:
     def register(self, experiment: Experiment, leaderboard_name: str):
         if leaderboard_name not in self.data:
             self.data[leaderboard_name] = Leaderboard(leaderboard_name)
-        self.data[leaderboard_name].register(experiment)  # TODO: fix, will not affect cached object
+        self.data[leaderboard_name].register(experiment)
+
 
 leaderboard_list = LeaderboardList()
+leaderboard = Leaderboard('main')
+if 'main' not in leaderboard:
+    leaderboard_list.data['main'] = leaderboard
