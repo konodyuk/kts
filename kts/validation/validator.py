@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
@@ -45,7 +47,7 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
     def evaluate(self, y_true, y_pred, fold_feature_set):
         return self.metric(y_true, y_pred)
 
-    def score(self, model: Model, feature_set: FeatureSet, desc: str, leaderboard: str, **kwargs):
+    def score(self, model: Model, feature_set: FeatureSet, desc: Optional[str] = None, leaderboard: str = "main", **kwargs):
         cfg.preview_mode = False
         if leaderboard in leaderboard_list and experiment_id(model, feature_set) in leaderboard_list[leaderboard]:
             raise UserWarning(f'Duplicate experiment: {experiment_id(model, feature_set)}')
