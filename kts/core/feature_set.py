@@ -151,7 +151,7 @@ class FeatureSet(ui.HTMLRepr):
         results = run_manager.run(self.features, frame, train=True, fold='preview', ret=True, report=report)
         result_frame = concat(results.values())
         run_manager.merge_scheduled()
-        return result_frame
+        return PreviewDataFrame(result_frame)
 
     @property
     def source(self):
