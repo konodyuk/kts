@@ -23,7 +23,7 @@ class Leaderboard(ui.HTMLRepr):
             raise KeyError
 
     def __getattr__(self, key):
-        if key not in self:
+        if key not in experiments:
             raise AttributeError
         return experiments[key]
 

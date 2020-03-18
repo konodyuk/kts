@@ -12,7 +12,7 @@ from kts.settings import cfg
 from kts.ui.feature_computing_report import FeatureComputingReport
 from kts.util.misc import SourceMetaClass
 from kts.validation.experiment import Experiment
-from kts.validation.leaderboard import leaderboard_list
+from kts.validation.leaderboard import leaderboard_list, experiments
 
 
 class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
@@ -50,8 +50,8 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
 
     def score(self, model: Model, feature_set: FeatureSet, desc: Optional[str] = None, leaderboard: str = "main", **kwargs):
         cfg.preview_mode = False
-        if leaderboard in leaderboard_list and pipeline_id(model, feature_set) in leaderboard_list[leaderboard]:
-            raise UserWarning(f'Duplicate experiment: {experiment_id(model, feature_set)}')
+        if pipeline_id(model, feature_set) in experiments:
+            raise UserWarning(f'Duplicate experiment: {pipeline_id(model, feature_set)}')
         report = FeatureComputingReport()
         feature_set.compute(report=report)
         folds = self.create_folds(feature_set, self.splitter)
