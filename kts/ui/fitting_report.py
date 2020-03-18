@@ -1,7 +1,10 @@
 import time
+from contextlib import redirect_stdout
 
 import numpy as np
+from IPython.display import display
 
+from kts.settings import cfg
 from kts.ui.components import HTMLRepr, Column, Field, Annotation, Title, InnerColumn, Row, Progress, Raw
 from kts.ui.plotting import Line, Plot
 from kts.ui.settings import ct
@@ -142,8 +145,9 @@ class CVFittingReport(HTMLRepr):
         return Column([Title('fitting')] + [Raw(report.html(active=(i in self.active), annotations=(i == 0))) for i, report in enumerate(self.reports)]).html
 
 
-class InferenceReport(HTMLRepr):
-    def __init__(self, n_folds=5):
+class InferenceReportBlock(HTMLRepr):
+    def __init__(self, id, n_folds=5):
+        self.id = id
         self.n_folds = n_folds
         self.fold = 0
         self.start = None
@@ -162,11 +166,48 @@ class InferenceReport(HTMLRepr):
         self.update(self.n_folds)
         self.eta = None
 
+    def html(self, annotations):
+        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
+        return Row([
+            InnerColumn([Annotation('id')] * (annotations) + [Field(self.id, **ind_kw)]),
+            InnerColumn([Annotation('progress')] * (annotations) + [Progress(self.fold, self.n_folds, style='width: 400px; margin-top: 7px;')]),
+            InnerColumn([Annotation('took')] * (annotations) + [Field(format_value(self.took, True), **ind_kw)]),
+            InnerColumn([Annotation('eta')] * (annotations) + [Field(format_value(self.eta, True), **ind_kw)]),
+        ])
+
+
+class InferenceReport(HTMLRepr):
+    def __init__(self):
+        self.current_report = -1
+        self.reports = []
+        self.handle = None
+
+    def start(self, id, n_folds):
+        self.current_report = len(self.reports)
+        self.reports.append(InferenceReportBlock(id, n_folds))
+        self.refresh()
+
+    def update(self, fold):
+        self.reports[self.current_report].update(fold)
+        self.refresh()
+
+    def finish(self):
+        self.reports[self.current_report].finish()
+        self.refresh()
+
     @property
     def html(self):
-        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
-        return Column([Title('inference'), Row([
-            InnerColumn([Annotation('progress')] + [Progress(self.fold, self.n_folds, style='width: 400px; margin-top: 7px;')]),
-            InnerColumn([Annotation('took')] + [Field(format_value(self.took, True), **ind_kw)]),
-            InnerColumn([Annotation('eta')] + [Field(format_value(self.eta, True), **ind_kw)]),
-        ])]).html
+        return Column([Title('inference')] + [report.html(i==0) for i, report in enumerate(self.reports)]).html
+
+    def show(self):
+        return display(self, display_id=True)
+
+    def refresh(self):
+        if self.handle is None:
+            with redirect_stdout(cfg.stdout):
+                self.handle = self.show()
+        if self.handle is None:
+            # not in ipython
+            return
+        with redirect_stdout(cfg.stdout):
+            self.handle.update(self)

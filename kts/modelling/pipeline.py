@@ -73,21 +73,27 @@ class CVPipeline:
         return self.cv_feature_set.feature_set
     
     def predict(self, frame):
-        self.cv_feature_set.compute(frame, report=FeatureComputingReport())
-        ifr = InferenceReport(self.n_folds)
-        handle = display(ifr, display_id=True)
+        if cfg.feature_computing_report is None:
+            was_none = True
+            cfg.feature_computing_report = FeatureComputingReport()
+            cfg.inference_report = InferenceReport()
+        else:
+            was_none = False
+        self.cv_feature_set.compute(frame, report=cfg.feature_computing_report)
+        cfg.inference_report.start(self.id, self.n_folds)
         predictions = []
         for i in range(self.n_folds):
-            ifr.update(i)
-            if handle: handle.update(ifr)
+            cfg.inference_report.update(i)
             model = self.models[i]
             fold = self.cv_feature_set.fold(i)
             x = fold(frame)
             y_pred = model.preprocess_predict(x)
             predictions.append(y_pred)
-        ifr.finish()
-        if handle: handle.update(ifr)
-        return self.blend(predictions) 
+        cfg.inference_report.finish()
+        if was_none:
+            cfg.feature_computing_report = None
+            cfg.inference_report = None
+        return self.blend(predictions)
 
     def fit(self, score_fun, **kwargs):
         cvr = CVFittingReport(self.n_folds, n_steps=self.model.get_n_steps())

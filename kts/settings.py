@@ -16,6 +16,8 @@ class Config:
         self.preview_mode = True
         self.debug = False
         self.stdout = sys.stdout
+        self.feature_computing_report = None
+        self.inference_report = None
 
     def load(self, path):
         self.config_path = Path(path)
