@@ -9,16 +9,16 @@ experiments = CachedMapping('experiments')
 class Leaderboard(ui.HTMLRepr):
     def __init__(self, name='main', maximize=True):
         self.name = name
-        self.aliases = CachedMapping(f'lb_{name}')
+        self.data = CachedMapping(f'lb_{name}')
         self.maximize = maximize
 
     def __getitem__(self, key):
         if isinstance(key, str):
             return experiments[key]
         elif isinstance(key, int):
-            return experiments[self.aliases[key].id]
+            return experiments[self.data[key].id]
         elif isinstance(key, slice):
-            return [experiments[i.id] for i in self.aliases[key]]
+            return [experiments[i.id] for i in self.data[key]]
         else:
             raise KeyError
 
@@ -34,21 +34,21 @@ class Leaderboard(ui.HTMLRepr):
         return key in experiments
 
     def __len__(self):
-        return len(self.aliases)
+        return len(self.data)
     
     def register(self, experiment):
         assert experiment.id not in experiments
         try:
             experiments[experiment.id] = experiment
-            self.aliases[experiment.id] = experiment.alias
+            self.data[experiment.id] = experiment.alias
         except Exception as e:
             experiments.pop(experiment.id, None)
-            self.aliases.pop(experiment.id, None)
+            self.data.pop(experiment.id, None)
             raise e
 
     @property
     def sorted_aliases(self):
-        res = list(self.aliases.values())
+        res = [v for k, v in self.data.items() if k != 'maximize']
         return sorted(res, key=lambda e: e.score, reverse=self.maximize)
 
     @property
@@ -57,6 +57,16 @@ class Leaderboard(ui.HTMLRepr):
 
     def __reduce__(self):
         return (self.__class__, (self.name, self.maximize,))
+
+    @property
+    def maximize(self) -> bool:
+        return self.data['maximize']
+
+    @maximize.setter
+    def maximize(self, value: bool):
+        if 'maximize' in self.data:
+            del self.data['maximize']
+        self.data['maximize'] = value
 
 
 class LeaderboardList:
