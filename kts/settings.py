@@ -18,7 +18,7 @@ class Config:
         self.stdout = sys.stdout
 
     def load(self, path):
-        self.config_path = path
+        self.config_path = Path(path)
         for k, v in toml.load(path).items():
             if k in dir(self):
                 cls = self.__dict__[k].__class__
@@ -38,10 +38,18 @@ class Config:
 
     @storage_path.setter
     def storage_path(self, value):
+        from kts.core.cache import obj_cache, frame_cache
+        if value is None:
+            self._storage_path = None
+            obj_cache.path = None
+            frame_cache.path = None
+            return
         if self.config_path is not None:
-            self._storage_path = self.config_path.parent / value
+            self._storage_path = Path(self.config_path.parent) / value
         else:
-            self._storage_path = value
+            self._storage_path = Path(value)
+        obj_cache.path = self._storage_path
+        frame_cache.path = self._storage_path
 
     @property
     def theme(self):
