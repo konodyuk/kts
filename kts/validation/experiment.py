@@ -7,11 +7,6 @@ import pandas as pd
 import kts.ui.components as ui
 from kts.feature_selection import Builtin
 from kts.ui.feature_importances import FeatureImportances
-from kts.util.hashing import hash_str
-
-
-def experiment_id(model, feature_set):
-    return hash_str(model.name + feature_set.name, 6)
 
 
 class Experiment(ui.HTMLRepr):
@@ -26,7 +21,7 @@ class Experiment(ui.HTMLRepr):
         self.oof = oof
         self.description = description
         self.validator = validator
-        self.id = experiment_id(self.model, self.feature_set)
+        self.id = self.cv_pipeline.id
         self.date = time.time()
         if oof.shape[1] == 1:
             self.oof.columns = [self.id]

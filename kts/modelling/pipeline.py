@@ -10,8 +10,13 @@ from IPython.display import display
 from kts.settings import cfg
 from kts.ui.feature_computing_report import FeatureComputingReport
 from kts.ui.fitting_report import CVFittingReport, InferenceReport
+from kts.util.hashing import hash_str
 
 avg = partial(np.mean, axis=0)
+
+
+def pipeline_id(model, feature_set):
+    return hash_str(model.name + feature_set.name, 6)
 
 
 class ProgressParser:
@@ -53,6 +58,7 @@ class CVPipeline:
         self.scores = []
         self.raw_oof = []
         self.took = None
+        self.id = pipeline_id(self.model, self.feature_set)
 
     @property
     def n_folds(self):
