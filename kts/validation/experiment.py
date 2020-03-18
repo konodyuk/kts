@@ -88,18 +88,15 @@ class Experiment(ui.HTMLRepr):
     @property
     def _html_elements(self):
         elements = [
-            ui.Annotation('ID'),
-            ui.Field(self.id),
-            ui.Annotation('score'),
-            ui.Field(self.score),
-            ui.Annotation('description'),
-            ui.Field(self.description),
-            ui.Annotation('model'),
-            ui.Field(self.model_class),
-            ui.Annotation('params'),
-            ui.Code(self.model.format_params(prettify=True)),
-            ui.Annotation('features'),
-            self.feature_set.feature_pool,
+            ui.Annotation('ID'), ui.Field(self.id),
+            ui.Annotation('score'), ui.Field(self.score),
+        ]
+        if self.description:
+            elements += [ui.Annotation('description'), ui.Field(self.description)]
+        elements += [
+            ui.Annotation('model'), ui.Field(self.model_class),
+            ui.Annotation('params'), ui.Code(self.model.format_params(prettify=True)),
+            ui.Annotation('features'), self.feature_set.feature_pool,
             ui.Annotation('details'),
             ui.Pool([
                 ui.Raw(self.feature_set.html_collapsible),
