@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from collections.abc import MutableMapping
 from glob import glob
 from pathlib import Path
@@ -8,6 +9,7 @@ from weakref import WeakValueDictionary
 
 import cloudpickle
 import feather
+import numpy as np
 import pandas as pd
 
 from kts.core.backend.address_manager import get_address_manager
@@ -26,7 +28,7 @@ class AbstractCache(ABC):
             self.data = WeakValueDictionary()
         else:
             self.data = dict()
-        self.timestamps = dict()
+        self.timestamps = defaultdict(lambda: np.inf)
         if path is not None:
             self.path = Path(path)
         else:
