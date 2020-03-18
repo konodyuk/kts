@@ -4,7 +4,7 @@ from kts.settings import cfg
 class SyncedList(CachedMapping):
     def sync(self, scope=None):
         if scope is None:
-            scope = cfg.global_scope
+            scope = cfg.scope
         for name, value in self.items():
             scope[name] = value
 
