@@ -8,6 +8,7 @@ import kts.ui.settings
 from kts.core.backend.address_manager import get_address_manager, create_address_manager
 from kts.core.backend.signal import get_signal_manager, create_signal_manager
 from kts.core.cache import frame_cache, obj_cache
+from kts.core.lists import feature_list, helper_list
 from kts.settings import cfg
 from kts.util.debug import logger
 
@@ -44,6 +45,8 @@ def init():
     if config_path is not None:
         frame_cache.path = cfg.storage_path
         obj_cache.path = cfg.storage_path
+    feature_list.sync()
+    helper_list.sync()
     ray.init(ignore_reinit_error=True, logging_level=20 if cfg.debug else 50)
     kts.ui.settings.init()
     try:
