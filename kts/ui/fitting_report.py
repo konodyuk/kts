@@ -7,7 +7,6 @@ from IPython.display import display
 from kts.settings import cfg
 from kts.ui.components import HTMLRepr, Column, Field, Annotation, Title, InnerColumn, Row, Progress, Raw
 from kts.ui.plotting import Line, Plot
-from kts.ui.settings import ct
 from kts.util.formatting import format_value
 
 
@@ -103,10 +102,10 @@ class SingleModelFittingReport:
             colors = []
             if len(self.train_scores) >= 5:
                 lines.append(self.train_scores)
-                colors.append(ct.theme.third)
+                colors.append(cfg._theme.third)
             if len(self.valid_scores) >= 5:
                 lines.append(self.valid_scores)
-                colors.append(ct.theme.accent)
+                colors.append(cfg._theme.accent)
             if len(lines) >= 1:
                 lines = self.clip_outliers(lines)
                 for i in range(len(lines)):
