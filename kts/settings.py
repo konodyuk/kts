@@ -10,9 +10,12 @@ class Config:
         self.config_path = None
         self._storage_path = Path('../storage')
         self._threads = psutil.cpu_count(logical=False)
+        self._memory = psutil.virtual_memory().total
         self._theme = None
-        self._highlighting = None
-        self._theme_displays = []
+        self._theme_name = None
+        self._highlighter = None
+        self._theme_handles = []
+        self._dashboard_handle = None
         self.preview_mode = True
         self.debug = False
         self.stdout = sys.stdout
@@ -55,22 +58,20 @@ class Config:
 
     @property
     def theme(self):
-        return self._theme
+        return self._theme_name
 
     @theme.setter
     def theme(self, value):
         from kts.ui.settings import set_theme
         set_theme(value)
-        self._theme = value
 
     @property
     def highlighting(self):
-        return self._highlighting
+        return self._highlighter.style
 
     @highlighting.setter
     def highlighting(self, value):
         from kts.ui.settings import set_highlighting
         set_highlighting(value)
-        self._highlighting = value
 
 cfg = Config()
