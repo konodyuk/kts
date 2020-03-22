@@ -4,42 +4,49 @@ from kts.settings import cfg
 from kts.ui.components import CurrentTheme
 from kts.ui.highlighting import Highlighter
 from kts.ui.theme import themes, default_highlightings
-
-ct = CurrentTheme(Highlighter('tango'), themes['light-orange'])
+from kts.ui.dashboard import Dashboard
 
 
 def init():
-    update_handles(ct)
+    cfg._highlighter = Highlighter('tango')
+    cfg._theme = themes['light-orange']
+    cfg._dashboard_handle = display(Dashboard(), display_id=True)
 
 
-def update_handles(new: CurrentTheme):
-    handles = cfg._theme_displays
+def update_dashboard():
+    cfg._dashboard_handle.update(Dashboard())
+
+
+def update_handles():
+    update_dashboard()
+    handles = cfg._theme_handles
     for h in handles:
-        h.update(new)
-    handles.append(display(new, display_id=True))
+        h.update(CurrentTheme())
+    handles.append(display(CurrentTheme(), display_id=True))
 
 
 def set_highlighting(name: str):
-    ct.hl.set_style(name)
-    update_handles(ct)
+    cfg._highlighter.set_style(name)
+    update_handles()
 
 
 theme_names = ', '.join(themes.keys())
 
 def set_theme(name: str = 'dark'):
     """One of: %s"""
-    if name in themes:
-        ct.set_theme(themes[name])
-        ct.hl.set_style(default_highlightings[name])
-        update_handles(ct)
-    else:
+    if name not in themes:
         raise UserWarning(f"Theme should be one of [{theme_names}]")
+    cfg._theme = themes[name]
+    cfg._theme_name = name
+    cfg._highlighter.set_style(default_highlightings[name])
+    update_handles()
 
 set_theme.__doc__ %= theme_names
 
 
 def set_animation(value: bool):
     if value:
-        ct.theme.anim_height, ct.theme.anim_padding = "1.0s", "0.7s"
+        cfg._theme.anim_height, cfg._theme.anim_padding = "1.0s", "0.7s"
     else:
-        ct.theme.anim_height, ct.theme.anim_padding = "0s", "0s"
+        cfg._theme.anim_height, cfg._theme.anim_padding = "0s", "0s"
+    update_handles()
