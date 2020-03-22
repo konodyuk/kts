@@ -19,7 +19,7 @@ class Applier(ParallelFeatureConstructor):
         self.parts = parts
         self.optimize = optimize
 
-    def map(self, df):
+    def split(self, df):
         if len(df) < 100 and self.optimize:
             yield (0, len(df))
         else:
@@ -51,7 +51,7 @@ class CategoryEncoder(ParallelFeatureConstructor):
         self.name = "category_encode_" + "_".join([self.encoder_name(), '_'] + columns + ['_'] + list(map(repr, targets)))
         self.source = "stl.category_encode(" + ", ".join([self.encoder_repr(), repr(columns), repr(targets)]) + ")"
 
-    def map(self, df):
+    def split(self, df):
         for col in self.encoded_columns:
             for tar in self.targets:
                 yield (col, tar)

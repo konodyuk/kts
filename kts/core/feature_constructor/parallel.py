@@ -24,7 +24,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
     def get_futures(self, kf: KTSFrame) -> Tuple[Dict[Tuple, ObjectID], Dict[Tuple, AnyFrame]]:
         scheduled_dfs = dict()
         result_dfs = dict()
-        for args in self.map(kf):
+        for args in self.split(kf):
             scope = self.get_scope(*args)
             run_id = RunID(scope, kf._fold, kf.hash())
             res_df = self.request_resource(run_id, kf)
@@ -51,7 +51,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         for k, v in scheduled_dfs.items():
             result_dfs[k] = ray.get(v)
         res_list = list()
-        for args in self.map(kf):
+        for args in self.split(kf):
             res_list.append(result_dfs[args])
         res = self.reduce(res_list)
         res = KTSFrame(res)
@@ -67,7 +67,7 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
         res = self.assemble_futures(scheduled_dfs, result_dfs, kf)
         return res
 
-    def map(self, kf: KTSFrame):
+    def split(self, kf: KTSFrame):
         yield ()
 
     def compute(self, *args, kf: KTSFrame):
