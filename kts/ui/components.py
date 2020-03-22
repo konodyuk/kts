@@ -1,5 +1,5 @@
 from kts.ui.highlighting import highlighter
-
+from kts.settings import cfg
 
 class HTMLRepr:
     def _repr_html_(self):
@@ -239,22 +239,14 @@ class CSS(HTMLRepr):
 
 
 class CurrentTheme(HTMLRepr):
-    def __init__(self, hl, theme):
+    def __init__(self):
         self.sample_code = """@decorator\ndef func(arg):\n    return arg + 1"""
-        self.hl = hl
-        self.theme = theme
-
-    def set_highlighting(self, hl):
-        self.hl = hl
-
-    def set_theme(self, theme):
-        self.theme = theme
 
     @property
     def html(self):
         return Column([
-            CSS(self.hl.css),
-            CSS(self.theme.css),
+            CSS(cfg._highlighter.css),
+            CSS(cfg._theme.css),
             Title('theme'),
             Annotation('annotation'),
             Field('field'),
