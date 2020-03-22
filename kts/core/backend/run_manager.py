@@ -89,7 +89,7 @@ class RunManager:
             frame: AnyFrame,
             *,
             train: bool,
-            fold: str = 'default',
+            fold: str,
             ret: bool = False,
             report=None) -> Optional[Dict[str, AnyFrame]]:
         if report is None:

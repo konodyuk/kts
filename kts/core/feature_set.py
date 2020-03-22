@@ -13,7 +13,7 @@ from kts.core.frame import KTSFrame
 from kts.core.lists import feature_list
 from kts.settings import cfg
 from kts.ui.feature_computing_report import FeatureComputingReport, SilentFeatureComputingReport
-from kts.util.hashing import hash_list, hash_fold
+from kts.util.hashing import hash_list, hash_fold, hash_frame
 from kts.stl.backend import Stacker
 
 AnyFrame = Union[pd.DataFrame, KTSFrame]
@@ -67,6 +67,7 @@ class FeatureSet(ui.HTMLRepr):
                  description: Optional[str] = None):
         self.before_split, self.after_split = self.check_features(before_split, after_split)
         self.train_frame = train_frame
+        self.train_id = hash_frame(train_frame)[:8]
         self.test_frame = test_frame
         self.targets = self.check_columns(targets)
         self.auxiliary = self.check_columns(auxiliary)
@@ -109,12 +110,12 @@ class FeatureSet(ui.HTMLRepr):
         else:
             train = False
         stackings = [i for i in self.before_split if isinstance(i, Stacker)]
-        run_manager.run(stackings, frame, train=train, ret=False, report=report)
+        run_manager.run(stackings, frame, train=train, fold=self.train_id, ret=False, report=report)
         parallel = [i for i in self.before_split if i.parallel]
-        run_manager.run(parallel, frame, train=train, ret=False, report=report)
+        run_manager.run(parallel, frame, train=train, fold=self.train_id, ret=False, report=report)
         run_manager.supervise(report)
         not_parallel = [i for i in self.before_split if not i.parallel]
-        run_manager.run(not_parallel, frame, train=train, ret=False, report=report)
+        run_manager.run(not_parallel, frame, train=train, fold=self.train_id, ret=False, report=report)
         run_manager.merge_scheduled()
 
     @property
@@ -122,7 +123,7 @@ class FeatureSet(ui.HTMLRepr):
         frame = self.train_frame
         self.compute()
         target_fcs = [fc for fc in self.before_split if len(set(self.targets) & set(fc.columns))]
-        results = list(run_manager.run(target_fcs, frame, train=True, ret=True).values())
+        results = list(run_manager.run(target_fcs, frame, train=True, fold=self.train_id, ret=True).values())
         results.append(frame)
         for i, frame in enumerate(results):
             results[i] = frame[frame.columns.intersection(self.targets)]
@@ -136,7 +137,7 @@ class FeatureSet(ui.HTMLRepr):
         frame = self.train_frame
         self.compute()
         aux_fcs = [fc for fc in self.before_split if len(set(self.auxiliary) & set(fc.columns))]
-        results = list(run_manager.run(aux_fcs, frame, train=True, ret=True).values())
+        results = list(run_manager.run(aux_fcs, frame, train=True, fold=self.train_id, ret=True).values())
         results.append(frame)
         for i, frame in enumerate(results):
             results[i] = frame[frame.columns.intersection(self.auxiliary)]
@@ -223,7 +224,7 @@ class CVFeatureSet:
         for idx_train, idx_valid in folds:
             assert len(set(idx_train) & set(idx_valid)) == 0 or all(idx_train == idx_valid), \
             "Train and valid sets should either not intersect or be equal"
-            self.fold_ids.append(hash_fold(idx_train, idx_valid))
+            self.fold_ids.append(hash_fold(idx_train, idx_valid)[:8] + self.train_id)
         self.folds = folds
         self.columns_by_fold = defaultdict(lambda: None)
 
@@ -243,6 +244,10 @@ class CVFeatureSet:
     @property
     def train_frame(self):
         return self.feature_set.train_frame
+
+    @property
+    def train_id(self):
+        return self.feature_set.train_id
 
     @property
     def n_folds(self):
@@ -279,7 +284,7 @@ class Fold:
     def train(self) -> np.ndarray:
         results = dict()
         frame = self.feature_set.train_frame
-        results.update(run_manager.run(self.before_split, frame, train=True, ret=True))
+        results.update(run_manager.run(self.before_split, frame, train=True, fold=self.train_id, ret=True))
         frame = self.train_frame
         results.update(run_manager.run(self.after_split, frame, train=True, fold=self.fold_id, ret=True))
         results.update({'_': self.train_frame[[]]})
@@ -294,7 +299,7 @@ class Fold:
     def valid(self) -> np.ndarray:
         results = dict()
         frame = self.feature_set.train_frame
-        results.update(run_manager.run(self.before_split, frame, train=True, ret=True))
+        results.update(run_manager.run(self.before_split, frame, train=True, fold=self.train_id, ret=True))
         frame = self.valid_frame
         results.update(run_manager.run(self.after_split, frame, train=False, fold=self.fold_id, ret=True))
         results.update({'_': self.valid_frame[[]]})
@@ -306,7 +311,7 @@ class Fold:
 
     def __call__(self, frame: AnyFrame) -> np.ndarray:
         results = dict()
-        results.update(run_manager.run(self.before_split, frame, train=False, ret=True))
+        results.update(run_manager.run(self.before_split, frame, train=False, fold=self.train_id, ret=True))
         results.update(run_manager.run(self.after_split, frame, train=False, fold=self.fold_id, ret=True))
         result_frame = concat(results.values())
         if self.columns is None:
@@ -357,6 +362,10 @@ class Fold:
     @property
     def fold_id(self):
         return self.cv_feature_set.fold_ids[self.fold_idx]
+
+    @property
+    def train_id(self):
+        return self.cv_feature_set.train_id
 
     @property
     def targets(self):
