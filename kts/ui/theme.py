@@ -42,7 +42,7 @@ class Theme:
 themes = {
     'dark': Theme("#2e3047", "#43455c", "#707793", "#000", "#3bba9c", ""),
     'dark-neon': Theme("#392338", "#523957", "#ff947f", "#000", "#ffcfa4"),
-    'light': Theme("#eee", "#fafafa", "#ec4e3a", "#fff", "#000"),
+    'light': Theme("#edf1fb", "#fafafa", "#ec4e3a", "#fff", "#000"),
     'light-blue': Theme("#edf1fb", "#f7f8fc", "#5e40d8aa", "#fff", "#000"),
     'light-orange': Theme("#edf1fb", "#f7f8fc", "#FF7500", "#fff", "#000"),
     'light-green': Theme("#edf1fb", "#f7f8fc", "#009900", "#fff", "#000"),
