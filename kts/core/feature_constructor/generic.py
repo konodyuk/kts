@@ -3,6 +3,8 @@ from copy import copy
 from functools import wraps
 from inspect import Signature, Parameter
 
+import numpy as np
+
 import kts.ui.components as ui
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.util.misc import extract_requirements, validate_source
@@ -68,7 +70,6 @@ class GenericFeatureConstructor(ui.HTMLRepr):
             return res
         return new_func
 
-
     def _html_elements(self):
         elements = [ui.Annotation('name'), ui.Field(self.name)]
         if self.description is not None:
@@ -83,6 +84,15 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         elements = [ui.Title('generic feature')]
         elements += self._html_elements()
         return ui.Column(elements).html
+
+    def html_collapsible(self, name=None, style="", border=False, **kw):
+        if name is None:
+            name = self.name
+        css_id = np.random.randint(1000000000)
+        elements = [ui.TitleWithCross('generic feature', css_id)]
+        elements += self._html_elements()
+        thumbnail = ui.ThumbnailField(name, css_id, style=style, **kw)
+        return ui.CollapsibleColumn(elements, thumbnail, css_id, border=border).html
 
 
 def create_generic(func, kwargs):
