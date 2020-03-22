@@ -1,5 +1,5 @@
+from kts.__version__ import __version__
 from kts.core.backend.util import in_cli, in_worker, in_pytest
-
 
 if not in_cli() and not in_worker() and not in_pytest():
     from kts.api.decorators import preview, feature, helper, generic
