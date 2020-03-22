@@ -1,11 +1,13 @@
 from IPython.display import display
 
+from kts.api.helper import Helper
 from kts.core.backend.run_manager import run_manager
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.feature_constructor.generic import GenericFeatureConstructor, create_generic
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.lists import feature_list, helper_list
 from kts.ui.feature_computing_report import FeatureComputingReport
+from kts.ui.settings import update_dashboard
 
 
 def preview(frame, *sizes, parallel=True, train=True):
@@ -42,6 +44,7 @@ def feature(*args, cache=True, parallel=True, verbose=True):
         feature_constructor.parallel = parallel
         feature_constructor.verbose = verbose
         feature_list.register(feature_constructor)
+        update_dashboard()
         return feature_constructor
     if args:
         function = args[0]
@@ -51,7 +54,8 @@ def feature(*args, cache=True, parallel=True, verbose=True):
 
 
 def helper(function):
-    helper_list.register(function)
+    helper_list.register(Helper(function))
+    update_dashboard()
 
 
 def generic(**kwargs):
