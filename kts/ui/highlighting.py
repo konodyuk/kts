@@ -27,6 +27,7 @@ custom_styles = {'kts': KTSStyle}
 class Highlighter:
     def __init__(self, style='tango'):
         self.lexer = get_lexer_by_name("python")
+        self.style = style
         self.set_style(style)
 
     def highlight(self, code):
@@ -40,5 +41,6 @@ class Highlighter:
         if style in custom_styles:
             style = custom_styles[style]
         self.formatter = HtmlFormatter(style=style, nowrap=True, nobackground=True)
+        self.style = style
 
 highlighter = Highlighter()
