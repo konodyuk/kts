@@ -41,8 +41,11 @@ def init():
     config_path = find_config()
     if config_path is not None:
         cfg.load(config_path)
-    kts.ui.settings.init()
+    if config_path is not None:
+        frame_cache.path = cfg.storage_path
+        obj_cache.path = cfg.storage_path
     ray.init(ignore_reinit_error=True, logging_level=20 if cfg.debug else 50)
+    kts.ui.settings.init()
     try:
         address_manager = get_address_manager()
     except:
@@ -51,8 +54,5 @@ def init():
         signal_manager = get_signal_manager()
     except:
         signal_manager = create_signal_manager()
-    if config_path is not None:
-        frame_cache.path = cfg.storage_path
-        obj_cache.path = cfg.storage_path
     if not cfg.debug:
         logger.level = 50
