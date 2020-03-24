@@ -8,8 +8,8 @@ from kts.ui.dashboard import Dashboard
 
 
 def init():
-    cfg._highlighter = Highlighter('tango')
-    cfg._theme = themes['light-orange']
+    cfg._highlighter = Highlighter(cfg._highlighter_name)
+    cfg._theme = themes[cfg._theme_name]
     cfg._dashboard_handle = display(Dashboard(), display_id=True)
 
 
@@ -27,6 +27,7 @@ def update_handles():
 
 def set_highlighting(name: str):
     cfg._highlighter.set_style(name)
+    cfg._highlighter_name = name
     update_handles()
 
 
