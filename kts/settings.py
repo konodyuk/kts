@@ -5,6 +5,10 @@ import psutil
 import toml
 
 
+class ConfigError(BaseException):
+    pass
+
+
 class Config:
     def __init__(self):
         self.config_path = None
@@ -27,8 +31,13 @@ class Config:
         self.config_path = Path(path)
         for k, v in toml.load(path).items():
             if k in dir(self):
-                cls = getattr(self, k).__class__
-                self.__setattr__(k, cls(v))
+                try:
+                    cls = getattr(self, k).__class__
+                    self.__setattr__(k, cls(v))
+                except BaseException as e:
+                    if isinstance(e, ConfigError):
+                        raise e
+                    raise ConfigError(f"Invalid {k}: {v}")
 
     @property
     def threads(self):
@@ -58,7 +67,7 @@ class Config:
         if new_path.exists():
             self._storage_path = new_path
         else:
-            raise OSError(f"{new_path} does not exist")
+            raise ConfigError(f"{new_path} does not exist")
         obj_cache.path = self._storage_path
         frame_cache.path = self._storage_path
 

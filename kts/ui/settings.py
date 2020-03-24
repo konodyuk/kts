@@ -1,6 +1,6 @@
 from IPython.core.display import display
 
-from kts.settings import cfg
+from kts.settings import cfg, ConfigError
 from kts.ui.components import CurrentTheme
 from kts.ui.highlighting import Highlighter
 from kts.ui.theme import themes, default_highlightings
@@ -8,8 +8,14 @@ from kts.ui.dashboard import Dashboard
 
 
 def init():
-    cfg._highlighter = Highlighter(cfg._highlighter_name)
-    cfg._theme = themes[cfg._theme_name]
+    try:
+        cfg._theme = themes[cfg._theme_name]
+    except:
+        raise ConfigError(f"Invalid theme: {cfg._theme_name}")
+    try:
+        cfg._highlighter = Highlighter(cfg._highlighter_name)
+    except:
+        raise ConfigError(f"Invalid highlighting: {cfg._highlighter_name}")
     cfg._dashboard_handle = display(Dashboard(), display_id=True)
 
 
