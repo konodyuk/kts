@@ -104,24 +104,27 @@ class RemoteProgressBar(AbstractProgressBar):
 
 
 class KTSProgressBar:
-    def __init__(self):
-        self.report = None
-        self.run_id = None
+    report = None
+    run_id = None
 
-    def __call__(self, iterable: Iterable, total: Optional[int] = None, title: Optional[str] = None):
+    def __init__(self, iterable: Iterable, total: Optional[int] = None, title: Optional[str] = None):
         if in_worker():
             cls = RemoteProgressBar
         else:
             cls = LocalProgressBar
             cls.report = self.report
             cls.run_id = self.run_id
-        return cls(iterable, total, title)
+        self.internal = cls(iterable, total, title)
 
+    def __iter__(self):
+        yield from self.internal
+
+    @classmethod
     @contextmanager
-    def local_mode(self, report, run_id):
-        self.report = report
-        self.run_id = run_id
+    def local_mode(cls, report, run_id):
+        cls.report = report
+        cls.run_id = run_id
         yield
 
 
-pbar = KTSProgressBar()
+pbar = KTSProgressBar
