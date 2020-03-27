@@ -59,8 +59,8 @@ class CategoryEncoder(ParallelFeatureConstructor):
     def compute(self, col, tar, df):
         EncoderClass = self.encoder.__class__
         X = df[[col]]
-        y = df[tar] if tar is not None else None
         if df._train:
+            y = df[tar] if tar is not None else None
             params = self.encoder.get_params()
             params['cols'] = [col]
             enc = EncoderClass(**params)
