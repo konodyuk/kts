@@ -11,6 +11,7 @@ if not in_cli() and not in_worker() and not in_pytest():
     from kts.validation.validator import Validator
     from kts.ui.settings import set_highlighting, set_theme, set_animation
     from kts.core.cache import save, load, rm, ls
+    from kts.core.backend.progress import pbar
     import kts.stl as stl
 
     lb = leaderboard
