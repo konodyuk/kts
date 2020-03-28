@@ -92,6 +92,6 @@ class LeaderboardList:
 
 
 leaderboard_list = LeaderboardList()
-leaderboard = Leaderboard('main')
-if 'main' not in leaderboard:
-    leaderboard_list.data['main'] = leaderboard
+if 'main' not in leaderboard_list:
+    leaderboard_list.data['main'] = Leaderboard('main')
+leaderboard = leaderboard_list['main']
