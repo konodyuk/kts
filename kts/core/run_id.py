@@ -55,3 +55,8 @@ class RunID:
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def registration_name(self):
+        # Splits by __ in case of generic (name__param1_param2)
+        # Otherwise does nothing
+        return self.function_name.partition('__')[0]

@@ -38,7 +38,7 @@ class GenericFeatureConstructor(ui.HTMLRepr):
                 raise ValueError(f"Unexpected arg: {k}")
             instance_kwargs[k] = v
         res = FeatureConstructor(self.modify(self.func, instance_kwargs), internal=True)
-        res.name = f"{self.name}_" + "_".join(map(str, instance_kwargs.values()))
+        res.name = f"{self.name}__" + "_".join(map(str, instance_kwargs.values()))
         res.description = f"An instance of generic feature constructor <tt>{self.name}</tt>"
         res.source = f"{self.name}({', '.join(f'{repr(instance_kwargs[k])}' for k in self.arg_names)})"
         # res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
