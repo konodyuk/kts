@@ -4,7 +4,7 @@ from collections import defaultdict
 from collections.abc import MutableMapping
 from glob import glob
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 from weakref import WeakValueDictionary
 
 import cloudpickle
@@ -185,6 +185,19 @@ class FrameCache(AbstractCache):
 
     def has_run(self, run_id: RunID):
         return run_id.get_alias_name() in self
+
+    def list_runs(self) -> List[RunID]:
+        result = list()
+        for key in self.ls():
+            try:
+                run_id = RunID.from_alias_name(key)
+                result.append(run_id)
+            except:
+                pass
+        return result
+
+    def del_run(self, run_id: RunID):
+        del self[run_id.get_alias_name()]
 
 
 obj_cache = ObjectCache()
