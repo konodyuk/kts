@@ -78,6 +78,47 @@ class RunCache:
     def has_result(self, run_id: RunID):
         return frame_cache.has_run(run_id)
 
+    def del_states(self, name: str):
+        to_del = list()
+        for key in self.states:
+            run_id = RunID.from_state_name(key)
+            if run_id.registration_name == name:
+                to_del.append(key)
+        for key in to_del:
+            del self.states[key]
+
+    def del_columns(self, name: str):
+        to_del = list()
+        for key in self.columns:
+            run_id = RunID.from_state_name(key)
+            if run_id.registration_name == name:
+                to_del.append(key)
+        for key in to_del:
+            del self.columns[key]
+
+    def del_stats(self, name: str):
+        to_del = list()
+        for key in self.stats:
+            run_id = RunID.from_alias_name(key)
+            if run_id.registration_name == name:
+                to_del.append(key)
+        for key in to_del:
+            del self.stats[key]
+
+    def del_results(self, name: str):
+        to_del = list()
+        for run_id in frame_cache.list_runs():
+            if run_id.registration_name == name:
+                to_del.append(run_id)
+        for run_id in to_del:
+            frame_cache.del_run(run_id)
+
+    def del_feature(self, name: str):
+        self.del_states(name)
+        self.del_columns(name)
+        self.del_stats(name)
+        self.del_results(name)
+
 run_cache = RunCache()
 
 class RunManager:
