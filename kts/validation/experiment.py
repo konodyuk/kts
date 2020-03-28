@@ -6,6 +6,7 @@ import pandas as pd
 
 import kts.ui.components as ui
 from kts.feature_selection import Builtin
+from kts.settings import cfg
 from kts.ui.feature_importances import FeatureImportances
 
 
@@ -120,6 +121,14 @@ class Experiment(ui.HTMLRepr):
     @property
     def requirements(self):
         return self.feature_set.requirements
+
+    def set_train_frame(self, train_frame: pd.DataFrame):
+        self.cv_pipeline.set_train_frame(train_frame)
+        cfg.preview_mode = False
+        folds = self.validator.create_folds(self.feature_set, self.validator.splitter)
+        folds = list(folds)
+        cfg.preview_mode = True
+        self.cv_pipeline.set_folds(folds)
 
 
 class ExperimentAlias(ui.HTMLRepr):
