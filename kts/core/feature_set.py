@@ -1,5 +1,6 @@
 import pprint
 from collections import defaultdict
+from copy import copy
 from typing import Union, List, Tuple, Optional, Collection, Set
 
 import numpy as np
@@ -12,9 +13,9 @@ from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.lists import feature_list
 from kts.settings import cfg
+from kts.stl.backend import Stacker
 from kts.ui.feature_computing_report import FeatureComputingReport, SilentFeatureComputingReport
 from kts.util.hashing import hash_list, hash_fold, hash_frame
-from kts.stl.backend import Stacker
 
 AnyFrame = Union[pd.DataFrame, KTSFrame]
 
@@ -214,12 +215,11 @@ class FeatureSet(ui.HTMLRepr):
             if feature.requirements:
                 result |= feature.requirements
         return result
-    
 
 
 class CVFeatureSet:
     def __init__(self, feature_set: FeatureSet, folds: List[Tuple[Collection, Collection]]):
-        self.feature_set = feature_set
+        self.feature_set = copy(feature_set)
         self.fold_ids = []
         for idx_train, idx_valid in folds:
             assert len(set(idx_train) & set(idx_valid)) == 0 or all(idx_train == idx_valid), \
