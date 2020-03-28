@@ -1,11 +1,16 @@
+from typing import Union
+from warnings import warn
+
 from IPython.display import display
 
 from kts.api.helper import Helper
-from kts.core.backend.run_manager import run_manager
+from kts.core.backend.run_manager import run_manager, run_cache
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.feature_constructor.generic import GenericFeatureConstructor, create_generic
+from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
 from kts.core.feature_constructor.user_defined import FeatureConstructor
 from kts.core.lists import feature_list, helper_list
+from kts.settings import cfg
 from kts.ui.feature_computing_report import FeatureComputingReport
 from kts.ui.settings import update_dashboard
 
@@ -68,3 +73,35 @@ def generic(**kwargs):
 
 # TODO
 # def parallel():
+
+
+def delete(feature_or_helper: Union[ParallelFeatureConstructor, GenericFeatureConstructor, Helper], force=False):
+    """TODO: add dependency checks"""
+    if not force:
+        warn(f"kts.delete() does not check if a feature or a helper is used in any experiments. "
+             f"Please make sure it is not used anywhere.")
+        confirmation = input("Are you sure? y/n")
+        if confirmation[0] != 'y':
+            return
+
+    instance = feature_or_helper
+    if isinstance(instance, ParallelFeatureConstructor):
+        if instance.name in feature_list:
+            del feature_list[instance.name]
+        for args in instance.split(None):
+            run_cache.del_feature(instance.get_scope(*args))
+    elif isinstance(instance, GenericFeatureConstructor):
+        if instance.name in feature_list:
+            del feature_list[instance.name]
+        run_cache.del_feature(instance.name)
+    elif isinstance(instance, Helper):
+        if instance.name in helper_list:
+            del helper_list[instance.name]
+    else:
+        raise TypeError(f"Expected cached feature constructor, generic or helper, got {instance.__class__.__name__}.")
+
+    update_dashboard()
+    if instance.name not in cfg.scope:
+        return
+    if cfg.scope[instance.name] is instance:
+        cfg.scope.pop(instance.name)
