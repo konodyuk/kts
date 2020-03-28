@@ -3,8 +3,10 @@ import time
 from contextlib import redirect_stdout
 from copy import deepcopy
 from functools import partial
+from typing import List, Tuple
 
 import numpy as np
+import pandas as pd
 from IPython.display import display
 
 from kts.settings import cfg
@@ -128,3 +130,14 @@ class CVPipeline:
                 cvr.set_metric(score)
                 sys.stdout.flush(force=True)
         self.took = time.time() - start
+
+    def compress(self):
+        self.cv_feature_set.feature_set.train_frame = None
+        self.cv_feature_set.feature_set.test_frame = None
+        self.cv_feature_set.folds = None
+
+    def set_train_frame(self, train_frame: pd.DataFrame):
+        self.cv_feature_set.feature_set.train_frame = train_frame
+
+    def set_folds(self, folds: List[Tuple[np.ndarray, np.ndarray]]):
+        self.cv_feature_set.folds = folds

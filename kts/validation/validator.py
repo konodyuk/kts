@@ -63,6 +63,7 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
         raw_oof = cv_pipeline.raw_oof
         oof = self.create_oof(raw_oof, folds, feature_set)
         cv_pipeline.raw_oof = None
+        cv_pipeline.compress()
         experiment = Experiment(
             cv_pipeline=cv_pipeline,
             oof=oof,
