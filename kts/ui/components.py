@@ -1,5 +1,8 @@
-from kts.ui.highlighting import highlighter
+import html
+
 from kts.settings import cfg
+from kts.ui.highlighting import highlighter
+
 
 class HTMLRepr:
     def _repr_html_(self):
@@ -169,7 +172,7 @@ class Output(HTMLRepr):
     @property
     def html(self):
         lines = self.string.split('\n')[::-1]
-        inner_css = '\n'.join([f"<div>{line}</div>" for line in lines])
+        inner_css = '\n'.join([f"<div>{html.escape(line)}</div>" for line in lines])
         return f"""<div class="output">{inner_css}</div>"""
 
 
