@@ -33,6 +33,7 @@ def preview(frame, *sizes, parallel=True, train=True):
                                           fold='preview',
                                           ret=True,
                                           report=report)
+                report.finish()
                 display(results[feature_constructor.name])
         finally:
             run_manager.merge_scheduled()

@@ -117,6 +117,7 @@ class FeatureSet(ui.HTMLRepr):
         run_manager.supervise(report)
         not_parallel = [i for i in self.before_split if not i.parallel]
         run_manager.run(not_parallel, frame, train=train, fold=self.train_id, ret=False, report=report)
+        report.finish()
         run_manager.merge_scheduled()
 
     @property
@@ -235,6 +236,7 @@ class CVFeatureSet:
         for i in range(self.n_folds):
             self.fold(i).compute(frame=frame, report=report, train=True)
             self.fold(i).compute(frame=frame, report=report, train=False)
+        report.finish()
         run_manager.merge_scheduled()
 
     @property

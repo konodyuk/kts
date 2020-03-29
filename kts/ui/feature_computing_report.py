@@ -134,11 +134,16 @@ class FeatureComputingReport(HTMLRepr):
                 return False
         return True
 
+    def finish(self):
+        for entry in self.entries.values():
+            entry['value'] = entry['total']
+        self.refresh(force=True)
+
     def show(self):
         return display(self, display_id=True)
 
     def refresh(self, force=False):
-        if not self.changed:
+        if not self.changed and not force:
             return
         self.changed = False
         if self.handle is None:
@@ -161,6 +166,9 @@ class SilentFeatureComputingReport:
         pass
 
     def update_text(self, *args, **kwargs):
+        pass
+
+    def finish(self):
         pass
 
     def refresh(self, *args, **kwargs):
