@@ -1,6 +1,12 @@
+import time
+from contextlib import redirect_stdout
 from typing import List, Dict, Union
 
-from kts.ui.components import HTMLRepr, Field, Annotation, AlignedColumns
+from IPython.display import display
+
+from kts.settings import cfg
+from kts.ui.components import HTMLRepr, Field, Annotation, AlignedColumns, Output, Progress, InnerColumn, Row, Title, \
+    Column
 from kts.util.formatting import format_value
 
 
@@ -40,6 +46,8 @@ class FeatureImportances(HTMLRepr):
             self.min_importance = 0
 
     def to_px(self, value):
+        if self.max_importance == self.min_importance:
+            return 0
         return self.width * ((value - self.min_importance) / (self.max_importance - self.min_importance))
 
     @property
@@ -65,3 +73,64 @@ class Hbar(HTMLRepr):
     @property
     def html(self):
         return f'<div class="hbar" style="width: {self.width}px"></div>'
+
+
+class ImportancesComputingReport(HTMLRepr):
+    update_interval = 0.1
+
+    def __init__(self, total):
+        self.total = total
+        self.last_update = 0
+        self.step = 1
+        self.current_feature = 'nothing'
+        self.start = None
+        self.took = None
+        self.eta = None
+        self.handle = None
+
+    def update(self, current_feature):
+        self.step += 1
+        if self.start is None:
+            self.start = time.time()
+        else:
+            self.took = time.time() - self.start
+            self.eta = (self.total - self.step) / max(self.step, 1) * self.took
+        self.current_feature = current_feature
+        self.refresh()
+
+    def show(self):
+        return display(self, display_id=True)
+
+    def refresh(self, force=False):
+        if self.handle is None:
+            with redirect_stdout(cfg.stdout):
+                self.handle = self.show()
+        if self.handle is None:
+            # not in ipython
+            return
+        if force or time.time() - self.last_update >= self.update_interval:
+            with redirect_stdout(cfg.stdout):
+                self.handle.update(self)
+            self.last_update = time.time()
+
+    @property
+    def html(self):
+        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
+        return Column([
+            Title('computing importances'),
+            Row([
+                InnerColumn([
+                    Annotation('progress'),
+                    Progress(self.step, self.total, style='width: 500px; margin-top: 7px;'),
+                    Output(f'Computing {self.current_feature}')
+                ]),
+                InnerColumn([
+                    Annotation('took'),
+                    Field(format_value(self.took, time=True), **ind_kw)
+                ]),
+                InnerColumn([
+                    Annotation('eta'),
+                    Field(format_value(self.eta, time=True), **ind_kw)
+                ]),
+            ])
+        ]).html
