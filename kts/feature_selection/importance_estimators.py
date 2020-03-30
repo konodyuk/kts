@@ -16,6 +16,7 @@ class ImportanceEstimator(ABC):
     last_update = 0
     update_interval = 0.1
     sort_by = 'mean'
+    n_best = None
 
     def setup(self, experiment):
         pass
@@ -41,6 +42,8 @@ class ImportanceEstimator(ABC):
                        .sort_values(axis=1, by=self.sort_by, ascending=False)
                        .to_dict()
                        .values())
+        if self.n_best is not None:
+            payload = payload[:self.n_best]
         return FeatureImportances(payload)
 
     def show(self):
@@ -100,8 +103,9 @@ class ImportanceEstimator(ABC):
 class Builtin(ImportanceEstimator):
     verbose = False
 
-    def __init__(self, sort_by='mean'):
+    def __init__(self, sort_by='mean', n_best=None):
         self.sort_by = sort_by
+        self.n_best = n_best
 
     def setup_fold(self, fold, model):
         self.model = model
@@ -116,12 +120,13 @@ class Builtin(ImportanceEstimator):
 class Permutation(ImportanceEstimator):
     verbose = True
 
-    def __init__(self, train_frame, n_iters=5, head=None, sort_by='mean', random_state=None, verbose=True):
+    def __init__(self, train_frame, n_iters=5, sample=None, sort_by='mean', random_state=None, n_best=None, verbose=True):
         self.train_frame = train_frame
         self.n_iters = n_iters
-        self.head = head
+        self.sample = sample
         self.sort_by = sort_by
         self.rng = np.random.RandomState(random_state)
+        self.n_best = n_best
         self.verbose = verbose
 
     def setup(self, experiment):
@@ -132,9 +137,9 @@ class Permutation(ImportanceEstimator):
         cfg.preview_mode = False
         self.X = fold.valid
         self.y = fold.valid_target
-        if self.head is not None:
-            self.X = self.X[:self.head]
-            self.y = self.y[:self.head]
+        if self.sample is not None:
+            self.X = self.X[:self.sample]
+            self.y = self.y[:self.sample]
         cfg.preview_mode = True
         self.model = model
         self.base_score = self.metric(self.y, self.model.predict(self.X))
@@ -158,13 +163,14 @@ class Permutation(ImportanceEstimator):
 class PermutationBlind(ImportanceEstimator):
     verbose = True
 
-    def __init__(self, frame, n_iters=5, head=None, sort_by='mean', random_state=None, verbose=True):
+    def __init__(self, frame, n_iters=5, sample=None, sort_by='mean', random_state=None, n_best=None, verbose=True):
         self.frame = frame
         self.n_iters = n_iters
-        self.head = head
+        self.sample = sample
         self.sort_by = sort_by
         self.rng = np.random.RandomState(random_state)
         self.verbose = verbose
+        self.n_best = n_best
 
     def setup(self, experiment):
         self.metric = experiment.validator.metric
@@ -172,8 +178,8 @@ class PermutationBlind(ImportanceEstimator):
     def setup_fold(self, fold, model):
         cfg.preview_mode = False
         self.X = fold(self.frame)
-        if self.head is not None:
-            self.X = self.X[:self.head]
+        if self.sample is not None:
+            self.X = self.X[:self.sample]
         cfg.preview_mode = True
         self.model = model
         self.base_pred = self.model.predict(self.X)
