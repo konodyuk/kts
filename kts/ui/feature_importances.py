@@ -75,7 +75,7 @@ class Hbar(HTMLRepr):
         return f'<div class="hbar" style="width: {self.width}px"></div>'
 
 
-class ImportancesComputingReport(HTMLRepr):
+class ImportanceComputingReport(HTMLRepr):
     update_interval = 0.1
 
     def __init__(self, total):
