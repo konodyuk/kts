@@ -1,1 +1,1 @@
-from kts.feature_selection.importance_estimators import Builtin, Permutation, SHAP
+from kts.feature_selection.importance_estimators import Builtin, Permutation
