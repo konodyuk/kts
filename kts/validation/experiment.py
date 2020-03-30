@@ -1,10 +1,12 @@
 import time
+from copy import copy
 from typing import Union
 
 import numpy as np
 import pandas as pd
 
 import kts.ui.components as ui
+from kts.core.feature_set import FeatureSet
 from kts.feature_selection import Builtin
 from kts.settings import cfg
 from kts.ui.feature_importances import FeatureImportances
@@ -56,23 +58,29 @@ class Experiment(ui.HTMLRepr):
     def predict(self, frame):
         return self.cv_pipeline.predict(frame)
 
-    def feature_importances(self, plot=True, estimator=Builtin(), sort_by='max', head=None) -> Union[pd.DataFrame, FeatureImportances]:
-        importances_by_fold = pd.DataFrame()
-        cv_feature_set = self.cv_pipeline.cv_feature_set
-        for i in range(cv_feature_set.n_folds):
-            fold = cv_feature_set.fold(i)
-            model = self.cv_pipeline.models[i]
-            importances_by_fold = importances_by_fold.append(estimator.estimate(fold, model), ignore_index=True)
-        if not plot:
-            return importances_by_fold
-        payload = list(importances_by_fold
-                       .agg(['name', 'min', 'max', 'mean'])
-                       .sort_values(axis=1, by=sort_by, ascending=False)
-                       .to_dict()
-                       .values())
-        if head:
-            payload = payload[:head]
-        return FeatureImportances(payload)
+    def feature_importances(self, plot=True, estimator=Builtin(), sort_by='mean', n_best=None, verbose=None) -> Union[pd.DataFrame, FeatureImportances]:
+        estimator.sort_by = sort_by
+        estimator.n_best = n_best
+        if verbose is not None:
+            estimator.verbose = verbose
+        estimator.process(self)
+        if plot:
+            return estimator.report
+        return estimator.result
+
+    def select(self, n_best, estimator=Builtin(), sort_by='max', verbose=None) -> FeatureSet:
+        estimator.sort_by = sort_by
+        if verbose is not None:
+            estimator.verbose = verbose
+        estimator.process(self)
+        best_columns = [i['name'] for i in estimator.to_list()]
+        best_columns = best_columns[:n_best]
+        new_feature_set = copy(self.feature_set)
+        new_before_split = [i & best_columns for i in new_feature_set.before_split]
+        new_after_split = [i & best_columns for i in new_feature_set.after_split]
+        new_feature_set.before_split = new_before_split
+        new_feature_set.after_split = new_after_split
+        return new_feature_set
 
     def move_to(self, lb_name: str):
         raise NotImplemented
