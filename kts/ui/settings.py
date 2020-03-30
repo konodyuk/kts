@@ -25,10 +25,10 @@ def update_dashboard():
 
 def update_handles():
     update_dashboard()
-    handles = cfg._theme_handles
-    for h in handles:
-        h.update(CurrentTheme())
-    handles.append(display(CurrentTheme(), display_id=True))
+    if cfg._theme_handle is None:
+        cfg._theme_handle = display(CurrentTheme(), display_id=True)
+    else:
+        cfg._theme_handle.display(CurrentTheme())
 
 
 def set_highlighting(name: str):

@@ -19,7 +19,7 @@ class Config:
         self._theme_name = 'light-orange'
         self._highlighter = None
         self._highlighter_name = 'tango'
-        self._theme_handles = []
+        self._theme_handle = None
         self._dashboard_handle = None
         self.preview_mode = True
         self.debug = False
