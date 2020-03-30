@@ -33,15 +33,18 @@ class ImportanceEstimator(ABC):
     def exit(self):
         pass
 
+    def to_list(self):
+        return list(self.result
+                    .agg(['name', 'min', 'max', 'mean'])
+                    .sort_values(axis=1, by=self.sort_by, ascending=False)
+                    .to_dict()
+                    .values())
+
     @property
     def report(self):
         if self.result.empty:
             return
-        payload = list(self.result
-                       .agg(['name', 'min', 'max', 'mean'])
-                       .sort_values(axis=1, by=self.sort_by, ascending=False)
-                       .to_dict()
-                       .values())
+        payload = self.to_list()
         if self.n_best is not None:
             payload = payload[:self.n_best]
         return FeatureImportances(payload)
