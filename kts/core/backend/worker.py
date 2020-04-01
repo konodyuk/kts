@@ -18,7 +18,7 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
     assert 'report' not in meta
     kf = KTSFrame(df, meta=meta)
     kf.__meta__['remote'] = True
-    had_state = bool(kf.state)
+    return_state = kf._train
     if self.verbose:
         rs.send(ProgressSignal(0, 1, None, None, None))
         io = self.remote_io()
@@ -34,10 +34,13 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
             rs.send(rs.ErrorSignal(traceback.format_exc()))
             return None, None, None
 
-    if had_state:
-        res_state = None
-    else:
+    if '__columns' not in kf._state:
+        kf._state['__columns'] = list(res_kf.columns)
+
+    if return_state:
         res_state = kf._state
+    else:
+        res_state = None
     if self.verbose:
         rs.send(ProgressSignal(1, 1, None, None, None))
     return res_kf, res_state, stats.data
