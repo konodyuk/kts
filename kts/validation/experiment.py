@@ -78,6 +78,8 @@ class Experiment(ui.HTMLRepr):
         new_feature_set = copy(self.feature_set)
         new_before_split = [i & best_columns for i in new_feature_set.before_split]
         new_after_split = [i & best_columns for i in new_feature_set.after_split]
+        new_before_split = [i for i in new_before_split if i.columns]
+        new_after_split = [i for i in new_after_split if i.columns]
         new_feature_set.before_split = new_before_split
         new_feature_set.after_split = new_after_split
         return new_feature_set
