@@ -13,5 +13,7 @@ if not cfg.debug:
     logger.level = 50
 
 
-debug = logger.debug
+def debug(*args):
+    logger.debug(' '.join(map(str, args)))
+
 exc = logger.exception
