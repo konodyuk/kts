@@ -9,26 +9,26 @@ This document contains notes on internal design which may not be obvious from so
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt;">
 		</td>
 		<td colspan="2" style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: center;">
-            parallel={true, false}
+            parallel={true, false}, cached
         </td>
 		<td colspan="2" style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: center;">
-            parallel=false
+            parallel=false, not cached
 		</td>
 	</tr>
 	<tr>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: center;">
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: center;">
-			cached (first call)
+			first call
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: center;">
-			cached (second+ call)
+			second+ call
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: center;">
-            not cached (first call)
+            first call
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: left;">
-            not cached (second+ call)
+            second+ call
 		</td>
 	</tr>
 	<tr>
@@ -58,7 +58,7 @@ This document contains notes on internal design which may not be obvious from so
             res_state &rarr; [3s]
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: left;">
-            res_state &nrarr; (dropped at worker level)
+            res_state &nrarr; (dropped by worker)
 		</td>
 	</tr>
 	<tr>
@@ -71,7 +71,7 @@ This document contains notes on internal design which may not be obvious from so
             stats &rarr; [3stats]
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: left;">
-            stats &rarr; [3stats] (ignored at RunCache level)
+            stats &rarr; [3stats] (ign. by RunCache)
 		</td>
 	</tr>
 	<tr>
@@ -114,7 +114,7 @@ This document contains notes on internal design which may not be obvious from so
             stats &rarr; [4stats]
 		</td>
 		<td style="border: 1px solid rgb(0, 0, 0); padding-right: 3pt; padding-left: 3pt; text-align: left;">
-            stats &rarr; [4stats] (ignored at RunCache level)
+            stats &rarr; [4stats] (ign. by RunCache)
 		</td>
 	</tr>
 </table>
