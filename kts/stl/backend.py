@@ -2,6 +2,7 @@ from typing import Union, List, Optional
 
 import pandas as pd
 
+from kts.core.backend.progress import RemoteProgressBar
 from kts.core.backend.util import in_worker
 from kts.core.feature_constructor.base import InlineFeatureConstructor
 from kts.core.feature_constructor.parallel import ParallelFeatureConstructor
@@ -28,13 +29,26 @@ class Applier(ParallelFeatureConstructor):
                 yield (part * len(df) // self.parts, (part + 1) * len(df) // self.parts)
 
     def compute(self, start, stop, df):
-        return df.iloc[start:stop].apply(self.func, axis=1)
+        if self.verbose:
+            func = self.ApplyProgressReporter(self.func, stop - start)
+        else:
+            func = self.func
+        return df.iloc[start:stop].apply(func, axis=1)
 
     def get_scope(self, start, stop):
         return f"stl_apply_{start}_{stop}"
 
     def reduce(self, results):
         return pd.concat(results, axis=0)
+
+    class ApplyProgressReporter:
+        def __init__(self, func, total):
+            self.func = func
+            self.pbar = iter(RemoteProgressBar(range(total)))
+
+        def __call__(self, *args, **kwargs):
+            next(self.pbar)
+            return self.func(*args, **kwargs)
 
 
 class CategoryEncoder(ParallelFeatureConstructor):
