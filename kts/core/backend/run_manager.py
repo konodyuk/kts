@@ -69,7 +69,9 @@ class RunCache:
         frame_cache.save_run(value, run_id)
 
     def put_stats(self, run_id: RunID, stats):
-        assert run_id.get_alias_name() not in self.stats
+        if run_id.get_alias_name() in self.stats:
+            # refer to https://github.com/konodyuk/kts/tree/master/kts/core#caching-policy
+            return
         self.stats[run_id.get_alias_name()] = stats
 
     def has_state(self, run_id: RunID):
@@ -157,7 +159,7 @@ class RunManager:
 
     @property
     def futures(self):
-        return [i.res_df for i in self.scheduled.values() if i.res_df is not None]
+        return [i.stats for i in self.scheduled.values()]
 
     def new_signals(self):
         if len(self.futures) == 0:
@@ -166,7 +168,7 @@ class RunManager:
 
     def find_run_id(self, oid):
         for k, v in self.scheduled.items():
-            if v.res_df == oid:
+            if v.stats == oid:
                 return k
 
     def filter_map_id(self, signals, signal_type):
