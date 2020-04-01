@@ -41,6 +41,7 @@ class GenericFeatureConstructor(ui.HTMLRepr):
         res.name = f"{self.name}__" + "_".join(map(str, instance_kwargs.values()))
         res.description = f"An instance of generic feature constructor <tt>{self.name}</tt>"
         res.source = f"{self.name}({', '.join(f'{repr(instance_kwargs[k])}' for k in self.arg_names)})"
+        res.additional_source = self.source
         # res.source = f"{self.name}({', '.join(f'{k}={repr(v)}' for k, v in instance_kwargs.items())})"
         res.requirements = self.requirements
         res.dependencies = dict()

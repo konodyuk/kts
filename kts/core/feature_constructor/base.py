@@ -30,6 +30,7 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
     worker = None
     registered = False
     source = None
+    additional_source = None
     requirements = None
     description = None
     columns = None
@@ -154,6 +155,8 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         if self.description is not None:
             elements += [ui.Annotation('description'), ui.Field(self.description)]
         elements += [ui.Annotation('source'), ui.Code(self.source)]
+        if self.additional_source:
+            elements += [ui.Annotation('additional source'), ui.Code(self.additional_source)]
         if self.columns:
             elements += [ui.Annotation('columns'), ui.Field('<tt>' + ', '.join(self.columns) + '</tt>')]
         if self.requirements:
@@ -221,6 +224,10 @@ class Selector(InlineFeatureConstructor):
         return f"{repr(self.feature_constructor)} & {column_intersection}"
 
     @property
+    def additional_source(self):
+        return self.feature_constructor.source
+
+    @property
     def columns(self):
         column_intersection = set(self.selected_columns)
         if self.feature_constructor.columns is not None:
@@ -262,6 +269,10 @@ class Dropper(InlineFeatureConstructor):
             column_intersection &= set(self.feature_constructor.columns)
         column_intersection = list(column_intersection)
         return f"{repr(self.feature_constructor)} - {column_intersection}"
+
+    @property
+    def additional_source(self):
+        return self.feature_constructor.source
 
     @property
     def columns(self):
