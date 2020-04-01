@@ -19,8 +19,8 @@ identity = Identity()
 def concat(feature_constructors: List[BaseFeatureConstructor]):
     return Concat(feature_constructors)
 
-def apply(df: pd.DataFrame, func: Callable, parts: Optional[int] = None, optimize: bool = True):
-    return Applier(func, parts=parts, optimize=optimize)(df)
+def apply(df: pd.DataFrame, func: Callable, parts: Optional[int] = None, optimize: bool = True, verbose: bool = False):
+    return Applier(func, parts=parts, optimize=optimize, verbose=verbose)(df)
 
 def select(columns: List[str]):
     return Selector(identity, columns)

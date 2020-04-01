@@ -12,12 +12,13 @@ from kts.settings import cfg
 class Applier(ParallelFeatureConstructor):
     cache = False
 
-    def __init__(self, func, parts=None, optimize=True):
+    def __init__(self, func, parts=None, optimize=True, verbose=False):
         self.func = func
         if parts is None:
             parts = cfg.threads
         self.parts = parts
         self.optimize = optimize
+        self.verbose = verbose
 
     def split(self, df):
         if len(df) < 100 and self.optimize:
