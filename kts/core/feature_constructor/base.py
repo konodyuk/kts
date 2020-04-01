@@ -54,6 +54,8 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
 
     def sync(self, run_id, res_df, res_state, stats, df):
         if not self.cache:
+            # result frame is not saved to cache if FC is not cached
+            # refer to https://github.com/konodyuk/kts/tree/master/kts/core#caching-policy
             res_df = None
         if in_worker():
             if not isinstance(res_df, ObjectID):
@@ -91,7 +93,11 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
 
     def local_worker(self, *args, kf: KTSFrame):
         run_id = RunID(kf._scope, kf._fold, kf.hash())
-        return_state = kf._train
+        return_state = kf._train  # default for cached FCs or first calls of not cached FCs
+        if not self.cache and bool(kf._state):
+            # second call of not cached FC does not return state, as it is saved previously
+            # refer to https://github.com/konodyuk/kts/tree/master/kts/core#caching-policy
+            return_state = False
         stats = Stats(kf)
         if in_worker() and self.verbose:
             report = None
@@ -106,6 +112,10 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
             io = self.suppress_io()
         with stats, io, self.suppress_stderr(), pbar.local_mode(report, run_id):
             res_kf = self.compute(*args, kf)
+
+        if '__columns' not in kf._state:
+            kf._state['__columns'] = list(res_kf.columns)
+
         if return_state:
             res_state = kf._state
         else:
@@ -191,7 +201,8 @@ class Selector(InlineFeatureConstructor):
     def compute(self, kf: KTSFrame, ret=True):
         res = self.feature_constructor(kf, ret=ret)
         if ret:
-            return res[self.selected_columns]
+            to_select = res.columns.intersection(self.selected_columns)
+            return res[to_select]
 
     @property
     def cache(self):
@@ -211,7 +222,17 @@ class Selector(InlineFeatureConstructor):
 
     @property
     def columns(self):
-        return self.selected_columns
+        column_intersection = set(self.selected_columns)
+        if self.feature_constructor.columns is not None:
+            column_intersection &= set(self.feature_constructor.columns)
+        column_intersection = list(column_intersection)
+        return column_intersection
+
+    def __and__(self, columns: List[str]):
+        return Selector(self.feature_constructor, columns=set(self.columns) & set(columns))
+
+    def __sub__(self, columns: List[str]):
+        return Selector(self.feature_constructor, columns=set(self.columns) - set(columns))
 
 
 class Dropper(InlineFeatureConstructor):
@@ -223,7 +244,8 @@ class Dropper(InlineFeatureConstructor):
     def compute(self, kf: KTSFrame, ret=True):
         res = self.feature_constructor(kf, ret=ret)
         if ret:
-            return res.drop(self.dropped_columns, axis=1)
+            to_drop = res.columns.intersection(self.dropped_columns)
+            return res.drop(to_drop, axis=1)
 
     @property
     def cache(self):
@@ -246,3 +268,9 @@ class Dropper(InlineFeatureConstructor):
         if self.feature_constructor.columns is None:
             return list()
         return list(set(self.feature_constructor.columns) - set(self.dropped_columns))
+
+    def __and__(self, columns: List[str]):
+        return Selector(self.feature_constructor, columns=set(self.columns) & set(columns))
+
+    def __sub__(self, columns: List[str]):
+        return Dropper(self.feature_constructor, columns=set(self.dropped_columns) | set(columns))
