@@ -3,6 +3,7 @@ from typing import Tuple, Dict, Optional, List
 import ray
 from ray._raylet import ObjectID
 
+from kts.core.backend.run_manager import run_cache
 from kts.core.feature_constructor.base import BaseFeatureConstructor
 from kts.core.frame import KTSFrame
 from kts.core.run_id import RunID
@@ -78,3 +79,13 @@ class ParallelFeatureConstructor(BaseFeatureConstructor):
 
     def get_scope(self, *args):
         return self.name
+
+    @property
+    def columns(self):
+        try:
+            result = set()
+            for args in self.split(None):
+                result |= set(run_cache.get_columns(self.get_scope(*args)))
+            return result
+        except:
+            return None

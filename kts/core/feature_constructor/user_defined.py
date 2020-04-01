@@ -54,7 +54,3 @@ class FeatureConstructor(ParallelFeatureConstructor):
             elif v.default != inspect._empty:
                 raise UserWarning(f"Unsupported argument type: {k}={type(v.default)}. String values expected.")
         return dependencies
-
-    @property
-    def columns(self):
-        return run_cache.get_columns(self.name)
