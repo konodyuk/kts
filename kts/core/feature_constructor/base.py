@@ -113,7 +113,7 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         with stats, io, self.suppress_stderr(), pbar.local_mode(report, run_id):
             res_kf = self.compute(*args, kf)
 
-        if '__columns' not in kf._state:
+        if 'columns' in dir(res_kf) and '__columns' not in kf._state:
             kf._state['__columns'] = list(res_kf.columns)
 
         if return_state:

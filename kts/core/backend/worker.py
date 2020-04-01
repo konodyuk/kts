@@ -34,7 +34,7 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
             rs.send(rs.ErrorSignal(traceback.format_exc()))
             return None, None, None
 
-    if '__columns' not in kf._state:
+    if 'columns' in dir(res_kf) and '__columns' not in kf._state:
         kf._state['__columns'] = list(res_kf.columns)
 
     if return_state:
