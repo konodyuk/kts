@@ -227,6 +227,7 @@ class CVFeatureSet:
             "Train and valid sets should either not intersect or be equal"
             self.fold_ids.append(hash_fold(idx_train, idx_valid)[:8] + self.train_id)
         self.folds = folds
+        self.n_folds = len(folds)
         self.columns_by_fold = defaultdict(lambda: None)
 
     def compute(self, frame: AnyFrame = None, report=None):
@@ -250,10 +251,6 @@ class CVFeatureSet:
     @property
     def train_id(self):
         return self.feature_set.train_id
-
-    @property
-    def n_folds(self):
-        return len(self.folds)
     
     def fold(self, idx) -> 'Fold':
         return Fold(self, idx)
