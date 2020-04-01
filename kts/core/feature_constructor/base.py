@@ -121,10 +121,10 @@ class BaseFeatureConstructor(ABC, ui.HTMLRepr):
         else:
             res_state = None
         if in_worker() and self.verbose:
-            rs.send(ProgressSignal(1, 1, None, None, None, run_id))
+            rs.send(ProgressSignal(1, 1, stats.data['took'], None, None, run_id))
         elif not in_worker() and self.verbose:
             report = kf.__meta__['report']
-            report.update(run_id, 1, 1)
+            report.update(run_id, 1, 1, stats.data['took'])
         return res_kf, res_state, stats.data
 
     def schedule(self, *args, scope: str, kf: KTSFrame) -> Tuple[RunID, Union[ObjectID, AnyFrame], Union[ObjectID, Dict], Union[ObjectID, Dict]]:

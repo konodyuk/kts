@@ -42,5 +42,5 @@ def worker(self, *args, df: pd.DataFrame, meta: Dict):
     else:
         res_state = None
     if self.verbose:
-        rs.send(ProgressSignal(1, 1, None, None, None))
+        rs.send(ProgressSignal(1, 1, stats.data['took'], None, None))
     return res_kf, res_state, stats.data
