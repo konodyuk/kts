@@ -25,6 +25,7 @@ class Applier(ParallelFeatureConstructor):
         if len(df) < 100 and self.optimize:
             yield (0, len(df))
         else:
+            self.parts = min(self.parts, df.shape[0])
             for part in range(self.parts):
                 yield (part * len(df) // self.parts, (part + 1) * len(df) // self.parts)
 
