@@ -2,11 +2,8 @@ import inspect
 import sys
 from pathlib import Path
 
-import ray
-
 import kts.ui.settings
-from kts.core.backend.address_manager import get_address_manager, create_address_manager
-from kts.core.backend.signal import get_signal_manager, create_signal_manager
+from kts.core.backend.ray_middleware import setup_ray
 from kts.core.cache import frame_cache, obj_cache
 from kts.core.lists import feature_list, helper_list
 from kts.settings import cfg
@@ -32,11 +29,8 @@ def find_config():
     else:
         return None
 
-address_manager = None
-signal_manager = None
 
 def init():
-    global address_manager, signal_manager
     cfg.scope = find_scope()
     cfg.stdout = sys.stdout
     config_path = find_config()
@@ -47,15 +41,7 @@ def init():
         obj_cache.path = cfg.storage_path
     feature_list.sync()
     helper_list.sync()
-    ray.init(ignore_reinit_error=True, logging_level=20 if cfg.debug else 50)
     kts.ui.settings.init()
-    try:
-        address_manager = get_address_manager()
-    except:
-        address_manager = create_address_manager()
-    try:
-        signal_manager = get_signal_manager()
-    except:
-        signal_manager = create_signal_manager()
+    setup_ray()
     if not cfg.debug:
         logger.level = 50

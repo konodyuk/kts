@@ -13,6 +13,7 @@ import kts.core.backend.signal as rs
 from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.io import TextChunk
 from kts.core.backend.progress import pbar, ProgressSignal
+from kts.core.backend.ray_middleware import ensure_ray
 from kts.core.backend.signal import Sync, ResourceRequest, RunPID, filter_signals
 from kts.core.cache import frame_cache, CachedMapping, user_cache_frame
 from kts.core.feature_constructor.base import BaseFeatureConstructor
@@ -135,6 +136,7 @@ class RunManager:
             fold: str,
             ret: bool = False,
             report=None) -> Optional[Dict[str, AnyFrame]]:
+        ensure_ray()
         if report is None:
             report = SilentFeatureComputingReport()
         frame = KTSFrame(frame)
