@@ -4,22 +4,15 @@ from itertools import product
 import numpy as np
 import pandas as pd
 import pytest
-import ray
 
-from kts.core.backend.address_manager import create_address_manager, get_address_manager
-from kts.core.feature_constructor.user_defined import FeatureConstructor
+from kts.core.backend.address_manager import get_address_manager
 from kts.core.backend.progress import pbar
-from kts.core.backend.signal import get_signal_manager, create_signal_manager
+from kts.core.backend.signal import get_signal_manager
+from kts.core.feature_constructor.user_defined import FeatureConstructor
 
-ray.init(logging_level=0, ignore_reinit_error=True)
-try:
-    am = get_address_manager()
-except:
-    am = create_address_manager()
-try:
-    sm = get_signal_manager()
-except:
-    sm = create_signal_manager()
+
+am = get_address_manager()
+sm = get_signal_manager()
 
 
 @pytest.mark.parametrize('remote', [False, True])

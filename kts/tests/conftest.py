@@ -1,11 +1,14 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
+from sklearn.model_selection import KFold
 
+from kts.core.backend.ray_middleware import setup_ray
 from kts.core.backend.run_manager import RunManager
 from kts.core.cache import obj_cache, frame_cache
 from kts.ui.feature_computing_report import FeatureComputingReport
-from sklearn.model_selection import KFold
+
+setup_ray()
 
 SIZE = 10000
 
