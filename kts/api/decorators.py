@@ -60,8 +60,10 @@ def feature(*args, cache=True, parallel=True, verbose=True):
 
 
 def helper(function):
-    helper_list.register(Helper(function))
+    helper = Helper(function)
+    helper_list.register(helper)
     update_dashboard()
+    return helper
 
 
 def generic(**kwargs):
