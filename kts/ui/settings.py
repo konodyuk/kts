@@ -16,11 +16,12 @@ def init():
         cfg._highlighter = Highlighter(cfg._highlighter_name)
     except:
         raise ConfigError(f"Invalid highlighting: {cfg._highlighter_name}")
-    cfg._dashboard_handle = display(Dashboard(), display_id=True)
+    cfg._dashboard_handles.append(display(Dashboard(), display_id=True))
 
 
 def update_dashboard():
-    cfg._dashboard_handle.update(Dashboard())
+    for handle in cfg._dashboard_handles:
+        handle.update(Dashboard())
 
 
 def update_handles():

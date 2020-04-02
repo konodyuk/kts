@@ -20,7 +20,7 @@ class Config:
         self._highlighter = None
         self._highlighter_name = 'tango'
         self._theme_handle = None
-        self._dashboard_handle = None
+        self._dashboard_handles = list()
         self.preview_mode = True
         self.debug = False
         self.stdout = sys.stdout

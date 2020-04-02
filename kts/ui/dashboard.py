@@ -1,3 +1,5 @@
+from IPython.display import display
+
 from kts.settings import cfg
 from kts.ui.components import Column, Pool, HTMLRepr, Title, Annotation, CSS, Raw, Field
 
@@ -22,3 +24,7 @@ class Dashboard(HTMLRepr):
         # TODO: add 5 best/recent experiments from lb
         elements += [CSS(cfg._theme.css), CSS(cfg._highlighter.css)]
         return Column(elements).html
+
+
+def dashboard():
+    cfg._dashboard_handles.append(display(Dashboard(), display_id=True))
