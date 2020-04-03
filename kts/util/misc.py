@@ -97,3 +97,9 @@ def extract_requirements(func) -> Set[str]:
 def validate_source(source):
     tokens = source.split()
     assert 'import' not in tokens, "Runtime imports are not allowed, please move them to global scope."
+
+
+class adaptivemethod(classmethod):
+    def __get__(self, instance, owner):
+        get = super().__get__ if instance is None else self.__func__.__get__
+        return get(instance, owner)
