@@ -36,7 +36,7 @@ class Pool(HTMLRepr):
 
 class Field(HTMLRepr):
     def __init__(self, string, bold=True, accent=True, bg=True, style=""):
-        self.string = string.replace('\n', '<br>')
+        self.string = str(string).replace('\n', '<br>')
         self.bold = bold
         self.accent = accent
         self.bg = bg
