@@ -12,10 +12,30 @@ from category_encoders import (
 
 from kts.core.feature_constructor.base import BaseFeatureConstructor, Selector, Dropper
 from kts.stl.backend import EmptyLike, Identity, Concat, Applier, CategoryEncoder, Stacker
-from kts.ui.docstring import html_docstring
+from kts.ui.docstring import html_docstring, parse_to_html
 
 empty_like = EmptyLike()
+empty_like.__doc__ = """Returns an empty dataframe, preserving only index
+
+Examples:
+    >>> @feature
+    ... def some_feature(df):
+    ...     res = stl.empty_like(df)
+    ...     res['col'] = ...
+    ...     return res
+"""
+empty_like._repr_html_ = lambda *a: parse_to_html(empty_like.__doc__, 'empty_like docs')
+
+
 identity = Identity()
+identity.__doc__ = """Returns its input
+
+Examples:
+    >>> fs = FeatureSet([stl.identity, one_feature, another_feature], ...)
+    >>> assert all((stl.identity & ['a', 'b'])(df) == stl.select(['a', 'b'])(df))
+    >>> assert all((stl.identity - ['a', 'b'])(df) == stl.drop(['a', 'b'])(df))
+"""
+identity._repr_html_ = lambda *a: parse_to_html(identity.__doc__, 'identity docs')
 
 
 @html_docstring
@@ -172,14 +192,15 @@ def one_hot_encode(columns: Union[List[str], str]) -> CategoryEncoder:
     enc = OneHotEncoder()
     return category_encode(enc, columns=columns, targets=None)
 
+
 def discretize():
-    raise NotImplemented
+    raise NotImplementedError
 
 def discretize_quantile():
-    raise NotImplemented
+    raise NotImplementedError
 
 def standardize():
-    raise NotImplemented
+    raise NotImplementedError
 
 
 @html_docstring
