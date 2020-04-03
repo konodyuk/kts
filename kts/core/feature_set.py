@@ -14,6 +14,7 @@ from kts.core.frame import KTSFrame
 from kts.core.lists import feature_list
 from kts.settings import cfg
 from kts.stl.backend import Stacker
+from kts.ui.docstring import HTMLReprWithDocstring
 from kts.ui.feature_computing_report import FeatureComputingReport, SilentFeatureComputingReport
 from kts.util.hashing import hash_list, hash_fold, hash_frame
 
@@ -56,7 +57,34 @@ class PreviewDataFrame:
         return self.repr_plaintext
 
 
-class FeatureSet(ui.HTMLRepr):
+class FeatureSet(HTMLReprWithDocstring):
+    """Collects and computes feature constructors
+
+    Args:
+        before_split: list of regular features
+        after_split: list of stateful features which may leak target if computed before split.
+            They are run in Single Validation mode, i.e. for each fold they are fit using training objects
+            and then applied to validation objects in inference mode.
+        train_frame: a dataframe to perform training on. Should contain unique indices for each object.
+        targets: list of target columns in case of a multilabel task, or a single string otherwise.
+            Target columns may be computed. In this case the corresponding feature constructors
+            should be passed to before_split list.
+        auxiliary: list of auxiliary columns, such as datetime, groups or whatever else can be used
+            for setting up your validation. These columns can be utilized by overriding Validator.
+            As well as targets, auxiliary columns may be computed.
+        description: any notes about this feature set.
+
+    Examples:
+        >>> fs = FeatureSet([feature_1, feature_2], [single_validation_feature],
+        ...                  train_frame=train, targets='Survived')
+
+        >>> fs = FeatureSet([feature_1, feature_2], [single_validation_feature],
+        ...                  train_frame=train,
+        ...                  targets=['Target1', 'Target2'], auxiliary=['date', 'metric_group'])
+
+        >>> fs = FeatureSet([stl.select(['Age', 'Fare'])], [stl.mean_encode(['Embarked', 'Parch'], 'Survived')],
+        ...                  train_frame=train, targets='Survived')
+    """
     def __init__(self,
                  before_split: List[FeatureConstructor],
                  after_split: Optional[List[FeatureConstructor]] = None,
