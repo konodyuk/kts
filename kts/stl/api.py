@@ -154,7 +154,7 @@ def category_encode(encoder, columns: Union[List[str], str], targets: Optional[U
 def mean_encode(columns: Union[List[str], str], targets: Union[List[str], str], smoothing: float = 1.0, min_samples_leaf: int = 1) -> CategoryEncoder:
     """Performs mean target encoding in parallel
 
-    An alias to stl.category_encode(TargetEncode(smoothing, min_samples_leaf), columns, targets).
+    An alias to stl.category_encode(TargetEncoder(smoothing, min_samples_leaf), columns, targets).
 
     Args:
         columns: list of encoded columns. Treats string as a list of length 1
@@ -178,6 +178,8 @@ def mean_encode(columns: Union[List[str], str], targets: Union[List[str], str], 
 @html_docstring
 def one_hot_encode(columns: Union[List[str], str]) -> CategoryEncoder:
     """Performs simple one-hot encoding
+
+    An alias to stl.category_encode(OneHotEncoder(), columns).
 
     Args:
         columns: list of columns to be encoded. Treats string as a list of length 1
