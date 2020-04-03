@@ -10,7 +10,7 @@ class Leaderboard(ui.HTMLRepr):
     def __init__(self, name='main', maximize=True):
         self.name = name
         self.data = CachedMapping(f'lb_{name}')
-        self.maximize = maximize
+        self._maximize = maximize
 
     def __getitem__(self, key):
         if isinstance(key, str):
@@ -48,8 +48,7 @@ class Leaderboard(ui.HTMLRepr):
 
     @property
     def sorted_aliases(self):
-        res = [v for k, v in self.data.items() if k != 'maximize']
-        return sorted(res, key=lambda e: e.score, reverse=self.maximize)
+        return sorted(self.data.values(), key=lambda e: e.score, reverse=self.maximize)
 
     @property
     def html(self):
@@ -60,13 +59,13 @@ class Leaderboard(ui.HTMLRepr):
 
     @property
     def maximize(self) -> bool:
-        return self.data['maximize']
+        return self._maximize
 
     @maximize.setter
     def maximize(self, value: bool):
-        if 'maximize' in self.data:
-            del self.data['maximize']
-        self.data['maximize'] = value
+        leaderboard_list.data.pop(self.name)
+        self._maximize = value
+        leaderboard_list.data[self.name] = self
 
 
 class LeaderboardList:
