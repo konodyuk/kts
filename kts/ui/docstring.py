@@ -1,6 +1,9 @@
+import inspect
+
 from docstring_parser import parse, DocstringMeta
 
 from kts.ui.components import Field, Column, AlignedColumns, Title, Code, Annotation
+from kts.util.misc import adaptivemethod
 
 
 def parse_to_html(doc, title=None, signature=None):
@@ -45,12 +48,27 @@ def parse_to_html(doc, title=None, signature=None):
 
 
 def html_docstring(f):
-    # signatures are temporarily removed from docstrings
-    # may later add them back, with annotations moved to argument descriptions
-    # to make signature more compact
-    # sig = inspect.signature(f)
-    # sig = f"{f.__qualname__}{sig}"
+    sig = inspect.signature(f)
+    params = ', '.join(p.name for p in sig.parameters.values())
+    sig = f"{f.__qualname__}({params})"
     name = f"{f.__qualname__} docs"
-    html = parse_to_html(f.__doc__, name, None)
+    html = parse_to_html(f.__doc__, name, sig)
     f._repr_html_ = lambda *a: html
     return f
+
+
+class HTMLReprWithDocstring:
+    @adaptivemethod
+    def _repr_html_(self):
+        if isinstance(self, type):
+            if 'html_doc' in dir(self):
+                html = self.html_doc
+            elif self.__doc__:
+                name = f"{self.__name__} docs"
+                sig = inspect.signature(self.__init__)
+                params = ', '.join(p.name for p in sig.parameters.values() if p.name != 'self')
+                sig = f"{self.__name__}({params})"
+                html = self.html_doc = parse_to_html(self.__doc__, name, sig)
+        else:
+            html = self.html
+        return f'<div class="kts">{html}</div>'
