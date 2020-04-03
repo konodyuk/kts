@@ -64,6 +64,7 @@ setuptools.setup(
         "psutil",
         "toml",
         "category_encoders",
+        "docstring_parser"
     ],
     entry_points={
         "console_scripts": ['kts=kts.cli.scripts:cli']
