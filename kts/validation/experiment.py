@@ -1,6 +1,6 @@
 import time
 from copy import copy
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,6 +9,7 @@ import kts.ui.components as ui
 from kts.core.feature_set import FeatureSet
 from kts.feature_selection import Builtin
 from kts.settings import cfg
+from kts.ui.docstring import html_docstring
 from kts.ui.feature_importances import FeatureImportances
 
 
@@ -58,17 +59,58 @@ class Experiment(ui.HTMLRepr):
     def predict(self, frame):
         return self.cv_pipeline.predict(frame)
 
-    def feature_importances(self, plot=True, estimator=Builtin(), sort_by='mean', n_best=None, verbose=None) -> Union[pd.DataFrame, FeatureImportances]:
+    @html_docstring
+    def feature_importances(self, plot=True, estimator=Builtin(), sort_by='mean', n_best=None, verbose=None) -> Optional[Union[pd.DataFrame, FeatureImportances]]:
+        """Computes feature importance
+
+        Args:
+            plot: if true, then returns a graph, otherwise returns a dataframe
+            estimator: importance estimator instance used to compute feature importances
+            sort_by: fold-wise statistic used to sort features. One of min, mean, and max
+            n_best: number of best features to show
+            verbose: whether to produce reports during computing, such as progress bar
+                and interim feature importances. Useful for long-running estimators
+
+        Returns:
+            A feature importances graph if plot=True, dataframe with importances otherwise
+
+        Examples:
+            >>> from kts.feature_selection import Permutation
+            >>> lb.ABCDEF.feature_importances(plot=False)  # -> pd.DataFrame
+            >>> lb.ABCDEF.feature_importances(estimator=Permutation(train_frame, n_iters=3), sort_by='max')
+        """
         estimator.sort_by = sort_by
         estimator.n_best = n_best
         if verbose is not None:
             estimator.verbose = verbose
         estimator.process(self)
         if plot:
-            return estimator.report
+            if estimator.verbose:
+                return None
+            else:
+                return estimator.report
         return estimator.result
 
+    @html_docstring
     def select(self, n_best, estimator=Builtin(), sort_by='max', verbose=None) -> FeatureSet:
+        """Computes feature importances and returns a FeatureSet containing best features
+
+        Args:
+            n_best: number of best features to select
+            estimator: importance estimator instance used to compute feature importances
+            sort_by: fold-wise statistic used to sort features. One of min, mean, and max
+            verbose: whether to produce reports during computing, such as progress bar
+                and interim feature importances. Useful for long-running estimators
+
+        Returns:
+            A FeatureSet instance containing only selected features.
+            Feature constructors containing no features are dropped.
+
+        Examples:
+            >>> from kts.feature_selection import Permutation
+            >>> fs_sel = lb.ABCDEF.select(30, estimator=Permutation(train_frame, n_iters=3, sample=400))
+            >>> val.score(fs_sel, CatBoostClassifier())  # new feature set can be used right after selection
+        """
         estimator.sort_by = sort_by
         if verbose is not None:
             estimator.verbose = verbose
