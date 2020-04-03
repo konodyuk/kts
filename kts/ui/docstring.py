@@ -12,7 +12,7 @@ def parse_to_html(doc, title=None, signature=None):
 
     description = doc.short_description
     if doc.long_description:
-        description += '\n' + doc.long_description
+        description += '\n\n' + doc.long_description
     elements += [Annotation('description'), Field(description, bg=False)]
 
     param_kw = dict(style="padding-bottom: 0px; padding-top: 0px; margin-bottom: 0px;")
