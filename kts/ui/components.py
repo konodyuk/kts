@@ -100,7 +100,7 @@ class Code(HTMLRepr):
 
     @property
     def html(self):
-        return f"""<div class="kts-code"><pre>{self.html_code}</pre></div>"""
+        return f"""<div class="kts-code"><pre style="margin: 0px; padding: 0px;">{self.html_code}</pre></div>"""
 
 
 class CollapsibleColumn(HTMLRepr):
