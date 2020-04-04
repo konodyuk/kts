@@ -69,9 +69,13 @@ CSS_STYLE = """
 }}
 .kts-code > pre {{
   background-color: {second};
+  margin: 0px;
+  padding: 0px;
 }}
 .kts-code:hover > pre {{
   background-color: {fourth};
+  margin: 0px;
+  padding: 0px;
 }}
 .kts-output {{
   background-color: {second};
