@@ -1,4 +1,7 @@
 CSS_STYLE = """
+.kts {{
+  line-height: 1.6;
+}}
 .kts .wrapper {{
   display: inline-flex;
   flex-direction: column;
@@ -197,27 +200,28 @@ CSS_STYLE = """
   flex-direction: column;
 }}
 
-.kts progress[value], .kts progress:not([value]) {{
-  -webkit-appearance: none;
-  appearance: none;
-  
-  padding: 3px;
-  width: calc(100% - 10px);
-  height: 1rem;
-  box-sizing: content-box;
+.kts .progressbar-wrapper {{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 1.6em;
 }}
 
-.kts progress[value]::-webkit-progress-bar {{
+.kts .progressbar-outer {{
+  box-sizing: padding-box;
+  display: flex;
+  flex-direction: row;
   background-color: {second};
-  border-radius: 15px;
+  align-items: center;
   padding: 3px;
-  box-sizing: border-box;
+  border-radius: 15px;
+  width: 100%;
 }}
 
-.kts progress[value]::-webkit-progress-value {{
+.kts .progressbar-inner {{
   background-color: {third};
-  border-radius: 15px; 
-  box-sizing: border-box;
+  height: 0.7em;
+  border-radius: 15px;
 }}
 
 .kts .hbar-container {{

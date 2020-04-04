@@ -205,7 +205,7 @@ class ThumbnailField(HTMLRepr):
 
 
 class Progress(HTMLRepr):
-    def __init__(self, value=None, total=None,  style=""):
+    def __init__(self, value=None, total=None, style=""):
         self.value = value
         self.total = total
         self.style = style
@@ -213,7 +213,9 @@ class Progress(HTMLRepr):
     @property
     def html(self):
         if isinstance(self.value, int) and isinstance(self.total, int):
-            return f"""<progress value="{self.value}" max="{self.total}" style="{self.style}"></progress>"""
+            percent = int((self.value / self.total) * 100)
+            inner = f"""<div class="progressbar-inner" style="width: {percent}%;"></div>"""
+            return f"""<div class="progressbar-wrapper" style="{self.style}"><div class="progressbar-outer">{inner}</div></div>"""
         else:
             return f"""<progress max="1" style="{self.style}"></progress>"""
 
