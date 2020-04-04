@@ -19,9 +19,9 @@ class Column(HTMLRepr):
     def html(self):
         css_class = ""
         if self.border:
-            css_class += 'wrapper-border'
+            css_class += 'kts-wrapper-border'
         stacked = "\n".join([e.html for e in self.elements])
-        return f"""<div class="{css_class} wrapper" style="{self.style}">{stacked}</div>"""
+        return f"""<div class="{css_class} kts-wrapper" style="{self.style}">{stacked}</div>"""
 
 
 class Pool(HTMLRepr):
@@ -31,7 +31,7 @@ class Pool(HTMLRepr):
     @property
     def html(self):
         stacked = "\n".join([e.html for e in self.elements])
-        return f"""<div class="pool">{stacked}</div>"""
+        return f"""<div class="kts-pool">{stacked}</div>"""
 
 
 class Field(HTMLRepr):
@@ -44,15 +44,15 @@ class Field(HTMLRepr):
 
     @property
     def html(self):
-        css_class = "field"
+        css_class = "kts-field"
         if self.bold:
-            css_class += " field-bold"
+            css_class += " kts-field-bold"
         if self.bg:
-            css_class += " field-bg"
+            css_class += " kts-field-bg"
         if self.accent:
-            css_class += " field-accent"
+            css_class += " kts-field-accent"
         else:
-            css_class += " field-third"
+            css_class += " kts-field-third"
         return f"""<div class="{css_class}" style="{self.style}">{self.string}</div>"""
 
 
@@ -63,7 +63,7 @@ class Annotation(HTMLRepr):
 
     @property
     def html(self):
-        return f"""<div class="annotation" style="{self.style}">{self.string}</div>"""
+        return f"""<div class="kts-annotation" style="{self.style}">{self.string}</div>"""
 
 
 class Title(HTMLRepr):
@@ -73,7 +73,7 @@ class Title(HTMLRepr):
 
     @property
     def html(self):
-        return f"""<div class="title" style="{self.style}">{self.string.upper()}</div>"""
+        return f"""<div class="kts-title" style="{self.style}">{self.string.upper()}</div>"""
 
 
 class TitleWithCross(HTMLRepr):
@@ -83,12 +83,12 @@ class TitleWithCross(HTMLRepr):
 
     @property
     def html(self):
-        return f"""<div class="title-with-cross">
+        return f"""<div class="kts-title-with-cross">
             <div></div>
-            <div class="title">{self.string.upper()}</div>
-            <label class="cross-circle" for="{self.css_id}">
-                <div class="cross-before"></div>
-                <div class="cross-after"></div>
+            <div class="kts-title">{self.string.upper()}</div>
+            <label class="kts-cross-circle" for="{self.css_id}">
+                <div class="kts-cross-before"></div>
+                <div class="kts-cross-after"></div>
             </label>
         </div>"""
 
@@ -100,7 +100,7 @@ class Code(HTMLRepr):
 
     @property
     def html(self):
-        return f"""<div class="code"><pre>{self.html_code}</pre></div>"""
+        return f"""<div class="kts-code"><pre>{self.html_code}</pre></div>"""
 
 
 class CollapsibleColumn(HTMLRepr):
@@ -115,14 +115,14 @@ class CollapsibleColumn(HTMLRepr):
     def html(self):
         stacked = "\n".join([e.html for e in self.elements])
         if self.outer:
-            check_class = "check-outer"
+            check_class = "kts-check-outer"
         else:
-            check_class = "check"
+            check_class = "kts-check"
         column_class = ""
         if self.border:
-            column_class += 'wrapper-border'
+            column_class += 'kts-wrapper-border'
         return f"""<input type="checkbox" class="{check_class}" id="{self.css_id}"/>
-            <div class="wrapper {column_class}" id="collapsible">{self.thumbnail.html}<div class="inner-wrapper" id="hidden">{stacked}</div>
+            <div class="kts-wrapper {column_class}" id="kts-collapsible">{self.thumbnail.html}<div class="kts-inner-wrapper" id="kts-hidden">{stacked}</div>
         </div>"""
 
 
@@ -133,7 +133,7 @@ class InnerColumn(HTMLRepr):
     @property
     def html(self):
         stacked = "\n".join([e.html for e in self.elements])
-        return f"""<div class="inner-column">{stacked}</div>"""
+        return f"""<div class="kts-inner-column">{stacked}</div>"""
 
 
 class Row(HTMLRepr):
@@ -143,7 +143,7 @@ class Row(HTMLRepr):
     @property
     def html(self):
         stacked = "\n".join([e.html for e in self.elements])
-        return f"""<div class="row">{stacked}</div>"""
+        return f"""<div class="kts-row">{stacked}</div>"""
 
 
 class AlignedColumns(HTMLRepr):
@@ -156,12 +156,12 @@ class AlignedColumns(HTMLRepr):
     @property
     def html(self):
         n_cols = len(self.columns)
-        res = f"""<div {'class="wrapper"' if self.bg and not self.title else ''} style="display: inline-grid; grid-template-columns: {'auto ' * n_cols if not self.style else self.style};">"""
+        res = f"""<div {'class="kts-wrapper"' if self.bg and not self.title else ''} style="display: inline-grid; grid-template-columns: {'auto ' * n_cols if not self.style else self.style};">"""
         for row in zip(*self.columns):
             res += ''.join(row) + '\n'
         res += "</div>"
         if self.title is not None:
-            res = f"""<div {'class="wrapper"' if self.bg and self.title else ''} style="display: inline-grid; grid-template-rows: auto auto;">{Title(self.title, style="margin-bottom: 5px;").html}{res}</div>"""
+            res = f"""<div {'class="kts-wrapper"' if self.bg and self.title else ''} style="display: inline-grid; grid-template-rows: auto auto;">{Title(self.title, style="margin-bottom: 5px;").html}{res}</div>"""
         return res
 
 
@@ -173,7 +173,7 @@ class Output(HTMLRepr):
     def html(self):
         lines = self.string.split('\n')[::-1]
         inner_css = '\n'.join([f"<div>{html.escape(line)}</div>" for line in lines])
-        return f"""<div class="output">{inner_css}</div>"""
+        return f"""<div class="kts-output">{inner_css}</div>"""
 
 
 class ThumbnailField(HTMLRepr):
@@ -188,20 +188,20 @@ class ThumbnailField(HTMLRepr):
 
     @property
     def html(self):
-        css_class = "field"
+        css_class = "kts-field"
         if self.bold:
-            css_class += " field-bold"
+            css_class += " kts-field-bold"
         if self.bg:
-            css_class += " field-bg"
+            css_class += " kts-field-bg"
         if self.accent:
-            css_class += " field-accent"
+            css_class += " kts-field-accent"
         else:
-            css_class += " field-third"
+            css_class += " kts-field-third"
         if self.first:
-            css_class += " thumbnail-first"
+            css_class += " kts-thumbnail-first"
         else:
-            css_class += " thumbnail-second"
-        return f"""<label class="{css_class} thumbnail" style="{self.style}" for="{self.css_id}">{self.string}</label>"""
+            css_class += " kts-thumbnail-second"
+        return f"""<label class="{css_class} kts-thumbnail" style="{self.style}" for="{self.css_id}">{self.string}</label>"""
 
 
 class Progress(HTMLRepr):
@@ -214,8 +214,8 @@ class Progress(HTMLRepr):
     def html(self):
         if isinstance(self.value, int) and isinstance(self.total, int):
             percent = int((self.value / self.total) * 100)
-            inner = f"""<div class="progressbar-inner" style="width: {percent}%;"></div>"""
-            return f"""<div class="progressbar-wrapper" style="{self.style}"><div class="progressbar-outer">{inner}</div></div>"""
+            inner = f"""<div class="kts-progressbar-inner" style="width: {percent}%;"></div>"""
+            return f"""<div class="kts-progressbar-wrapper" style="{self.style}"><div class="kts-progressbar-outer">{inner}</div></div>"""
         else:
             return f"""<progress max="1" style="{self.style}"></progress>"""
 
@@ -226,7 +226,7 @@ class DF(HTMLRepr):
 
     @property
     def html(self):
-        return f"""<div class="df">{self.df._repr_html_()}</div>"""
+        return f"""<div class="kts-df">{self.df._repr_html_()}</div>"""
 
 
 class Raw(HTMLRepr):

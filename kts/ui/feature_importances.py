@@ -23,12 +23,12 @@ class Importance(HTMLRepr):
             hbar_style = f'width: {self.value - self.zero}px; left: {self.zero}px;'
         else:
             hbar_style = f'width: {self.zero - self.value}px; left: {self.value}px;'
-        return f'''<div class="hbar-container" style="width: {self.vmax}px">
-        <div class="hbar" style="{hbar_style}"></div>
-        {f'<div class="hbar-line" style="width: 1px; left: {self.zero}px; height: calc(100% + 8px); top: -4px;"></div>' if self.zero else ''}
-        <div class="hbar-line" style="width: {self.vmax - self.vmin}px; left: {self.vmin}px"></div>
-        <div class="hbar-line" style="width: 1px; height: 5px; top: calc(50% - 2px); left: {self.vmin}px"></div>
-        <div class="hbar-line" style="width: 1px; height: 5px; top: calc(50% - 2px); left: {self.vmax}px"></div>
+        return f'''<div class="kts-hbar-container" style="width: {self.vmax}px">
+        <div class="kts-hbar" style="{hbar_style}"></div>
+        {f'<div class="kts-hbar-line" style="width: 1px; left: {self.zero}px; height: calc(100% + 8px); top: -4px;"></div>' if self.zero else ''}
+        <div class="kts-hbar-line" style="width: {self.vmax - self.vmin}px; left: {self.vmin}px"></div>
+        <div class="kts-hbar-line" style="width: 1px; height: 5px; top: calc(50% - 2px); left: {self.vmin}px"></div>
+        <div class="kts-hbar-line" style="width: 1px; height: 5px; top: calc(50% - 2px); left: {self.vmax}px"></div>
         </div>
         '''
 
@@ -72,7 +72,7 @@ class Hbar(HTMLRepr):
 
     @property
     def html(self):
-        return f'<div class="hbar" style="width: {self.width}px"></div>'
+        return f'<div class="kts-hbar" style="width: {self.width}px"></div>'
 
 
 class ImportanceComputingReport(HTMLRepr):

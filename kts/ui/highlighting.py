@@ -35,7 +35,7 @@ class Highlighter:
 
     @property
     def css(self):
-        return f'<style>\n{self.formatter.get_style_defs([".kts .code"])}\n</style>\n'
+        return f'<style>\n{self.formatter.get_style_defs([".kts .kts-code"])}\n</style>\n'
 
     def set_style(self, style):
         if style in custom_styles:
