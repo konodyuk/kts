@@ -1,1 +1,1 @@
-jupyter trust tutorials/**/*.ipynb
+jupyter trust tutorials/*/notebooks/*.ipynb
