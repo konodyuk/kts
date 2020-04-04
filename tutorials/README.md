@@ -10,7 +10,7 @@ This tutorial is based on [Titanic dataset](https://www.kaggle.com/c/titanic).
 
 ### 1. Feature Engineering
 [![nbviewer](https://img.shields.io/badge/render-nbviewer-orange)](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/master/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/konodyuk/kts/master?filepath=tutorials%2Ftitanic%2F1.%20Feature%20Engineering.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/konodyuk/kts/master?filepath=tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb)
 - [Modular Feature Engineering in 30 seconds](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/master/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Modular-Feature-Engineering-in-30-seconds)
 - [KTS decorators reference](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/master/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Decorators)
 - [Feature Types](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/master/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Feature-Types)
