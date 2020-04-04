@@ -143,6 +143,8 @@ class FeatureComputingReport(HTMLRepr):
         return display(self, display_id=True)
 
     def refresh(self, force=False):
+        if not self.entries:
+            return
         if not self.changed and not force:
             return
         self.changed = False
