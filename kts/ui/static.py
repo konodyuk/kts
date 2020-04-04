@@ -67,10 +67,10 @@ CSS_STYLE = """
 .kts-code:hover {{
   background-color: {fourth};
 }}
-.kts-code pre {{
+.kts-code > pre {{
   background-color: {second};
 }}
-.kts-code:hover pre {{
+.kts-code:hover > pre {{
   background-color: {fourth};
 }}
 .kts-output {{
