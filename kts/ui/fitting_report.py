@@ -112,7 +112,7 @@ class SingleModelFittingReport:
                     steps = list(zip(*lines[i]))[0]
                     scores = list(zip(*lines[i]))[1]
                     lines[i] = Line(steps, scores, colors[i])
-                indicators.elements[0].elements.append(Field(Plot(lines, height=200, width=385).html, bg=False, style='padding-right: 5px; padding-left: 5px;'))
+                indicators.elements[0].elements.append(Field(Plot(lines, height=200, width=385).html, bg=False, style='padding-right: 0px; padding-left: 5px;'))
                 return indicators.html
             else:
                 return indicators.html
