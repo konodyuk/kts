@@ -1,7 +1,5 @@
 # Custom Models
 
-To use a model not contained in `kts.zoo`, you  need to define its class and specify tracked hyperparameters:
-
 ```python
 from nonamelib import NoNameClassifier
 
@@ -12,8 +10,6 @@ class KTSNNClassifier(kts.CustomModel, NoNameClassifier):
 nnc = KTSNNClassifier(parameter_name=42)
 val.score(nnc, fs_1)
 ```
-
-You can also specify preprocessing \(later it will be available in a more convenient way\):
 
 ```python
 from nonamelib import NoNameClassifier

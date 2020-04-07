@@ -1,7 +1,5 @@
 # Custom Validators
 
-Similarly to custom models, to adjust a validation strategy, you need to subclass `Validator`:
-
 ```python
 class TimeSeriesValidator(Validator):
     def create_folds(self, feature_set, splitter):

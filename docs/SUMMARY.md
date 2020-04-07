@@ -1,33 +1,26 @@
 # Table of contents
 
 * [Introduction](README.md)
+* [Getting Started](getting-started/README.md)
+  * [Installation](getting-started/installation.md)
+  * [Overview](getting-started/overview.md)
+  * [Tutorials](getting-started/tutorials.md)
 
-## Goose's guide
+## walkthrough
 
-* [KTS Project Structure](gooses-guide/kts-project-structure.md)
-* [Basic Feature Engineering](gooses-guide/basic-feature-engineering.md)
-* [Standard Library for Feature Engineering](gooses-guide/standard-library-for-feature-engineering.md)
-* [Basic Modeling](gooses-guide/basic-modeling.md)
-* [Validation](gooses-guide/validation.md)
-* [Source Code Tracking](gooses-guide/source-code-tracking.md)
-
-## Master's guide
-
-* [User's Cache](masters-guide/users-cache.md)
-* [Helper Functions](masters-guide/helper-functions.md)
-* [Stateful Features](masters-guide/stateful-features.md)
-* [Feature Selection](masters-guide/feature-selection.md)
-* [Custom Models](masters-guide/custom-models.md)
-* [Custom Validators](masters-guide/custom-validators.md)
-* [Hyperparameter Optimization](masters-guide/hyperparameter-optimization.md)
-* [Stacking](masters-guide/stacking.md)
-* [Configuring KTS](masters-guide/configuring-kts.md)
-
-## Grandmaster's guide
-
-* [Distributed KTS](grandmasters-guide/distributed-kts.md)
-* [Experiment Queue](grandmasters-guide/experiment-queue.md)
-* [Multiple Notebook Workflow](grandmasters-guide/configuring-kts.md)
-* [Runtime Code Injection](grandmasters-guide/runtime-code-injection.md)
-* [Extending KTS](grandmasters-guide/extending-kts.md)
+* [Feature Engineering](walkthrough/feature-engineering/README.md)
+  * [Simple Features](walkthrough/feature-engineering/simple-features.md)
+  * [Stateful Features](walkthrough/feature-engineering/stateful-features.md)
+  * [Standard Library](walkthrough/feature-engineering/standard-library.md)
+  * [Generic Features](walkthrough/feature-engineering/generic-features.md)
+  * [Feature Sets](walkthrough/feature-engineering/feature-sets.md)
+* [Modelling](walkthrough/modelling/README.md)
+  * [Custom Models](walkthrough/modelling/custom-models.md)
+* [Validation](walkthrough/validation/README.md)
+  * [Custom Validators](walkthrough/validation/custom-validators.md)
+* [Stacking](walkthrough/stacking.md)
+* [Feature Selection](walkthrough/feature-selection.md)
+* [Hyperparameter Optimization](walkthrough/hyperparameter-optimization.md)
+* [CLI](walkthrough/cli.md)
+* [Configuring KTS](walkthrough/configuring-kts.md)
 
