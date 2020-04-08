@@ -1,10 +1,8 @@
 # Table of contents
 
-* [Introduction](README.md)
-* [Getting Started](getting-started/README.md)
-  * [Installation](getting-started/installation.md)
-  * [Overview](getting-started/overview.md)
-  * [Tutorials](getting-started/tutorials.md)
+* [Overview](README.md)
+* [Installation](installation.md)
+* [Tutorials](tutorials.md)
 
 ## walkthrough
 
