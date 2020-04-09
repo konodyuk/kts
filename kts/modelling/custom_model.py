@@ -1,6 +1,6 @@
 from typing import List
 
-from kts.modelling.mixins import Model
+from kts.modelling.mixins import Model, NormalizeFillNAMixin
 from kts.util.misc import SourceMetaClass
 
 
@@ -28,7 +28,10 @@ class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
         return X, y
 
 
-def custom_model(ModelClass: type, ignored_params: List[str], name: str = None):
+def custom_model(ModelClass: type, ignored_params: List[str], name: str = None, normalize_fillna: bool = False):
     if name is None:
         name = ModelClass.__name__
-    return type(name, (ModelClass, CustomModel), {'ignored_params': ignored_params})
+    bases = (ModelClass, CustomModel)
+    if normalize_fillna:
+        bases = (NormalizeFillNAMixin,) + bases
+    return type(name, bases, {'ignored_params': ignored_params})
