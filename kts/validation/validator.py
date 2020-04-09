@@ -41,7 +41,7 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
             res[idx_val] += pred
             weights[idx_val] += 1
         res = res / weights
-        res = pd.DataFrame(res, index=input_frame.index)
+        res = pd.DataFrame(res, index=input_frame.index.copy())
         res = res[weights > 0]
         return res
 
