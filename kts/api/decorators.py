@@ -61,6 +61,7 @@ def preview(frame, *sizes, parallel=True, train=True):
             feature_constructor = obj
         feature_constructor.parallel = parallel
         try:
+            cfg.feature_computing_report = report
             for size in sizes:
                 results = run_manager.run([feature_constructor],
                                           frame=frame.head(size),
@@ -72,6 +73,7 @@ def preview(frame, *sizes, parallel=True, train=True):
                 display(results[feature_constructor.name])
         finally:
             run_manager.merge_scheduled()
+            cfg.feature_computing_report = None
     return _preview
 
 
