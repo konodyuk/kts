@@ -191,12 +191,12 @@ class Stacker(ParallelFeatureConstructor):
         self.oof = self.experiment.oof
         self.name = "stack_" + self.id
         self.source = f"stl.stack({repr(self.id)})"
-        self.columns = list(self.oof.columns)
+        self.result_columns = list(self.oof.columns)
         self.requirements = self.experiment.requirements
 
     def compute(self, kf: KTSFrame):
         assert not in_worker()
-        result = pd.DataFrame(index=kf.index, columns=self.columns)
+        result = pd.DataFrame(index=kf.index, columns=self.result_columns)
         known_index = kf.index.intersection(self.oof.index)
         unknown_index = kf.index.difference(self.oof.index)
         if len(known_index) > 0:
