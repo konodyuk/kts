@@ -1,6 +1,7 @@
 import inspect
 import sys
 from abc import ABCMeta
+from types import FunctionType
 from typing import Set
 
 import importlib_metadata
@@ -13,31 +14,35 @@ class BadSignatureException(Exception):
     pass
 
 
-def _create_source(class_name, base_classes, methods):
+def _create_source(class_name, base_classes, members):
     base_class_names = ", ".join([bc.__name__ for bc in base_classes])
     res = f"""class {class_name}({base_class_names}):\n"""
-    for name, meth in methods.items():
+    for name, item in members.items():
         if name not in ["__module__", "__qualname__", "__doc__"] + IGNORED_ATTRIBUTES:
-            try:
-                res += inspect.getsource(meth) + "\n"
-            except TypeError:
-                raise UserWarning(
-                    f"Unexpected static variable in class definition: {name}. Use instance variables instead."
-                )
+            if isinstance(item, FunctionType):
+                res += inspect.getsource(item) + '\n'
+            else:
+                res += " " * 4 + f"{name} = {repr(item)}\n"
     return res.strip()
 
 
-def _check_signatures(class_name, base_classes, methods):
-    for name, meth in methods.items():
+def _check_signatures(class_name, base_classes, members):
+    for name, item in members.items():
         for base_class in base_classes:
             if name in base_class.__dict__ and name not in [
                 "__module__",
                 "__qualname__",
                 "__doc__",
             ]:
-                base_meth = getattr(base_class, name)
-                sign = inspect.signature(meth)
-                base_sign = inspect.signature(base_meth)
+                base_item = getattr(base_class, name)
+                if not isinstance(item, FunctionType):
+                    if isinstance(item, type(base_item)):
+                        continue
+                    else:
+                        raise TypeError(f"Type discrepancy: {name} is of type {type(base_item)} in {base_class.__name__}, "
+                                        f"but {type(item)} in {class_name}")
+                sign = inspect.signature(item)
+                base_sign = inspect.signature(base_item)
                 if sign != base_sign:
                     raise BadSignatureException(
                         f"Signature discrepancy: {name}{sign} in {class_name}, "
@@ -46,9 +51,10 @@ def _check_signatures(class_name, base_classes, methods):
 
 class SourceMetaClass(ABCMeta):
     def __new__(cls, class_name, base_classes, dict_of_methods):
-        cls.check_methods(dict_of_methods)
-        _check_signatures(class_name, base_classes, dict_of_methods)
-        dict_of_methods["class_source"] = _create_source(class_name, base_classes, dict_of_methods)
+        if dict_of_methods != {'__doc__': None}:  # not in cloudpickle
+            cls.check_methods(dict_of_methods)
+            _check_signatures(class_name, base_classes, dict_of_methods)
+            dict_of_methods["class_source"] = _create_source(class_name, base_classes, dict_of_methods)
         return ABCMeta.__new__(cls, class_name, base_classes, dict_of_methods)
 
     def check_methods(methods):
