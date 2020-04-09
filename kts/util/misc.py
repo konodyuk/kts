@@ -14,9 +14,9 @@ class BadSignatureException(Exception):
     pass
 
 
-def _create_source(class_name, base_classes, members):
-    base_class_names = ", ".join([bc.__name__ for bc in base_classes])
-    res = f"""class {class_name}({base_class_names}):\n"""
+def _create_source(class_name, bases, members):
+    base_names = ", ".join([base.__name__ for base in bases])
+    res = f"""class {class_name}({base_names}):\n"""
     for name, item in members.items():
         if name not in ["__module__", "__qualname__", "__doc__"] + IGNORED_ATTRIBUTES:
             if isinstance(item, FunctionType):
@@ -26,9 +26,9 @@ def _create_source(class_name, base_classes, members):
     return res.strip()
 
 
-def _check_signatures(class_name, base_classes, members):
+def _check_signatures(class_name, bases, members):
     for name, item in members.items():
-        for base_class in base_classes:
+        for base_class in bases:
             if name in base_class.__dict__ and name not in [
                 "__module__",
                 "__qualname__",
@@ -50,12 +50,12 @@ def _check_signatures(class_name, base_classes, members):
 
 
 class SourceMetaClass(ABCMeta):
-    def __new__(cls, class_name, base_classes, dict_of_methods):
-        if dict_of_methods != {'__doc__': None}:  # not in cloudpickle
-            cls.check_methods(dict_of_methods)
-            _check_signatures(class_name, base_classes, dict_of_methods)
-            dict_of_methods["class_source"] = _create_source(class_name, base_classes, dict_of_methods)
-        return ABCMeta.__new__(cls, class_name, base_classes, dict_of_methods)
+    def __new__(cls, name, bases, members):
+        if members != {'__doc__': None}:  # not in cloudpickle
+            cls.check_methods(members)
+            _check_signatures(name, bases, members)
+            members["class_source"] = _create_source(name, bases, members)
+        return ABCMeta.__new__(cls, name, bases, members)
 
     def check_methods(methods):
         pass
