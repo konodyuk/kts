@@ -75,12 +75,14 @@ class CVPipeline:
         return self.cv_feature_set.feature_set
     
     def predict(self, frame):
+        fcr_was_none = ir_was_none = False
         if cfg.feature_computing_report is None:
-            was_none = True
+            fcr_was_none = True
             cfg.feature_computing_report = FeatureComputingReport()
+        if cfg.inference_report is None:
+            ir_was_none = True
             cfg.inference_report = InferenceReport()
-        else:
-            was_none = False
+
         self.cv_feature_set.compute(frame, report=cfg.feature_computing_report)
         cfg.inference_report.start(self.id, self.n_folds)
         predictions = []
@@ -92,8 +94,10 @@ class CVPipeline:
             y_pred = model.preprocess_predict(x)
             predictions.append(y_pred)
         cfg.inference_report.finish()
-        if was_none:
+
+        if fcr_was_none:
             cfg.feature_computing_report = None
+        if ir_was_none:
             cfg.inference_report = None
         return self.blend(predictions)
 
