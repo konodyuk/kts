@@ -163,7 +163,8 @@ class FrameCache(AbstractCache):
             os.remove(path)
             path = self.path / (key + '.pq.frame')
             df.to_parquet(path)
-        self.recover_index(df)
+        finally:
+            self.recover_index(df)
 
     def read(self, key: str):
         path = self.path / (key + '.fth.frame')
