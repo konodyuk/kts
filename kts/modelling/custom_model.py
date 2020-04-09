@@ -5,15 +5,14 @@ from kts.util.misc import SourceMetaClass
 
 
 class CustomModelSourceMetaClass(SourceMetaClass):
-    def check_methods(methods):
-        required_methods = ["get_tracked_params"]
-        for meth in required_methods:
-            assert (meth in methods), f"Method .{meth}() is required to define a custom model"
+    def check_methods(members):
+        required_members = ["ignored_params"]
+        for item in required_members:
+            assert (item in members), f"Member {meth} is required to define a custom model"
 
 
 class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
-    def get_tracked_params(self):
-        return []
+    ignored_params = []
 
     def preprocess(self, X, y=None):
         """Preprocess input before feeding it into model
@@ -29,8 +28,7 @@ class CustomModel(Model, metaclass=CustomModelSourceMetaClass):
         return X, y
 
 
-def custom_model(ModelClass: type, tracked_params: List[str], name: str = None):
-    raise NotImplementedError
+def custom_model(ModelClass: type, ignored_params: List[str], name: str = None):
     if name is None:
         name = ModelClass.__name__
-    return type(name, (ModelClass, CustomModel), {'get_tracked_params': lambda self: tracked_params})
+    return type(name, (ModelClass, CustomModel), {'ignored_params': ignored_params})
