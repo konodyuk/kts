@@ -19,6 +19,7 @@ if not in_cli() and not in_worker() and not in_pytest():
     from kts.ui.settings import set_highlighting, set_theme, set_animation
     from kts.validation.leaderboard import leaderboard, leaderboard_list
     from kts.validation.validator import Validator
+    from kts.validation.split import Refiner
 
     lb = leaderboard
     lbs = leaderboard_list
