@@ -145,14 +145,14 @@ class Permutation(ImportanceEstimator):
             self.y = self.y[:self.sample]
         cfg.preview_mode = True
         self.model = model
-        self.base_score = self.metric(self.y, self.model.predict(self.X))
+        self.base_score = self.metric(self.y, self.model.preprocess_predict(self.X))
 
     def step(self, i):
         unshuffled = self.X[:, i].copy()
         result = []
         for _ in range(self.n_iters):
             self.rng.shuffle(self.X[:, i])
-            result.append(-self.metric(self.y, self.model.predict(self.X)) + self.base_score)
+            result.append(-self.metric(self.y, self.model.preprocess_predict(self.X)) + self.base_score)
         self.X[:, i] = unshuffled
         return np.mean(result)
 
@@ -185,14 +185,14 @@ class PermutationBlind(ImportanceEstimator):
             self.X = self.X[:self.sample]
         cfg.preview_mode = True
         self.model = model
-        self.base_pred = self.model.predict(self.X)
+        self.base_pred = self.model.preprocess_predict(self.X)
 
     def step(self, i):
         unshuffled = self.X[:, i].copy()
         result = []
         for _ in range(self.n_iters):
             self.rng.shuffle(self.X[:, i])
-            result.append(np.std(self.model.predict(self.X) - self.base_pred))
+            result.append(np.std(self.model.preprocess_predict(self.X) - self.base_pred))
         self.X[:, i] = unshuffled
         return np.mean(result)
 
