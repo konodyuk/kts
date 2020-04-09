@@ -21,7 +21,7 @@ class Validator(ui.HTMLRepr, metaclass=SourceMetaClass):
         self.metric = metric
 
     def create_folds(self, feature_set, splitter):
-        y = feature_set.target
+        y = feature_set.target.values
         for idx_train, idx_test in splitter.split(y, y):
             yield idx_train, idx_test
 
