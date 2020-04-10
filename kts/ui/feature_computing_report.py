@@ -30,7 +30,7 @@ class SingleFoldReport(HTMLRepr):
 
     @property
     def indicator_formatting(self):
-        return dict(bg=False, style=f"padding: 0px 5px; margin: 2px; width: 7rem;")
+        return dict(bg=False, style=f"padding: 0px 5px; margin: 2px; width: 7em;")
 
     @property
     def progress_formatting(self):

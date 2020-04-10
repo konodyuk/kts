@@ -88,9 +88,9 @@ class SingleModelFittingReport:
         return [i[1] for i in a]
 
     def html(self, active=False, annotations=False):
-        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
+        ind_kw = dict(style='width: 4.5em; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
         indicators = Row([
-            InnerColumn([Annotation('progress')] * (annotations) + [Progress(self.step, self.n_steps, style='width: 400px; margin-top: 7px;')]), # calc(600px - 12rem - 150px)
+            InnerColumn([Annotation('progress')] * (annotations) + [Progress(self.step, self.n_steps, style='width: 400px; margin-top: 5px;')]), # calc(600px - 12rem - 150px)
             InnerColumn([Annotation('train')] * (annotations) + [Field(format_value(self.current_train_score), **ind_kw, accent=False)]),
             InnerColumn([Annotation('valid')] * (annotations) + [Field(format_value(self.current_valid_score), **ind_kw)]),
             InnerColumn([Annotation(self.metric_name)] * (annotations) + [Field(format_value(self.metric_value), **ind_kw)]),
@@ -166,10 +166,10 @@ class InferenceReportBlock(HTMLRepr):
         self.eta = None
 
     def html(self, annotations):
-        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
+        ind_kw = dict(style='width: 4.5em; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
         return Row([
             InnerColumn([Annotation('id')] * (annotations) + [Field(self.id, **ind_kw)]),
-            InnerColumn([Annotation('progress')] * (annotations) + [Progress(self.fold, self.n_folds, style='width: 400px; margin-top: 7px;')]),
+            InnerColumn([Annotation('progress')] * (annotations) + [Progress(self.fold, self.n_folds, style='width: 400px; margin-top: 5px;')]),
             InnerColumn([Annotation('took')] * (annotations) + [Field(format_value(self.took, True), **ind_kw)]),
             InnerColumn([Annotation('eta')] * (annotations) + [Field(format_value(self.eta, True), **ind_kw)]),
         ])

@@ -20,9 +20,9 @@ class Importance(HTMLRepr):
     @property
     def html(self):
         if self.value >= self.zero:
-            hbar_style = f'width: {self.value - self.zero}px; left: {self.zero}px; height: 1rem; top: calc(50% - 0.5rem);'
+            hbar_style = f'width: {self.value - self.zero}px; left: {self.zero}px; height: 1em; top: calc(50% - 0.5em);'
         else:
-            hbar_style = f'width: {self.zero - self.value}px; left: {self.value}px; height: 1rem; top: calc(50% - 0.5rem);'
+            hbar_style = f'width: {self.zero - self.value}px; left: {self.value}px; height: 1em; top: calc(50% - 0.5em);'
         return f'''<div class="kts-hbar-container" style="width: {self.vmax}px">
         <div class="kts-hbar" style="{hbar_style}"></div>
         {f'<div class="kts-hbar-line" style="width: 1px; left: {self.zero}px; height: calc(100% + 8px); top: -4px;"></div>' if self.zero else ''}
@@ -34,7 +34,7 @@ class Importance(HTMLRepr):
 
 
 class FeatureImportances(HTMLRepr):
-    def __init__(self, features: List[Dict[str, Union[str, 'FeatureConstructor', float]]], width: int = 600):
+    def __init__(self, features: List[Dict[str, Union[str, 'FeatureConstructor', float]]], width: int = 450):
         self.features = features
         self.width = width
         self.max_importance = max([i['max'] for i in self.features])
@@ -57,7 +57,7 @@ class FeatureImportances(HTMLRepr):
         hbar_annotation = Annotation('importance', style="margin-left: 5px; margin-bottom: 3px;")
         # names = [i['feature_constructor'].html_collapsible(name=i['name'], style='padding: 0px 5px; text-align: right;', bg=False, border=True) for i in self.features]
         names = [Field(i['name'], style='padding: 0px 5px; text-align: right; margin: 2px;', bg=False).html for i in self.features]
-        means = [Field(format_value(i['mean']), style='padding: 0px 5px; max-height: 1.5rem; margin: 2px;', bg=False).html for i in self.features]
+        means = [Field(format_value(i['mean']), style='padding: 0px 5px; max-height: 1.5em; margin: 2px;', bg=False).html for i in self.features]
         hbars = [Importance(self.to_px(i['mean']), self.to_px(i['min']), self.to_px(i['max']), self.zero_position).html for i in self.features]
         return AlignedColumns([
             [name_annotation.html] + names,
@@ -115,7 +115,7 @@ class ImportanceComputingReport(HTMLRepr):
 
     @property
     def html(self):
-        ind_kw = dict(style='width: 4.5rem; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
+        ind_kw = dict(style='width: 4.5em; padding-top: 0px; padding-bottom: 0px;', bg=False, bold=True)
         return Column([
             Title('computing importances'),
             Row([

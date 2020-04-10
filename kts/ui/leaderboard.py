@@ -16,7 +16,7 @@ class Leaderboard(HTMLRepr):
     """Needs refactoring, very sketchy"""
     def __init__(self, experiments):
         self.experiments = experiments
-        self.col_widths = [1, 6, 5, 10, 6, 8, 8]
+        self.col_widths = [1, 6, 5, 12, 6, 8, 8]
         self.col_names = ['#', 'id', 'score', 'model', '# features', "date", "took"]
         self.data = [
             (
@@ -33,10 +33,10 @@ class Leaderboard(HTMLRepr):
 
     def head_style(self, i):
         return dict(bg=False, accent=False, bold=False,
-                    style=f"padding: 0px 5px; margin: 0px; width: {i}rem; border: 0px;")
+                    style=f"padding: 0px 5px; margin: 0px; width: {i}em; border: 0px;")
 
     def cell_style(self, i):
-        return dict(bg=False, style=f"padding: 0px 5px; margin: 0px; width: {i}rem; border: 0px;")
+        return dict(bg=False, style=f"padding: 0px 5px; margin: 0px; width: {i}em; border: 0px;")
 
     def concat(self, row):
         return ' '.join(cell.html if not isinstance(cell, str) else cell for cell in row)

@@ -1,0 +1,3 @@
+storage_path = './storage'
+theme = 'light-orange'
+highlighting = 'tango'

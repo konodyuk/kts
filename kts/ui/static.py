@@ -2,6 +2,9 @@ CSS_STYLE = """
 .kts {{
   line-height: 1.6;
 }}
+.kts * {{
+  box-sizing: content-box;
+}}
 .kts-wrapper {{
   display: inline-flex;
   flex-direction: column;
@@ -59,7 +62,7 @@ CSS_STYLE = """
   background-color: {second};
   text-align: left;
   border-radius: 15px;
-  padding: 0.5rem 15px;
+  padding: 0.5em 15px;
   margin: 5px;
   color: white;
   display: inline-block;
@@ -69,6 +72,8 @@ CSS_STYLE = """
 }}
 .kts-code > pre {{
   background-color: {second};
+  overflow: auto;
+  white-space: pre-wrap;
 }}
 .kts-code:hover > pre {{
   background-color: {fourth};
@@ -83,7 +88,7 @@ CSS_STYLE = """
   font-family: monospace;
   color: {accent};
   overflow: auto;
-  max-height: 3rem;
+  max-height: 4.8em;
   display: flex;
   flex-direction: column-reverse;
 }}
@@ -100,42 +105,43 @@ CSS_STYLE = """
 
 .kts-title-with-cross {{
   display: grid;
-  grid-template-columns: 1rem auto 1rem;
+  grid-template-columns: 1em auto 1em;
   margin-left: 5px;
   margin-right: 5px;
 }}
 .kts-cross-circle {{
   background-color: {second};
-  width: 1rem;
-  height: 1rem;
+  width: 1em;
+  height: 1em;
   position: relative;
   border-radius: 50%;
   cursor: pointer;
   z-index: 2;
   margin-top: 2px;
+  max-width: none;
 }}
 .kts-cross-before,
 .kts-cross-after {{
   background-color: {third};
   content: '';
   position: absolute;
-  width: 0.75rem;
+  width: 0.75em;
   height: 2px;
   border-radius: 0;
-  top: calc((1rem - 2px) / 2);
+  top: calc((1em - 2px) / 2);
   z-index: 0;
 }}
 .kts-cross-before {{
   -webkit-transform: rotate(-45deg);
   -moz-transform: rotate(-45deg);
   transform: rotate(-45deg);
-  left: calc(1rem / 8);
+  left: calc(1em / 8);
 }}
 .kts-cross-after {{
   -webkit-transform: rotate(-135deg);
   -moz-transform: rotate(-135deg);
   transform: rotate(-135deg);
-  right: calc(1rem / 8);
+  right: calc(1em / 8);
 }}
 
 #kts-hidden {{
@@ -227,7 +233,7 @@ CSS_STYLE = """
 .kts-hbar-container {{
   display: block;
   position: relative;
-  height: min(calc(100% - 3px), 1.5rem);
+  height: min(calc(100% - 3px), 1.5em);
   margin: 2px;
 }}
 .kts-hbar {{
