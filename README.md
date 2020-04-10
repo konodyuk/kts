@@ -4,131 +4,82 @@
 [![Docs](https://img.shields.io/badge/docs-draft%20version-orange)](https://docs.kts.ai/)
 [![CI](https://github.com/konodyuk/kts/workflows/CI/badge.svg)](https://github.com/konodyuk/kts/actions/)
 [![Codecov](https://img.shields.io/codecov/c/github/konodyuk/kts?label=core%20coverage)](https://codecov.io/gh/konodyuk/kts)
+[![CodeFactor](https://www.codefactor.io/repository/github/konodyuk/kts/badge)](https://www.codefactor.io/repository/github/konodyuk/kts)
 
-**An ultimate workflow for solving machine learning competitions with tabular data.**
+**An interactive environment for modular feature engineering, experiment tracking, feature selection and stacking.**
 
-Install KTS with `pip install kts`. Compatible with Python 3.6+. 
+Install KTS with `pip install kts`. Compatible with Python 3.6+.
 
-## Features
+## Modular Feature Engineering
+Define features as independent blocks to organize your projects.
+![Modular Feature Engineering](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/modularity_diagram.png)
 
--  Modular feature engineering
--  Source code tracking
--  Caching of interim results
--  Standard library for feature engineering
--  Easy customization
--  Local leaderboard
--  Leak-free stacking in one line
--  Parallel or distributed backend (feature computing/training/inference/hyperparameter tuning) -- coming soon
+## Source Code Tracking
+Track source code of every feature and experiment to make each of them reproducible.
+![Source Code Tracking](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_constructor.png)
 
+## Parallel Computing
+Compute independent features in parallel. 
+![Parallel Computing](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_computing.png)
 
-## Quick Start
+## Caching
+Cache your features to avoid repeated computations.
 
+## Experiment Tracking
+Track your progress with local leaderboards.
+![Leaderboards](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/leaderboard.png)
 
-```python
-import kts
-from kts import *
-```
+## Feature Selection
+Compute feature importances and select features from any experiment with `experiment.feature_importances()` and `experiment.select()`.
+![Feature Importances](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_importances.png)
 
-Load data from user cache:
+## Easy Stacking
+With KTS, stacking is as simple as `stl.stack(experiment_id)`.
 
+## Interactivity and Rich Reports
+Monitor the progress of everything going on in KTS with our interactive reports. From model fitting to computing feature importances.
+![Fitting](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/fitting.png)
 
-```python
-train = kts.load('train')
-test = kts.load('test')
-```
+## Getting Started
+### Titanic Tutorial
+Start exploring KTS with tutorial based on [Titanic dataset](https://www.kaggle.com/c/titanic). Run notebooks interactively in Binder or just read them in NBViewer.
+#### 1. Feature Engineering
+[![nbviewer](https://img.shields.io/badge/render-nbviewer-orange)](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/konodyuk/kts/master?urlpath=/lab/tree/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb)
+- [Modular Feature Engineering in 30 seconds](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Modular-Feature-Engineering-in-30-seconds)
+- [Decorators reference](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Decorators)
+- [Feature Types](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Feature-Types)
+    - [Regular Features](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Regular-Features)
+    - [Features Using External Frames](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Features-Using-External-Frames)
+    - [Stateful Features](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Stateful-Features)
+    - [Generic Features](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Generic-Features)
+- [Standard Library](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Standard-Library)
+- [Feature Set](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/1.%20Feature%20Engineering.ipynb#Feature-Set)
 
-Create functions computing blocks of new features:
+#### 2. Modelling
+[![nbviewer](https://img.shields.io/badge/render-nbviewer-orange)](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/konodyuk/kts/master?urlpath=/lab/tree/tutorials/titanic/notebooks/2.%20Modelling.ipynb)
+- [Models](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Models)
+- [Validation](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Validation)
+- [Leaderboard](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Leaderboard)
+    - [Multiple Leaderboards](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Multiple-Leaderboards)
+- [Experiments](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Experiments)
+    - [Inference](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Inference)
+    - [Feature Importances](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Feature-Importances)
+- [Custom Models](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/2.%20Modelling.ipynb#Custom-Models)
 
-
-```python
-@register
-def feature_1(df):
-    ...
-    
-@register
-def feature_2(df):
-    ...
-    
-@register
-def feature_3(df):
-    ...
-```
-
-Combine them using FeatureSet:
-
-
-```python
-fs_1 = FeatureSet([feature_1, feature_2, feature_3],
-                  target_columns=...,
-                  df_input=train)
-```
-
-Define a validation strategy:
-
-
-```python
-from sklearn.metrics import roc_score
-from sklearn.model_selection import StratifiedKFold
-
-skf = StratifiedKFold(10, True, 42)
-val = Validator(skf, roc_score)
-```
-
-Train trackable models (built in or custom) using your features and get their IDs at the local leaderboard:
-
-
-```python
-from zoo.binary_classification import CatBoostClassifier, LGBMClassifier, LogisticRegression
-
-cb = CatBoostClassifier(iterations=50)
-lgb = LGBMClassifier()
-
-summary_cb = val.score(cb, fs_1, verbose=False)
-summary_lgb = val.score(cb, fs_1, verbose=False)
-```
-
-Use `kts.stack` to get leak-free validator and a feature block with the predictions of first-level models, then add this block to your set of features and train a second-level model:
-
-
-```python
-ids_to_stack = [summary_cb['id'], summary_lgb['id']]
-val_stack, fc_stack = kts.stack(ids_to_stack)
-
-fs_stack = FeatureSet([feature_1, feature_2, feature_3, fc_stack],
-                  target_columns=...,
-                  df_input=train)
-
-logreg = LogisticRegression()
-summary_logreg = val_stack.score(logreg, fs_stack)
-```
-
-Access the experiment by its ID and get final predictions for test dataframe:
-
-
-```python
-logreg_id  = summary_logreg['id']
-
-logreg_exp = lb[logreg_id] # == kts.leaderboard[logreg_id]
-
-test_predictions = logreg_exp.predict(test)
-```
-
-Check out the [docs](https://kts.readthedocs.io) for a detailed description of the features of KTS and its best practices of usage.  
-
-## Command line interface
-Use it to create a new project:
-```
-$ mkdir project
-$ cd project
-$ kts init
-```
-or download an example from [kts-examples](https://github.com/konodyuk/kts-examples) repo:
-```
-$ kts example titanic
-```
-
-## Contribution
-Contact me in [Telegram](https://telegram.me/konodyuk) or [ODS Slack](https://opendatascience.slack.com/team/UC43HUBQV) to share any thoughts about the framework or examples. You're always welcome to propose new features or even implement them. 
+#### 3. Stacking
+[![nbviewer](https://img.shields.io/badge/render-nbviewer-orange)](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/3.%20Stacking.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/konodyuk/kts/master?urlpath=/lab/tree/tutorials/titanic/notebooks/3.%20Stacking.ipynb)
+- [stl.stack](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/3.%20Stacking.ipynb#stl.stack)
+- [Anti-overfitting](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/3.%20Stacking.ipynb#Anti-overfitting)
+    - [Noise](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/3.%20Stacking.ipynb#Noise)
+    - [Refiner](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/3.%20Stacking.ipynb#Refiner)
+- [Deep Stacking](https://nbviewer.jupyter.org/github/konodyuk/kts/blob/dev/tutorials/titanic/notebooks/3.%20Stacking.ipynb#Deep-Stacking)
+### Documentation
+Check out [docs.kts.ai](http://docs.kts.ai) for a more detailed description of KTS features and interfaces
+### Inline Docs
+Most of our functions and classes have rich docstrings. Read them right in your notebook, without interruption.
 
 ## Acknowledgements
-Core of the project was designed and implemented by the team of [Mikhail Andronov](https://github.com/Academich), [Roman Gorb](https://github.com/rvg77) and [Nikita Konodyuk](https://github.com/konodyuk) under the mentorship of [Alexander Avdyushenko](https://github.com/avalur) during a project practice held by Yandex and Higher School of Economics on 1-14 February 2019 at Educational Center «Sirius».
+MVP of the project was designed and implemented by the team of [Mikhail Andronov](https://github.com/Academich), [Roman Gorb](https://github.com/rvg77) and [Nikita Konodyuk](https://github.com/konodyuk) under the mentorship of [Alexander Avdyushenko](https://github.com/avalur) during a project practice held by Yandex and Higher School of Economics on 1-14 February 2019 at Educational Center «Sirius».
