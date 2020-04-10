@@ -33,10 +33,10 @@ class Leaderboard(HTMLRepr):
 
     def head_style(self, i):
         return dict(bg=False, accent=False, bold=False,
-                    style=f"padding: 0px 5px; margin: 0px; width: {i}rem; border: 0px;")
+                    style=f"padding: 0px 5px; margin: 0px; width: {i}em; border: 0px;")
 
     def cell_style(self, i):
-        return dict(bg=False, style=f"padding: 0px 5px; margin: 0px; width: {i}rem; border: 0px;")
+        return dict(bg=False, style=f"padding: 0px 5px; margin: 0px; width: {i}em; border: 0px;")
 
     def concat(self, row):
         return ' '.join(cell.html if not isinstance(cell, str) else cell for cell in row)
