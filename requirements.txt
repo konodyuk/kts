@@ -13,3 +13,5 @@ psutil
 toml
 category_encoders
 docstring_parser
+catboost
+pytest
