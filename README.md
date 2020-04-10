@@ -12,7 +12,9 @@ Install KTS with `pip install kts`. Compatible with Python 3.6+.
 
 ## Modular Feature Engineering
 Define features as independent blocks to organize your projects.
-![Modular Feature Engineering](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/modularity_diagram.png)
+<div style="margin-left: 10%; margin-right: 10%; margin-top: 50px;">
+<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/modularity_diagram.png" style="width: 600px;"/>
+</div>
 
 ## Source Code Tracking
 Track source code of every feature and experiment to make each of them reproducible.
