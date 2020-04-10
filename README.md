@@ -12,33 +12,42 @@ Install KTS with `pip install kts`. Compatible with Python 3.6+.
 
 ## Modular Feature Engineering
 Define features as independent blocks to organize your projects.
+
+<p align="center">
+<br>
 <img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/modularity_diagram.png"/>
+</p>
 
 ## Source Code Tracking
 Track source code of every feature and experiment to make each of them reproducible.
-<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_constructor.png"/>
+<br>
+<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_constructor.png"/>
 
 ## Parallel Computing
 Compute independent features in parallel. 
-<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_computing.png"/>
+<br>
+<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_computing.png"/>
 
 ## Caching
 Cache your features to avoid repeated computations.
 
 ## Experiment Tracking
 Track your progress with local leaderboards.
-<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/leaderboard.png"/>
+<br>
+<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/leaderboard.png"/>
 
 ## Feature Selection
 Compute feature importances and select features from any experiment with `experiment.feature_importances()` and `experiment.select()`.
-<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_importances.png"/>
+<br>
+<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_importances.png"/>
 
 ## Easy Stacking
 With KTS, stacking is as simple as `stl.stack(experiment_id)`.
 
 ## Interactivity and Rich Reports
 Monitor the progress of everything going on in KTS with our interactive reports. From model fitting to computing feature importances.
-<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/fitting.png"/>
+<br>
+<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/fitting.png"/>
 
 ## Getting Started
 ### Titanic Tutorial
