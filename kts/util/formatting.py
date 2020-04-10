@@ -20,6 +20,8 @@ def format_value(value, time=False):
             res.append(f"{minutes}m")
         if seconds:
             res.append(f"{seconds}s")
+        if not res:
+            res = ['0s']
         return ' '.join(res)
     elif time:
         res = strftime("%d %b", localtime(value)).lower()
