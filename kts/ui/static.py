@@ -1,6 +1,7 @@
 CSS_STYLE = """
 .kts {{
   line-height: 1.6;
+  box-sizing: content-box;
 }}
 .kts-wrapper {{
   display: inline-flex;
