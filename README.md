@@ -12,35 +12,33 @@ Install KTS with `pip install kts`. Compatible with Python 3.6+.
 
 ## Modular Feature Engineering
 Define features as independent blocks to organize your projects.
-<div style="margin-left: 10%; margin-right: 10%; margin-top: 50px;">
-<img src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/modularity_diagram.png" style="width: 600px;"/>
-</div>
+<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/modularity_diagram.png"/>
 
 ## Source Code Tracking
 Track source code of every feature and experiment to make each of them reproducible.
-![Source Code Tracking](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_constructor.png)
+<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_constructor.png"/>
 
 ## Parallel Computing
 Compute independent features in parallel. 
-![Parallel Computing](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_computing.png)
+<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_computing.png"/>
 
 ## Caching
 Cache your features to avoid repeated computations.
 
 ## Experiment Tracking
 Track your progress with local leaderboards.
-![Leaderboards](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/leaderboard.png)
+<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/leaderboard.png"/>
 
 ## Feature Selection
 Compute feature importances and select features from any experiment with `experiment.feature_importances()` and `experiment.select()`.
-![Feature Importances](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_importances.png)
+<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_importances.png"/>
 
 ## Easy Stacking
 With KTS, stacking is as simple as `stl.stack(experiment_id)`.
 
 ## Interactivity and Rich Reports
 Monitor the progress of everything going on in KTS with our interactive reports. From model fitting to computing feature importances.
-![Fitting](https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/fitting.png)
+<img width="600" src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/fitting.png"/>
 
 ## Getting Started
 ### Titanic Tutorial
