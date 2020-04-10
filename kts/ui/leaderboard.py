@@ -16,7 +16,7 @@ class Leaderboard(HTMLRepr):
     """Needs refactoring, very sketchy"""
     def __init__(self, experiments):
         self.experiments = experiments
-        self.col_widths = [1, 6, 5, 10, 6, 8, 8]
+        self.col_widths = [1, 6, 5, 12, 6, 8, 8]
         self.col_names = ['#', 'id', 'score', 'model', '# features', "date", "took"]
         self.data = [
             (
