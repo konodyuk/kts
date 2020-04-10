@@ -1,0 +1,15 @@
+ray>=0.8.1
+pandas
+numpy
+scikit-learn
+matplotlib
+cloudpickle
+feather-format
+click
+xxhash
+pygments
+ipython
+psutil
+toml
+category_encoders
+docstring_parser
