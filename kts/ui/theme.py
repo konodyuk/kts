@@ -40,12 +40,14 @@ class Theme:
 
 
 themes = {
-    'dark': Theme("#2e3047", "#43455c", "#707793", "#000", "#3bba9c", ""),
-    'dark-neon': Theme("#392338", "#523957", "#ff947f", "#000", "#ffcfa4"),
-    'light': Theme("#edf1fb", "#fafafa", "#ec4e3a", "#fff", "#000"),
-    'light-blue': Theme("#edf1fb", "#f7f8fc", "#5e40d8aa", "#fff", "#000"),
-    'light-orange': Theme("#edf1fb", "#f7f8fc", "#FF7500", "#fff", "#000"),
-    'light-green': Theme("#edf1fb", "#f7f8fc", "#009900", "#fff", "#000"),
+    'dark': Theme("#2e3047", "#43455c", "#707793", "#000", "#3bba9c", "#f00"),
+    'dark-neon': Theme("#392338", "#523957", "#ff947f", "#000", "#ffcfa4", "#ff0"),
+    'light': Theme("#edf1fb", "#fafafa", "#ec4e3a", "#fff", "#000", "#ff0"),
+    'light-blue': Theme("#edf1fb", "#f7f8fc", "#5e40d8aa", "#fff", "#000", "#ff0"),
+    'light-orange': Theme("#edf1fb", "#f7f8fc", "#FF7500", "#fff", "#000", "#ff0"),
+    'light-green': Theme("#edf1fb", "#f7f8fc", "#009900", "#fff", "#000", "#ff0"),
+    'light-banana': Theme("#ffcb48", "#f7f8fc", "#000000", "#fff", "#000", "#fff"),
+    'light-gray': Theme("#f7f7f8", "#fff", "#000000", "#fff", "#000", "#999"),
 }
 
 default_highlightings = {
@@ -55,4 +57,6 @@ default_highlightings = {
     'light-blue': 'tango',
     'light-orange': 'tango',
     'light-green': 'tango',
+    'light-banana': 'tango',
+    'light-gray': 'tango',
 }

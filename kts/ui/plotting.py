@@ -4,11 +4,13 @@ from kts.ui.components import HTMLRepr
 
 
 class Line(HTMLRepr):
-    def __init__(self, x: Collection, y: Collection, color: str, width: int = 3):
+    def __init__(self, x: Collection, y: Collection, color: str, width: int = 3, dash: int = 0, desc: str = ''):
         self.xs = x
         self.ys = y
         self.color = color
         self.width = width
+        self.dash = dash
+        self.desc = desc
 
     def calc_svg_pts(self, height, width, margin, limits):
         min_x, max_x, min_y, max_y = limits
@@ -22,16 +24,34 @@ class Line(HTMLRepr):
         return res
 
     def html(self, height, width, margin, limits):
-        return f'<path d="{self.calc_svg_pts(height, width, margin, limits)}" stroke="{self.color}" fill="transparent" stroke-width="{self.width}"/>'
+        return f'<path d="{self.calc_svg_pts(height, width, margin, limits)}" ' \
+               f'stroke="{self.color}" ' \
+               f'fill=none ' \
+               f'stroke-width="{self.width}" ' \
+               f'stroke-dasharray="{self.dash}" ' \
+               f'stroke-linecap="round"> <title>{self.desc}</title> </path>'
 
+
+class Polyline(HTMLRepr):
+    def __init__(self, lines: Collection):
+        self.lines = lines
+        self.xs = sum([i.xs for i in lines], [])
+        self.ys = sum([i.ys for i in lines], [])
+
+    def html(self, *args, **kwargs):
+        inner = ''.join(i.html(*args, **kwargs) for i in self.lines)
+        return f'<g class="kts-hoverable-line" cursor="pointer" pointer-events="visible"> {inner} </g>'
 
 class Plot(HTMLRepr):
-    def __init__(self, lines, height=300, width=600, margin=0):
+    def __init__(self, lines, height=300, width=600, margin=0, limits=None):
         self.lines = lines
         self.margin = margin
         self.height = height
         self.width = width
-        self.limits = self.compute_limits()
+        if limits is None:
+            self.limits = self.compute_limits()
+        else:
+            self.limits = limits
 
     def compute_limits(self):
         min_x = min([min(l.xs) for l in self.lines])

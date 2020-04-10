@@ -8,6 +8,7 @@ with open("kts/__version__.py") as fh:
 
 extras = {
     'models': ['catboost', 'xgboost', 'lightgbm', 'skorch'],
+    'hpo': ['ray[tune]'],
 }
 
 all_deps = []
@@ -57,7 +58,6 @@ setuptools.setup(
         "cloudpickle",
         "feather-format",
         "click",
-        "python-forge",
         "xxhash",
         "pygments",
         "ipython",

@@ -206,7 +206,7 @@ def standardize():
 
 
 @html_docstring
-def stack(experiment_id: str) -> Stacker:
+def stack(experiment_id: str, noise_level: float = 0, random_state: Optional[int] = None) -> Stacker:
     """Returns predictions of specified experiment as features
 
     For indices used for fitting the experiment returns OOF predictions.
@@ -214,12 +214,17 @@ def stack(experiment_id: str) -> Stacker:
 
     Args:
         experiment_id: id of the experiment at the leaderboard
+        noise_level: range of noise added to predictions during train stage.
+            If specified, then uniformly distributed value from range [-noise_level/2, noise_level/2]
+            is added to each prediction.
+        random_state: random state for random noise generator
 
     Returns:
         A feature constructor returning predictions of the experiment.
 
     Examples:
         >>> stl.stack('ABCDEF')
+        >>> stl.stack('ABCDEF', noise_level=0.3, random_state=42)
         >>> stl.concat([stl.stack('ABCDEF'), stl.stack('GHIJKL')])
     """
-    return Stacker(experiment_id)
+    return Stacker(experiment_id, noise_level, random_state)

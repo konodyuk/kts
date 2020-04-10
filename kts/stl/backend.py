@@ -1,6 +1,7 @@
 from typing import Union, List, Optional
 
 import pandas as pd
+import numpy as np
 
 from kts.core.backend.progress import RemoteProgressBar
 from kts.core.backend.util import in_worker
@@ -16,7 +17,7 @@ class Applier(ParallelFeatureConstructor):
     def __init__(self, func, parts=None, optimize=True, verbose=False):
         self.func = func
         if parts is None:
-            parts = cfg.threads
+            parts = cfg.cpu_count
         self.parts = parts
         self.optimize = optimize
         self.verbose = verbose
@@ -183,7 +184,7 @@ class Stacker(ParallelFeatureConstructor):
     parallel = False
     cache = True
 
-    def __init__(self, id):
+    def __init__(self, id, noise_level=0, random_state=None):
         from kts.validation.leaderboard import experiments
         assert id in experiments, "No such experiment found"
         self.id = id
@@ -191,12 +192,14 @@ class Stacker(ParallelFeatureConstructor):
         self.oof = self.experiment.oof
         self.name = "stack_" + self.id
         self.source = f"stl.stack({repr(self.id)})"
-        self.columns = list(self.oof.columns)
+        self.result_columns = list(self.oof.columns)
         self.requirements = self.experiment.requirements
+        self.noise_level = noise_level
+        self.random_state = random_state
 
     def compute(self, kf: KTSFrame):
         assert not in_worker()
-        result = pd.DataFrame(index=kf.index, columns=self.columns)
+        result = pd.DataFrame(index=kf.index.copy(), columns=self.result_columns)
         known_index = kf.index.intersection(self.oof.index)
         unknown_index = kf.index.difference(self.oof.index)
         if len(known_index) > 0:
@@ -206,4 +209,12 @@ class Stacker(ParallelFeatureConstructor):
             if len(pred.shape) == 1:
                 pred = pred.reshape((-1, 1))
             result.loc[unknown_index] = pred
+        if kf._train and self.noise_level:
+            rng = np.random.RandomState(self.random_state)
+            noise = rng.rand(*result.shape)
+            noise = (noise - 0.5) * self.noise_level
+            result += noise
         return result
+
+    def __reduce__(self):
+        return (self.__class__, (self.id, self.noise_level, self.random_state))

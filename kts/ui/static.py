@@ -256,4 +256,14 @@ CSS_STYLE = """
   display: flex;
   flex-direction: row;
 }}
+
+.kts-hoverable-line, .kts-hoverable-line * {{
+  pointer-events: all;
+  transition: all 0.1s ease-out;
+}}
+
+.kts-hoverable-line:hover * {{
+  stroke: {second_accent};
+  stroke-width: 10;
+}}
 """

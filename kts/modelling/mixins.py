@@ -7,7 +7,6 @@ from kts.util.hashing import hash_dict, hash_str
 
 
 class TrackingMixin:
-    """@DynamicAttrs"""
     @property
     def params(self) -> Dict[str, Any]:
         try:
