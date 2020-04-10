@@ -34,7 +34,7 @@ class Importance(HTMLRepr):
 
 
 class FeatureImportances(HTMLRepr):
-    def __init__(self, features: List[Dict[str, Union[str, 'FeatureConstructor', float]]], width: int = 600):
+    def __init__(self, features: List[Dict[str, Union[str, 'FeatureConstructor', float]]], width: int = 450):
         self.features = features
         self.width = width
         self.max_importance = max([i['max'] for i in self.features])
