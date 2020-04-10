@@ -13,7 +13,7 @@ class Config:
     def __init__(self):
         self.config_path = None
         self._storage_path = Path('../storage')
-        self._threads = psutil.cpu_count(logical=False)
+        self._cpu_count = psutil.cpu_count(logical=True)
         self._memory = psutil.virtual_memory().total
         self._theme = None
         self._theme_name = 'light-orange'
@@ -40,12 +40,12 @@ class Config:
                     raise ConfigError(f"Invalid {k}: {v}")
 
     @property
-    def threads(self):
-        return self._threads
+    def cpu_count(self):
+        return self._cpu_count
 
-    @threads.setter
-    def threads(self, value):
-        self._threads = value
+    @cpu_count.setter
+    def cpu_count(self, value):
+        self._cpu_count = value
 
     @property
     def storage_path(self):
