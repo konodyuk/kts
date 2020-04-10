@@ -103,6 +103,8 @@ class FeatureSet(HTMLReprWithDocstring):
         self.description = description
 
     def check_features(self, before, after):
+        before = copy(before)
+        after = copy(after)
         if before is None:
             before = []
         if after is None:
@@ -235,7 +237,8 @@ class FeatureSet(HTMLReprWithDocstring):
     def name(self):
         sources_before = [i.source for i in self.before_split]
         sources_after = [i.source for i in self.after_split]
-        return f"FS{hash_list(sources_before, 2)}{hash_list(sources_after, 2)}"
+        other_hashes = [hash_list(self.targets), hash_list(self.auxiliary), self.train_id]
+        return f"FS{hash_list(sources_before, 2)}{hash_list(sources_after, 2)}{hash_list(other_hashes, 2)}"
 
     @property
     def requirements(self) -> Set[str]:
