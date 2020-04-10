@@ -72,6 +72,8 @@ CSS_STYLE = """
 }}
 .kts-code > pre {{
   background-color: {second};
+  overflow: auto;
+  white-space: pre-wrap;
 }}
 .kts-code:hover > pre {{
   background-color: {fourth};
