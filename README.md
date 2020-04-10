@@ -55,7 +55,7 @@ Install KTS with `pip install kts`. Compatible with Python 3.6+.
     <br>
     <img width=800 src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/feature_importances.png"/>
     <br><br>
-    <strong>Compute feature importances and select features from any experiment with <code>experiment.feature_importances()</code> and <code>experiment.select()</code>.</strong>
+    <strong>Compute feature importances and select features from any experiment <br> with <code>experiment.feature_importances()</code> and <code>experiment.select()</code>.</strong>
     <br>
 </p>
 
@@ -65,7 +65,7 @@ Install KTS with `pip install kts`. Compatible with Python 3.6+.
     <img width=800 src="https://raw.githubusercontent.com/konodyuk/kts/master/docs/static/fitting.png"/>
     <br>
     <br>
-    <strong>Monitor the progress of everything going on in KTS with our interactive reports. From model fitting to computing feature importances.</strong>
+    <strong>Monitor the progress of everything going on in KTS with our interactive reports. <br> From model fitting to computing feature importances.</strong>
     <br>
 </p>
 
