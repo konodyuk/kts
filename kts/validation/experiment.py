@@ -112,6 +112,7 @@ class Experiment(ui.HTMLRepr):
             >>> val.score(fs_sel, CatBoostClassifier())  # new feature set can be used right after selection
         """
         estimator.sort_by = sort_by
+        estimator.n_best = n_best
         if verbose is not None:
             estimator.verbose = verbose
         estimator.process(self)
@@ -189,7 +190,7 @@ class ExperimentAlias(ui.HTMLRepr):
         self.id = experiment.id
         self.score = experiment.score
         self.model_class = experiment.model_class
-        self.n_features = len(experiment.feature_set.before_split) + len(experiment.feature_set.before_split)
+        self.n_features = experiment.cv_pipeline.cv_feature_set.n_features
         self.date = experiment.date
         self.took = experiment.took
 
