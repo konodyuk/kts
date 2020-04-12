@@ -286,6 +286,10 @@ class CVFeatureSet:
     def fold(self, idx) -> 'Fold':
         return Fold(self, idx)
 
+    @property
+    def n_features(self) -> int:
+        return max(map(len, self.columns_by_fold.values()))
+
 
 class Fold:
     def __init__(self, cv_feature_set: CVFeatureSet, fold_idx: int):
