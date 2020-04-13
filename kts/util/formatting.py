@@ -18,7 +18,7 @@ def format_value(value, time=False):
             res.append(f"{hours}h")
         if minutes:
             res.append(f"{minutes}m")
-        if seconds:
+        if seconds and not hours:
             res.append(f"{seconds}s")
         if not res:
             res = ['0s']
