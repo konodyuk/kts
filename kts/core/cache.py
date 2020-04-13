@@ -8,6 +8,7 @@ from typing import Any, List
 from weakref import WeakValueDictionary
 
 import cloudpickle
+import dill
 import feather
 import numpy as np
 import pandas as pd
@@ -113,19 +114,27 @@ class AbstractCache(ABC):
 
 
 class ObjectCache(AbstractCache):
-    extensions = ['.cpkl.obj']
+    extensions = ['.cpkl.obj', '.dill.obj']
 
     def write(self, key: str, value):
         path = self.path / (key + '.cpkl.obj')
         try:
             cloudpickle.dump(value, open(path, "wb"))
-        except:  # don't need to handle this anymore, but leave for safety purposes, TODO: remove
-            if path.exists():
-                os.remove(path)
+            return
+        except:
+            os.remove(path)
+        path = self.path / (key + '.dill.obj')
+        try:
+            dill.dump(value, open(path, "wb"))
+        except:
+            os.remove(path)
 
     def read(self, key: str):
         path = self.path / (key + '.cpkl.obj')
-        return cloudpickle.load(open(path, "rb"))
+        if path.exists():
+            return cloudpickle.load(open(path, "rb"))
+        path = self.path / (key + '.dill.obj')
+        return dill.load(open(path, "rb"))
 
 
 class FrameCache(AbstractCache):

@@ -56,6 +56,7 @@ setuptools.setup(
         "scikit-learn",
         "matplotlib",
         "cloudpickle",
+        "dill",
         "feather-format",
         "click",
         "xxhash",
