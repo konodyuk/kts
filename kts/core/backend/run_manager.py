@@ -146,6 +146,7 @@ class RunManager:
             frame.__meta__['fold'] = fold
             frame.__meta__['run_manager'] = self
             frame.__meta__['report'] = report
+            frame.__meta__['pid'] = os.getpid()
             run_id = RunID(feature_constructor.name, frame._fold, frame.hash())
             with pbar.local_mode(report, run_id):
                 results[feature_constructor.name] = feature_constructor(frame, ret=ret)

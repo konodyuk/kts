@@ -1,6 +1,8 @@
+import os
 import time
 
 import ray
+
 try:
     from ray.experimental import get_actor  # ray<=0.8.1
 except ImportError:
@@ -45,9 +47,11 @@ class AddressManager:
     def delete(self, key):
         self.is_none[key] = True
 
-def get_address_manager():
-    return get_actor('AddressManager')
 
+pid = os.getpid()
+
+def get_address_manager():
+    return get_actor(f"AddressManager{pid}")
 
 def create_address_manager():
-    return AddressManager.options(name="AddressManager").remote()
+    return AddressManager.options(name=f"AddressManager{pid}").remote()
