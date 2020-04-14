@@ -96,7 +96,8 @@ class KTSFrame(pd.DataFrame):
             'fold': '0000',
             'scope': '__global__',
             'train': False,
-            'remote': False
+            'remote': False,
+            'pid': 0,
         }
     
 
