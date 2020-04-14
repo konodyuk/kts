@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from typing import Union, Tuple, List, Any
 
@@ -39,11 +40,13 @@ class SignalManager:
         self.data.clear()
 
 
+pid = os.getpid()
+
 def get_signal_manager():
-    return get_actor('SignalManager')
+    return get_actor(f"SignalManager{pid}")
 
 def create_signal_manager():
-    return SignalManager.options(name="SignalManager").remote()
+    return SignalManager.options(name=f"SignalManager{pid}").remote()
 
 
 def send(signal):

@@ -6,6 +6,7 @@ import pandas as pd
 import ray
 
 import kts.core.backend.signal as rs
+from kts.core.backend import signal, address_manager
 from kts.core.backend.progress import ProgressSignal
 from kts.core.backend.signal import RunPID
 from kts.core.backend.stats import Stats
@@ -16,6 +17,9 @@ from kts.core.frame import KTSFrame
 def worker(self, *args, df: pd.DataFrame, meta: Dict):
     assert 'run_manager' not in meta
     assert 'report' not in meta
+    assert 'pid' in meta
+    signal.pid = meta['pid']
+    address_manager.pid = meta['pid']
     kf = KTSFrame(df, meta=meta)
     kf.__meta__['remote'] = True
     return_state = kf._train
